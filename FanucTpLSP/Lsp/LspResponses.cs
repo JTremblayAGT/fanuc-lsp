@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
-using JsonRPC;
+using FanucTpLsp.JsonRPC;
 
-namespace FanucTpLSP.Lsp.Responses;
+namespace FanucTpLsp.Lsp;
 
 public class ServerInfo
 {
@@ -14,14 +14,29 @@ public class ServerInfo
 
 public class ServerCapabilities
 {
+
 }
 
-public class InitializeResult : ResponseMessage
+public class InitializeResult
 {
     /// <summary>
     /// Gets or sets the capabilities of the server.
     /// </summary>
     [JsonPropertyName("capabilities")]
-    public ServerCapabilities Capabilities { get; set; } = new ServerCapabilities();
+    public ServerCapabilities Capabilities { get; set; } = new();
 
+    /// <summary>
+    /// Gets or sets the information of the server.
+    /// </summary>
+    [JsonPropertyName("serverInfo")]
+    public ServerInfo ServerInfo { get; set; } = new();
+}
+
+public class InitializeResponse : ResponseMessage
+{
+    /// <summary>
+    /// Gets or sets the result of the initialize request.
+    /// </summary>
+    [JsonPropertyName("result")]
+    public InitializeResult Result { get; set; } = new();
 }

@@ -1,8 +1,7 @@
 using System.Text.Json.Serialization;
-using JsonRPC;
+using FanucTpLsp.JsonRPC;
 
-namespace FanucTpLSP.Lsp;
-
+namespace FanucTpLsp.Lsp;
 
 public class ClientInfo
 {
@@ -20,12 +19,6 @@ public class InitializeParams
     /// </summary>
     [JsonPropertyName("clientInfo")]
     public ClientInfo? ClientInfo { get; set; } = new ClientInfo();
-
-    /// <summary>
-    /// Gets or sets the capabilities of the client.
-    /// </summary>
-    //[JsonPropertyName("capabilities")]
-    //public ClientCapabilities Capabilities { get; set; } = new ClientCapabilities();
 }
 
 /// <summary>
