@@ -23,6 +23,11 @@ namespace JsonRPC
         ContentModified = -32801
     }
 
+    public class Methods
+    {
+        public const string Initialize = "initialize";
+    }
+
     /// <summary>
     /// Base message interface following JSON-RPC 2.0 spec
     /// </summary>
@@ -30,9 +35,6 @@ namespace JsonRPC
     {
         [JsonPropertyName("jsonrpc")]
         public string JsonRpc { get; set; } = "2.0";
-
-        [JsonPropertyName("method")]
-        public string Method { get; set; } = string.Empty;
     }
 
     /// <summary>
@@ -41,10 +43,10 @@ namespace JsonRPC
     public class RequestMessage : Message
     {
         [JsonPropertyName("id")]
-        public object? Id { get; set; }
+        public int Id { get; set; } = 0;
 
-        [JsonPropertyName("params")]
-        public object? Params { get; set; }
+        [JsonPropertyName("method")]
+        public string Method { get; set; } = string.Empty;
     }
 
     /// <summary>
@@ -68,13 +70,7 @@ namespace JsonRPC
     public class ResponseMessage : Message
     {
         [JsonPropertyName("id")]
-        public object? Id { get; set; }
-
-        [JsonPropertyName("result")]
-        public object? Result { get; set; }
-
-        [JsonPropertyName("error")]
-        public ResponseError? Error { get; set; }
+        public int? Id { get; set; }
     }
 
     /// <summary>
@@ -82,8 +78,8 @@ namespace JsonRPC
     /// </summary>
     public class NotificationMessage : Message
     {
-        [JsonPropertyName("params")]
-        public object? Params { get; set; }
+        [JsonPropertyName("method")]
+        public string Method { get; set; } = string.Empty;
     }
 
     public class JsonRpcEncoder
