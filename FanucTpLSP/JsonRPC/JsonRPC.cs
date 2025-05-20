@@ -27,9 +27,16 @@ public class LspMethods
 {
     // Requests
     public const string Initialize = "initialize";
+    public const string Shutdown = "shutdown";
+
+    public const string TextDocumentDidHover = "textDocument/hover";
 
     // Notifications
     public const string Initialized = "initialized";
+
+    public const string TextDocumentDidOpen = "textDocument/didOpen";
+    public const string TextDocumentDidClose = "textDocument/didClose";
+    public const string TextDocumentDidChange = "textDocument/didChange";
 }
 
 /// <summary>
@@ -72,6 +79,7 @@ public class ResponseError
 /// Response message sent from server to client
 /// </summary>
 [JsonDerivedType(typeof(InitializeResponse))]
+[JsonDerivedType(typeof(TextDocumentHoverResponse))]
 public class ResponseMessage : Message
 {
     [JsonPropertyName("id")]

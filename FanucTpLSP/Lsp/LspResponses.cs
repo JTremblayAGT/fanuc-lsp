@@ -12,9 +12,35 @@ public class ServerInfo
     public string? Version { get; set; } = string.Empty;
 }
 
+public enum TextDocumentSyncKind
+{
+    None = 0,
+    Full = 1,
+    Incremental = 2
+}
+
+public class TextDocumentSyncOptions
+{
+    /// <summary>
+    /// Gets or sets the synchronization kind.
+    /// </summary>
+    [JsonPropertyName("change")]
+    public TextDocumentSyncKind Change { get; set; } = TextDocumentSyncKind.Incremental;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to open close notifications.
+    /// </summary>
+    [JsonPropertyName("openClose")]
+    public bool OpenClose { get; set; } = true;
+}
+
 public class ServerCapabilities
 {
+    [JsonPropertyName("textDocumentSync")]
+    public TextDocumentSyncOptions TextDocumentSync { get; set; } = new();
 
+    [JsonPropertyName("hoverProvider")]
+    public bool HoverProvider { get; set; } = true;
 }
 
 public class InitializeResult

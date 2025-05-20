@@ -32,3 +32,9 @@ public class InitializeRequest : RequestMessage
     [JsonPropertyName("params")]
     public InitializeParams Params { get; set; } = new InitializeParams();
 }
+
+/// <summary>
+/// Represents the request that is sent by the client when shutting down
+/// </summary>
+public class ShutdownRequest : RequestMessage;
+
