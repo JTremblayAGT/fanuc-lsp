@@ -1,9 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.36105.23 d17.13
+VisualStudioVersion = 17.13.36105.23
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FanucTpLSP", "FanucTpLSP.csproj", "{19DF9E4A-1FB9-412D-AEA6-DF978D67B892}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TPLangParser", "..\TPLangParser\TPLangParser.csproj", "{F3499D19-3D0D-5A33-909C-C4398AA808E2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TPLangParser.Tests", "..\Tests\TPLangParser.Tests\TPLangParser.Tests.csproj", "{558844AD-1843-F697-CA05-92F74441D4A5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,9 +21,20 @@ Global
 		{19DF9E4A-1FB9-412D-AEA6-DF978D67B892}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{19DF9E4A-1FB9-412D-AEA6-DF978D67B892}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{19DF9E4A-1FB9-412D-AEA6-DF978D67B892}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3499D19-3D0D-5A33-909C-C4398AA808E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3499D19-3D0D-5A33-909C-C4398AA808E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3499D19-3D0D-5A33-909C-C4398AA808E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3499D19-3D0D-5A33-909C-C4398AA808E2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{558844AD-1843-F697-CA05-92F74441D4A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{558844AD-1843-F697-CA05-92F74441D4A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{558844AD-1843-F697-CA05-92F74441D4A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{558844AD-1843-F697-CA05-92F74441D4A5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{558844AD-1843-F697-CA05-92F74441D4A5} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6066DDFB-0FA8-4031-BE4C-B235329435E4}
