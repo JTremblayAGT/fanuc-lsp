@@ -11,6 +11,8 @@ public class LspServer(string logFilePath)
     {
         _state.IsInitialized = true;
 
+        // TODO: proper initialization logic (go through project)
+
         return _state.IsInitialized;
     }
 
@@ -24,7 +26,11 @@ public class LspServer(string logFilePath)
             LspMethods.TextDocumentDidOpen => HandleTextDocumentDidOpen(json),
             LspMethods.TextDocumentDidClose => HandleTextDocumentDidClose(json),
             LspMethods.TextDocumentDidChange => HandleTextDocumentDidChange(json),
+            LspMethods.TextDocumentDidSave => HandleTextDocumentDidSave(json),
             LspMethods.TextDocumentDidHover => HandleTextDocumentDidHover(json),
+            LspMethods.TextDocumentDefinition => HandleTextDocumentDefinition(json),
+            LspMethods.TextDocumentCodeAction => HandleTextDocumentCodeAction(json),
+            LspMethods.TextDocumentCompletion => HandleTextDocumentCompletion(json),
 
             LspMethods.Shutdown => HandleShutdownRequest(),
             _ => null
@@ -53,7 +59,10 @@ public class LspServer(string logFilePath)
                         Change = TextDocumentSyncKind.Incremental,
                         OpenClose = true
                     },
-                    HoverProvider = true
+                    HoverProvider = true,      // TODO: look into this
+                    DefinitionProvider = true, // TODO: look into this
+                    CodeActionProvider = true, // TODO: look into this
+                    CompletionProvider = new(),// TODO: look into this
                 },
                 ServerInfo = new()
                 {
@@ -135,7 +144,14 @@ public class LspServer(string logFilePath)
         }
 
         // TODO: handle change (update contents)
+        // TODO: run tools and return diagnostics (e.g. syntax check, etc.)
 
+        // Notifications that are sent by the server inherit from ResponseMessage and specify the method name
+        return null;
+    }
+
+    private ResponseMessage? HandleTextDocumentDidSave(string json)
+    {
         return null;
     }
 
@@ -148,12 +164,14 @@ public class LspServer(string logFilePath)
             throw new JsonRpcException(ErrorCodes.ParseError, "Failed to decode TextDocumentDidHoverNotification");
         }
         LogMessage($"[TextDocumentDidHover]: {request.Params.TextDocument.Uri}");
-
+        // TODO: implement this
         if (!_state.OpenedTextDocuments.ContainsKey(request.Params.TextDocument.Uri))
         {
             LogMessage($"[TextDocumentDidHover]: Document not opened: {request.Params.TextDocument.Uri}");
             return null;
         }
+
+        // TODO: Hovering a program name will pull the comment at the beginning of the /MN section
 
         return new TextDocumentHoverResponse
         {
@@ -171,6 +189,82 @@ public class LspServer(string logFilePath)
                     End = request.Params.Position,
                 }
             },
+        };
+    }
+
+    private TextDocumentDefinitionResponse? HandleTextDocumentDefinition(string json)
+    {
+        var request = JsonRpcDecoder.Decode<TextDocumentDefinitionRequest>(json);
+        // Handle the text document definition request
+        if (request == null)
+        {
+            throw new JsonRpcException(ErrorCodes.ParseError, "Failed to decode TextDocumentDefinitionRequest");
+        }
+        LogMessage($"[TextDocumentDefinition]: {request.Params.TextDocument.Uri}");
+
+        if (!_state.OpenedTextDocuments.ContainsKey(request.Params.TextDocument.Uri))
+        {
+            LogMessage($"[TextDocumentDefinition]: Document not opened: {request.Params.TextDocument.Uri}");
+            return null;
+        }
+
+        // TODO: we'll have to find the program in project folder and open it in the current buffer
+
+        return new TextDocumentDefinitionResponse
+        {
+            Id = request.Id,
+            Result = new TextDocumentLocation
+            {
+                Uri = request.Params.TextDocument.Uri,
+                Range = new TextDocumentContentRange
+                {
+                    Start = request.Params.Position,
+                    End = request.Params.Position,
+                }
+            },
+        };
+    }
+
+    private TextDocumentCodeActionResponse? HandleTextDocumentCodeAction(string json)
+    {
+        var request = JsonRpcDecoder.Decode<TextDocumentCodeActionRequest>(json);
+        // Handle the text document code action request
+        if (request == null)
+        {
+            throw new JsonRpcException(ErrorCodes.ParseError, "Failed to decode TextDocumentCodeActionRequest");
+        }
+        LogMessage($"[TextDocumentCodeAction]: {request.Params.TextDocument.Uri}");
+
+        if (!_state.OpenedTextDocuments.ContainsKey(request.Params.TextDocument.Uri))
+        {
+            LogMessage($"[TextDocumentCodeAction]: Document not opened: {request.Params.TextDocument.Uri}");
+            return null;
+        }
+
+        // TODO: implement code actions (e.g. refactoring, line renumbering, syncing comments with robot, etc.)
+
+        return new TextDocumentCodeActionResponse
+        {
+            Id = request.Id,
+            Result = []
+        };
+    }
+
+    private TextDocumentCompletionResponse? HandleTextDocumentCompletion(string json)
+    {
+        var request = JsonRpcDecoder.Decode<TextDocumentCompletionRequest>(json);
+        // Handle the text document completion request
+        if (request == null)
+        {
+            throw new JsonRpcException(ErrorCodes.ParseError, "Failed to decode TextDocumentCompletionRequest");
+        }
+
+        // TODO: will need to look into the context thing and use TpLangParser
+
+        return new TextDocumentCompletionResponse
+        {
+            Id = request.Id,
+            Result = []
         };
     }
 

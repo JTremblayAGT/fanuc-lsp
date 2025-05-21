@@ -34,6 +34,11 @@ public class TextDocumentSyncOptions
     public bool OpenClose { get; set; } = true;
 }
 
+public class CompletionOptions
+{
+    // TODO: leave this empty for now, see if we need to add anything later
+}
+
 public class ServerCapabilities
 {
     [JsonPropertyName("textDocumentSync")]
@@ -41,6 +46,15 @@ public class ServerCapabilities
 
     [JsonPropertyName("hoverProvider")]
     public bool HoverProvider { get; set; } = true;
+
+    [JsonPropertyName("definitionProvider")]
+    public bool DefinitionProvider { get; set; } = true;
+
+    [JsonPropertyName("codeActionProvider")]
+    public bool CodeActionProvider { get; set; } = true;
+
+    [JsonPropertyName("completionProvider")]
+    public CompletionOptions CompletionProvider { get; set; } = new();
 }
 
 public class InitializeResult
@@ -66,3 +80,4 @@ public class InitializeResponse : ResponseMessage
     [JsonPropertyName("result")]
     public InitializeResult Result { get; set; } = new();
 }
+

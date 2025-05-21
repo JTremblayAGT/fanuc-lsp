@@ -23,22 +23,6 @@ public enum ErrorCodes
     ContentModified = -32801
 }
 
-public class LspMethods
-{
-    // Requests
-    public const string Initialize = "initialize";
-    public const string Shutdown = "shutdown";
-
-    public const string TextDocumentDidHover = "textDocument/hover";
-
-    // Notifications
-    public const string Initialized = "initialized";
-
-    public const string TextDocumentDidOpen = "textDocument/didOpen";
-    public const string TextDocumentDidClose = "textDocument/didClose";
-    public const string TextDocumentDidChange = "textDocument/didChange";
-}
-
 /// <summary>
 /// Base message interface following JSON-RPC 2.0 spec
 /// </summary>
@@ -80,6 +64,8 @@ public class ResponseError
 /// </summary>
 [JsonDerivedType(typeof(InitializeResponse))]
 [JsonDerivedType(typeof(TextDocumentHoverResponse))]
+[JsonDerivedType(typeof(TextDocumentDefinitionResponse))]
+[JsonDerivedType(typeof(TextDocumentCodeActionResponse))]
 public class ResponseMessage : Message
 {
     [JsonPropertyName("id")]
@@ -105,7 +91,6 @@ public class JsonRpcDecoder
     public static Parser<int> HeaderParser =
         from ident in Parse.String("Content-Length: ")
         from contentLength in Parse.Number.Select(int.Parse)
-            //from separator in Parse.String("\r\n\r\n")
         select contentLength;
 
     public static TMessage? Decode<TMessage>(string json)

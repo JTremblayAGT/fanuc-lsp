@@ -81,6 +81,38 @@ public class TextDocumentDidChangeParams
     public TextDocumentContentChangeEvent[] ContentChanges { get; set; } = [];
 }
 
+public enum DiagnosticSeverity
+{
+    Error = 1,
+    Warning = 2,
+    Information = 3,
+    Hint = 4
+}
+
+public class Diagnostic
+{
+    [JsonPropertyName("range")]
+    public TextDocumentContentRange Range { get; set; } = new();
+
+    [JsonPropertyName("severity")]
+    public DiagnosticSeverity Severity { get; set; } = DiagnosticSeverity.Error;
+
+    [JsonPropertyName("source")]
+    public string Source { get; set; } = string.Empty;
+
+    [JsonPropertyName("message")]
+    public string Message { get; set; } = string.Empty;
+}
+
+public class PublishDiagnosticParams
+{
+    [JsonPropertyName("uri")]
+    public string Uri { get; set; } = string.Empty;
+
+    [JsonPropertyName("diagnostics")]
+    public Diagnostic[] Diagnostics { get; set; } = [];
+}
+
 #endregion
 
 #region Notifications
@@ -101,6 +133,21 @@ public class TextDocumentDidChangeNotification : RequestMessage
 {
     [JsonPropertyName("params")]
     public TextDocumentDidChangeParams Params { get; set; } = new();
+}
+
+public class TextDocumentDidSaveNotification : RequestMessage
+{
+    [JsonPropertyName("params")]
+    public TextDocumentIdentifier Params { get; set; } = new();
+}
+
+public class TextDocumentPublishDiagnosticsNotification : ResponseMessage
+{
+    [JsonPropertyName("method")]
+    public string Method { get; set; } = "textDocument/publishDiagnostics";
+
+    [JsonPropertyName("params")]
+    public PublishDiagnosticParams Params { get; set; } = new();
 }
 
 #endregion
