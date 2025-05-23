@@ -1,5 +1,8 @@
 ﻿using System.Text.RegularExpressions;
 
+using TPLangParser.TPLang;
+using TPLangParser.TPLang.Instructions;
+
 namespace FanucTpLsp.Lsp.Completion
 {
     public class TpMotionInstructionCompletion
@@ -104,7 +107,9 @@ namespace FanucTpLsp.Lsp.Completion
             => !string.IsNullOrEmpty(token) && MotionTypes.Contains(token);
 
         private static bool IsPositionToken(string token)
-            => !string.IsNullOrEmpty(token) && (token.StartsWith("P[") || token.StartsWith("PR["));
+            => !string.IsNullOrEmpty(token)
+                && (token.StartsWith($"{TpPosition.Keyword}[")
+                    || token.StartsWith($"{TpPositionRegister.Keyword}["));
 
         private static bool IsSpeedToken(string token)
         {
@@ -119,7 +124,10 @@ namespace FanucTpLsp.Lsp.Completion
             }
 
             // Check for register-based speed
-            return token.StartsWith("R[") || token.StartsWith("AR[") || token.StartsWith("WELD_SPEED");
+            return token.StartsWith($"{TpRegister.Keyword}[")
+                || token.StartsWith($"{TpArgumentRegister.Keyword}[")
+                || token.StartsWith("WELD_SPEED");
+
         }
 
         private static bool ContainsSpeedToken(List<string> tokens)
@@ -186,29 +194,29 @@ namespace FanucTpLsp.Lsp.Completion
             [
                 new ()
                 {
-                    Label = "P[n]",
+                    Label = $"{TpPosition.Keyword}[n]",
                     Kind = CompletionItemKind.Snippet,
                     Detail = "Position",
                     Documentation = "A taught position",
-                    InsertText = "P[$1]",
+                    InsertText = $"{TpPosition.Keyword}[$1]",
                     InsertTextFormat = InsertTextFormat.Snippet
                 },
                 new ()
                 {
-                    Label = "PR[R[n]]",
+                    Label = $"{TpPositionRegister.Keyword}[{TpRegister.Keyword}[n]]",
                     Kind = CompletionItemKind.Snippet,
                     Detail = "Indirect Position Register",
                     Documentation = "Position register referenced by register value",
-                    InsertText = "P[R[$1]]",
+                    InsertText = $"{TpPositionRegister.Keyword}[{TpRegister.Keyword}[$1]]",
                     InsertTextFormat = InsertTextFormat.Snippet
                 },
                 new ()
                 {
-                    Label = "PR[n]",
+                    Label = $"{TpPositionRegister.Keyword}[n]",
                     Kind = CompletionItemKind.Snippet,
                     Detail = "Position Register",
                     Documentation = "Position register containing a position",
-                    InsertText = "PR[$1]",
+                    InsertText = $"{TpPositionRegister.Keyword}[$1]",
                     InsertTextFormat = InsertTextFormat.Snippet
                 }
             ];
@@ -254,11 +262,11 @@ namespace FanucTpLsp.Lsp.Completion
                 },
                 new ()
                 {
-                    Label = "R[n]",
+                    Label = $"{TpRegister.Keyword}[n]",
                     Kind = CompletionItemKind.Snippet,
                     Detail = "Register speed",
                     Documentation = "Speed from register value",
-                    InsertText = "R[$1]",
+                    InsertText = $"{TpRegister.Keyword}[$1]",
                     InsertTextFormat = InsertTextFormat.Snippet
                 },
                 new ()
@@ -307,88 +315,201 @@ namespace FanucTpLsp.Lsp.Completion
             var existingOptions = tokens.Where(t => MotionOptions.Any(t.StartsWith)).ToList();
 
             // Add options that aren't already used
-            if (!existingOptions.Any(o => o.StartsWith("Wjnt")))
+            if (!existingOptions.Any(o => o.StartsWith(TpWristJointOption.Keyword)))
             {
                 completions.Add(new()
                 {
-                    Label = "Wjnt",
+                    Label = TpWristJointOption.Keyword,
                     Kind = CompletionItemKind.Keyword,
                     Detail = "Wrist Joint",
                     Documentation = "Specifies wrist joint motion",
-                    InsertText = "Wjnt"
+                    InsertText = TpWristJointOption.Keyword
                 });
             }
-
-            if (!existingOptions.Any(o => o.StartsWith("ACC")))
+            if (!existingOptions.Any(o => o.StartsWith(TpAccOption.Keyword)))
             {
                 completions.Add(new()
                 {
-                    Label = "ACCn",
+                    Label = $"{TpAccOption.Keyword}n",
                     Kind = CompletionItemKind.Snippet,
                     Detail = "Acceleration",
                     Documentation = "Sets acceleration percentage (1-100)",
-                    InsertText = "ACC$0",
+                    InsertText = $"{TpAccOption.Keyword}$0",
                     InsertTextFormat = InsertTextFormat.Snippet
                 });
             }
-
-            if (!existingOptions.Any(o => o.StartsWith("PTH")))
+            if (!existingOptions.Any(o => o.StartsWith(TpPathOption.Keyword)))
             {
                 completions.Add(new()
                 {
-                    Label = "PTH",
+                    Label = TpPathOption.Keyword,
                     Kind = CompletionItemKind.Keyword,
-                    Detail = "Path",
-                    Documentation = "Enables path mode",
-                    InsertText = "PTH"
+                    Detail = "Path priority option",
+                    Documentation = "Enables path priority mode",
+                    InsertText = TpPathOption.Keyword
                 });
             }
-
-            if (!existingOptions.Any(o => o.StartsWith("BREAK")))
+            if (!existingOptions.Any(o => o.StartsWith(TpBreakOption.Keyword)))
             {
                 completions.Add(new()
                 {
-                    Label = "BREAK",
+                    Label = TpBreakOption.Keyword,
                     Kind = CompletionItemKind.Keyword,
                     Detail = "Break",
                     Documentation = "Breaks continuous motion",
-                    InsertText = "BREAK"
+                    InsertText = TpBreakOption.Keyword
                 });
             }
-
-            if (!existingOptions.Any(o => o.StartsWith("Offset")))
+            if (!existingOptions.Any(o => o.StartsWith(TpOffsetOption.Keyword)))
             {
                 completions.Add(new()
                 {
-                    Label = "Offset",
+                    Label = TpOffsetOption.Keyword,
                     Kind = CompletionItemKind.Keyword,
                     Detail = "Offset",
-                    Documentation = "Applies an offset to the motion",
-                    InsertText = "Offset"
+                    Documentation = "Applies an offset to the motion, requires OFFSET CONDITION",
+                    InsertText = TpOffsetOption.Keyword
                 });
-
                 completions.Add(new()
                 {
-                    Label = "Offset, PR[n]",
+                    Label = $"{TpOffsetOption.Keyword},{TpPositionRegister.Keyword}[n]",
                     Kind = CompletionItemKind.Snippet,
                     Detail = "Offset with position register",
                     Documentation = "Applies an offset from position register",
-                    InsertText = "Offset, PR[$0]",
+                    InsertText = $"{TpOffsetOption.Keyword},{TpPositionRegister.Keyword}[$0]",
                     InsertTextFormat = InsertTextFormat.Snippet
                 });
             }
-
-            if (!existingOptions.Any(o => o.StartsWith("RTCP")))
+            if (!existingOptions.Any(o => o.StartsWith(TpToolOffsetOption.Keyword)))
             {
                 completions.Add(new()
                 {
-                    Label = "RTCP",
+                    Label = TpToolOffsetOption.Keyword,
+                    Kind = CompletionItemKind.Keyword,
+                    Detail = "Tool offset",
+                    Documentation = "TODO",
+                    InsertText = TpToolOffsetOption.Keyword
+                });
+                completions.Add(new()
+                {
+                    Label = $"{TpToolOffsetOption.Keyword},{TpPositionRegister.Keyword}[n]",
+                    Kind = CompletionItemKind.Snippet,
+                    Detail = "Tool offset with position register",
+                    Documentation = "TODO",
+                    InsertText = $"{TpToolOffsetOption.Keyword},{TpPositionRegister.Keyword}[$0]",
+                    InsertTextFormat = InsertTextFormat.Snippet
+                });
+            }
+            if (!existingOptions.Any(o => o.StartsWith(TpRemoteTcpOption.Keyword)))
+            {
+                completions.Add(new()
+                {
+                    Label = TpRemoteTcpOption.Keyword,
                     Kind = CompletionItemKind.Keyword,
                     Detail = "Remote TCP",
                     Documentation = "Enables Remote Tool Center Point mode",
-                    InsertText = "RTCP"
+                    InsertText = TpRemoteTcpOption.Keyword
                 });
             }
+            if (!existingOptions.Any(o => o.StartsWith(TpSkipOption.Keyword)))
+            {
+                completions.Add(new()
+                {
+                    Label = $"{TpSkipOption.Keyword},{TpLabel.Keyword}[n]",
+                    Kind = CompletionItemKind.Snippet,
+                    Detail = "Skip",
+                    Documentation = "Skip motion on condition, goto LBL[n] if motion finished.",
+                    InsertText = $"{TpSkipOption.Keyword},{TpLabel.Keyword}[$0]",
+                    InsertTextFormat = InsertTextFormat.Snippet
+                });
+            }
+            if (!existingOptions.Any(o => o.StartsWith(TpSkipJumpOption.Keyword)))
+            {
+                completions.Add(new()
+                {
+                    Label = $"{TpSkipJumpOption.Keyword},{TpLabel.Keyword}[n]",
+                    Kind = CompletionItemKind.Snippet,
+                    Detail = "SkipJump",
+                    Documentation = "Skip motion on condition, goto LBL[n] if motion skipped (requires option).",
+                    InsertText = $"{TpSkipJumpOption.Keyword},{TpLabel.Keyword}[$0]",
+                    InsertTextFormat = InsertTextFormat.Snippet
+                });
+            }
+            if (!existingOptions.Any(o => o.StartsWith(TpLinearDistanceOption.ApproachKeyword)))
+            {
+                completions.Add(new()
+                {
+                    Label = $"{TpLinearDistanceOption.ApproachKeyword}n",
+                    Kind = CompletionItemKind.Snippet,
+                    Detail = "Linear approach distance",
+                    Documentation = "Force linear approach on joint motion.",
+                    InsertText = $"{TpLinearDistanceOption.ApproachKeyword}$0",
+                    InsertTextFormat = InsertTextFormat.Snippet
+                });
+            }
+            if (!existingOptions.Any(o => o.StartsWith(TpLinearDistanceOption.RetractKeyword)))
+            {
+                completions.Add(new()
+                {
+                    Label = $"{TpLinearDistanceOption.RetractKeyword}n",
+                    Kind = CompletionItemKind.Snippet,
+                    Detail = "Linear retract distance",
+                    Documentation = "Force linear retract on joint motion.",
+                    InsertText = $"{TpLinearDistanceOption.RetractKeyword}$0",
+                    InsertTextFormat = InsertTextFormat.Snippet
+                });
+            }
+            if (!existingOptions.Any(o => o.StartsWith(TpWeldOption.Keyword)))
+            {
+                completions.Add(new()
+                {
+                    Label = $"{TpWeldOption.Keyword} Start[...]",
+                    Kind = CompletionItemKind.Snippet,
+                    Detail = "Arc start",
+                    Documentation = "Start welding arc",
+                    InsertText = $"{TpWeldOption.Keyword} Start[$0]",
+                    InsertTextFormat = InsertTextFormat.Snippet
+                });
+                completions.Add(new()
+                {
+                    Label = $"{TpWeldOption.Keyword} End[...]",
+                    Kind = CompletionItemKind.Snippet,
+                    Detail = "Arc end",
+                    Documentation = "Stop welding arc",
+                    InsertText = $"{TpWeldOption.Keyword} End[$0]",
+                    InsertTextFormat = InsertTextFormat.Snippet
+                });
+                completions.Add(new()
+                {
+                    Label = $"{TpWeldOption.Keyword} StartE<n>[...]",
+                    Kind = CompletionItemKind.Snippet,
+                    Detail = "Arc start with equipment number",
+                    Documentation = "Start welding arc",
+                    InsertText = $"{TpWeldOption.Keyword} StartE$1[$2]",
+                    InsertTextFormat = InsertTextFormat.Snippet
+                });
+                completions.Add(new()
+                {
+                    Label = $"{TpWeldOption.Keyword} EndE<n>[...]",
+                    Kind = CompletionItemKind.Snippet,
+                    Detail = "Arc end with equipment number",
+                    Documentation = "Stop welding arc",
+                    InsertText = $"{TpWeldOption.Keyword} EndE$1[$2]",
+                    InsertTextFormat = InsertTextFormat.Snippet
+                });
+            }
+            if (!existingOptions.Any(o => o.StartsWith(TpCoordMotionOption.Keyword)))
+            {
+                completions.Add(new()
+                {
+                    Label = TpCoordMotionOption.Keyword,
+                    Kind = CompletionItemKind.Keyword,
+                    Detail = "Coordinate motion",
+                    Documentation = "Enables coordinate motion on the instruction",
+                    InsertText = TpCoordMotionOption.Keyword
+                });
+            }
+
 
             return completions.ToArray();
         }

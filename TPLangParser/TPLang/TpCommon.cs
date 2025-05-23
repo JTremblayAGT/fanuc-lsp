@@ -167,8 +167,10 @@ public abstract record TpGenericRegister(TpAccess Access) : ITpParser<TpGenericR
 public record TpPosition(TpAccess Access)
     : TpGenericRegister(Access), ITpParser<TpPosition>
 {
+    public const string Keyword = "P";
+
     private static readonly Parser<TpPosition> Parser =
-        TpCommon.Keyword("P").Then(_ => TpAccess.GetParser())
+        TpCommon.Keyword(Keyword).Then(_ => TpAccess.GetParser())
             .Select(access => new TpPosition(access));
 
     public new static Parser<TpPosition> GetParser()
@@ -178,6 +180,8 @@ public record TpPosition(TpAccess Access)
 public record TpRegister(TpAccess Access)
     : TpGenericRegister(Access), ITpParser<TpRegister>
 {
+    public const string Keyword = "R";
+
     public new static Parser<TpRegister> GetParser()
         => TpCommon.Keyword("R").Then(_ => TpAccess.GetParser())
             .Select(access => new TpRegister(access));
@@ -187,18 +191,22 @@ public record TpRegister(TpAccess Access)
 public sealed record TpPositionRegister(TpAccess Access)
     : TpPosition(Access), ITpParser<TpPositionRegister>
 {
+    public new const string Keyword = "PR";
+
     public static readonly Parser<TpPositionRegister> Element
-        = TpCommon.Keyword("PR").Then(_ => TpAccessMultiple.GetParser())
+        = TpCommon.Keyword(Keyword).Then(_ => TpAccessMultiple.GetParser())
             .Select(access => new TpPositionRegister(access));
 
     public new static Parser<TpPositionRegister> GetParser()
-        => TpCommon.Keyword("PR").Then(_ => TpAccess.GetParser())
+        => TpCommon.Keyword(Keyword).Then(_ => TpAccess.GetParser())
             .Select(access => new TpPositionRegister(access));
 }
 
 public sealed record TpArgumentRegister(TpAccess Access)
     : TpRegister(Access), ITpParser<TpArgumentRegister>
 {
+    public new const string Keyword = "AR";
+
     public new static Parser<TpArgumentRegister> GetParser()
         => TpCommon.Keyword("AR").Then(_ => TpAccess.GetParser())
             .Select(access => new TpArgumentRegister(access));
@@ -349,8 +357,10 @@ public sealed record TpWeldingIOPort(TpIOType Type, TpAccess PortNumber) : TpNum
 
 public sealed record TpLabel(TpAccess LabelNumber) : ITpParser<TpLabel>
 {
+    public const string Keyword = "LBL";
+
     public static Parser<TpLabel> GetParser()
-        => from keyword in TpCommon.Keyword("LBL")
+        => from keyword in TpCommon.Keyword(Keyword)
            from labelNumber in TpAccessDirect.GetParser().Or(TpAccessIndirect.GetParser())
            select new TpLabel(labelNumber);
 
