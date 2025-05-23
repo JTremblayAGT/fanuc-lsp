@@ -113,8 +113,7 @@ public class LspServer(string logFilePath)
             return null;
         }
 
-        _state.OpenedTextDocuments.Add(notification.Params.TextDocument.Uri,
-            new(notification.Params.TextDocument, new()));
+        var compiled = _state.OnDocumentOpen(notification.Params.TextDocument);
 
         return null;
     }
@@ -150,7 +149,6 @@ public class LspServer(string logFilePath)
 
         var changedDocumentUri = notification.Params.TextDocument.Uri;
         LogMessage($"[TextDocumentDidChange]: {changedDocumentUri}");
-
 
         _state.UpdateDocumentText(changedDocumentUri, notification.Params.ContentChanges);
 

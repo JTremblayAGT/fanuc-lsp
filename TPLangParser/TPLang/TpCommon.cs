@@ -35,6 +35,9 @@ public struct TpCommon
         => input => Result.Failure<TParsed>(input, message, []);
 }
 
+public sealed record TpTokenPosition(int Line, int Column);
+public record TpPositionedToken(TpTokenPosition Position);
+
 public static class TpParserExtensions
 {
     public static Parser<TParsedType> BetweenParen<TParsedType>(this Parser<TParsedType> parser)
@@ -46,6 +49,22 @@ public static class TpParserExtensions
     public static Parser<TParsedType> BetweenBraces<TParsedType>(this Parser<TParsedType> parser)
         => parser.Contained(TpCommon.Keyword("{"), TpCommon.Keyword("}"));
 
+    public static Parser<(TParsedType Value, TpTokenPosition Position)> WithPosition<TParsedType>(this Parser<TParsedType> parser)
+        => input =>
+        {
+            var result = parser(input);
+            if (result.WasSuccessful)
+            {
+                return Result.Success<(TParsedType Value, TpTokenPosition Position)>
+                (
+                    (result.Value, new(result.Remainder.Line, result.Remainder.Column)),
+                    result.Remainder
+                );
+            }
+
+            return Result.Failure<(TParsedType Value, TpTokenPosition Position)>
+                (input, $"Unexpected character '{result.Remainder.Current}'", []);
+        };
 }
 
 public enum TpArcWeldingOptionType
@@ -153,8 +172,13 @@ public sealed record TpAccessMultiple(TpValue Number, TpValue Item, string? Comm
             ).BetweenBrackets();
 }
 
-public abstract record TpGenericRegister(TpAccess Access) : ITpParser<TpGenericRegister>
+public abstract record TpGenericRegister(TpAccess Access) : TpPositionedToken(new TpTokenPosition(0, 0)), ITpParser<TpGenericRegister>
 {
+    protected static Parser<T> GetParserFor<T>(string keyword, Func<TpAccess, TpTokenPosition, T> builderFunc)
+        => from kwPos in TpCommon.Keyword(keyword).WithPosition()
+           from access in TpAccess.GetParser()
+           select builderFunc(access, kwPos.Position);
+
     public static Parser<TpGenericRegister> GetParser()
         => TpRegister.GetParser().Select(TpGenericRegister (reg) => reg)
         .Or(TpPositionRegister.GetParser().Select(TpGenericRegister (reg) => reg))
@@ -170,8 +194,7 @@ public record TpPosition(TpAccess Access)
     public const string Keyword = "P";
 
     private static readonly Parser<TpPosition> Parser =
-        TpCommon.Keyword(Keyword).Then(_ => TpAccess.GetParser())
-            .Select(access => new TpPosition(access));
+        GetParserFor(Keyword, (access, pos) => new TpPosition(access) with { Position = pos });
 
     public new static Parser<TpPosition> GetParser()
         => TpPositionRegister.GetParser().Or(Parser);
@@ -183,8 +206,7 @@ public record TpRegister(TpAccess Access)
     public const string Keyword = "R";
 
     public new static Parser<TpRegister> GetParser()
-        => TpCommon.Keyword("R").Then(_ => TpAccess.GetParser())
-            .Select(access => new TpRegister(access));
+        => GetParserFor(Keyword, (access, pos) => new TpRegister(access) with { Position = pos });
 }
 
 // A PR can also be used as a position for motion instruction
@@ -194,12 +216,12 @@ public sealed record TpPositionRegister(TpAccess Access)
     public new const string Keyword = "PR";
 
     public static readonly Parser<TpPositionRegister> Element
-        = TpCommon.Keyword(Keyword).Then(_ => TpAccessMultiple.GetParser())
-            .Select(access => new TpPositionRegister(access));
+        = from kwPos in TpCommon.Keyword(Keyword).WithPosition()
+          from access in TpAccessMultiple.GetParser()
+          select new TpPositionRegister(access) with { Position = kwPos.Position };
 
     public new static Parser<TpPositionRegister> GetParser()
-        => TpCommon.Keyword(Keyword).Then(_ => TpAccess.GetParser())
-            .Select(access => new TpPositionRegister(access));
+        => GetParserFor(Keyword, (access, pos) => new TpPositionRegister(access) with { Position = pos });
 }
 
 public sealed record TpArgumentRegister(TpAccess Access)
@@ -208,23 +230,26 @@ public sealed record TpArgumentRegister(TpAccess Access)
     public new const string Keyword = "AR";
 
     public new static Parser<TpArgumentRegister> GetParser()
-        => TpCommon.Keyword("AR").Then(_ => TpAccess.GetParser())
-            .Select(access => new TpArgumentRegister(access));
+        => GetParserFor(Keyword, (access, pos) => new TpArgumentRegister(access) with { Position = pos });
 }
 
 public sealed record TpStringRegister(TpAccess Access)
     : TpGenericRegister(Access), ITpParser<TpStringRegister>
 {
+    public const string Keyword = "SR";
+
     public new static Parser<TpStringRegister> GetParser()
-        => TpCommon.Keyword("SR").Then(_ => TpAccess.GetParser())
-            .Select(access => new TpStringRegister(access));
+        => GetParserFor(Keyword, (access, pos) => new TpStringRegister(access) with { Position = pos });
 }
 
-public sealed record TpFlag(TpAccess Access) : ITpParser<TpFlag>
+public sealed record TpFlag(TpAccess Access) : TpPositionedToken(new TpTokenPosition(0, 0)), ITpParser<TpFlag>
 {
+    public const string Keyword = "F";
+
     public static Parser<TpFlag> GetParser()
-        => TpCommon.Keyword("F").Then(_ => TpAccess.GetParser())
-            .Select(access => new TpFlag(access));
+        => from kwPos in TpCommon.Keyword(Keyword).WithPosition()
+           from access in TpAccess.GetParser()
+           select new TpFlag(access) with { Position = kwPos.Position };
 }
 
 public enum TpIOType

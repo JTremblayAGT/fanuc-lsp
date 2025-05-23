@@ -1,9 +1,13 @@
+using TPLangParser.TPLang;
+
+using Sprache;
 
 namespace FanucTpLsp.Lsp.State;
 
 internal record TextDocumentState(
     TextDocumentItem TextDocument,
-    TextDocumentContentPosition LastEditPosition
+    TextDocumentContentPosition LastEditPosition,
+    TpProgram? Program
 );
 
 internal class LspServerState(string logFilePath)
@@ -12,6 +16,22 @@ internal class LspServerState(string logFilePath)
     public bool IsShutdown { get; set; } = false;
     public string LastChangedDocumentUri { get; set; } = string.Empty;
     public Dictionary<string, TextDocumentState> OpenedTextDocuments { get; set; } = new();
+
+    public bool OnDocumentOpen(TextDocumentItem document)
+    {
+        var result = TpProgram.GetParser().TryParse(document.Text);
+        if (!result.WasSuccessful)
+        {
+            // TODO: should actually publish a diagnostic error
+        }
+
+        var program = result.WasSuccessful ? result.Value : default(TpProgram);
+
+        OpenedTextDocuments.Add(document.Uri,
+            new(document, new(), program));
+
+        return result.WasSuccessful;
+    }
 
     public void UpdateDocumentText(string uri, TextDocumentContentChangeEvent[] changes)
     {
@@ -52,7 +72,19 @@ internal class LspServerState(string logFilePath)
         // Update the document with the new text
         var document = documentState.TextDocument;
         document.Text = text;
-        OpenedTextDocuments[uri] = documentState with { LastEditPosition = lastEditPosition, TextDocument = document };
+
+        var result = TpProgram.GetParser().TryParse(document.Text);
+        if (!result.WasSuccessful)
+        {
+            // TODO: should actually publish a diagnostic error
+        }
+
+        OpenedTextDocuments[uri] = documentState with
+        {
+            LastEditPosition = lastEditPosition,
+            TextDocument = document,
+            Program = result.WasSuccessful ? result.Value : documentState.Program
+        };
         LastChangedDocumentUri = uri;
     }
 

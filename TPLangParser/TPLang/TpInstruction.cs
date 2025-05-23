@@ -1,7 +1,7 @@
-﻿    using TPLangParser.TPLang.Instructions;
-    using Sprache;
+﻿using TPLangParser.TPLang.Instructions;
+using Sprache;
 
-    namespace TPLangParser.TPLang;
+namespace TPLangParser.TPLang;
 
 public static class InstructionParsingExtensions
 {
@@ -11,7 +11,7 @@ public static class InstructionParsingExtensions
             var result = parser(input);
             if (result.WasSuccessful)
             {
-                return Result.Success((result.Value, input.Line), result.Remainder);
+                return Result.Success((result.Value, result.Remainder.Line), result.Remainder);
             }
 
             return Result.Failure<(T Value, int LineNumber)>(input,
@@ -71,16 +71,16 @@ public abstract record TpInstruction(int LineNumber) : ITpParser<TpInstruction>
 
     public static Parser<TpInstruction> GetParser()
         => from lineNumber in TpCommon.LineNumber.Or(TpCommon.Fail<int>("Failed to parse start of line."))
-            from kvp in InternalParser.WithLineNumber()
-            from lineEnd in TpCommon.LineEnd
-            select kvp.Value with { LineNumber = kvp.LineNumber };
+           from kvp in InternalParser.WithLineNumber()
+           from lineEnd in TpCommon.LineEnd
+           select kvp.Value with { LineNumber = kvp.LineNumber };
 }
 
 public sealed record TpEmptyInstruction() : TpInstruction(0), ITpParser<TpEmptyInstruction>
 {
-    public new static Parser<TpEmptyInstruction> GetParser() 
+    public new static Parser<TpEmptyInstruction> GetParser()
         => from whitespace in Parse.WhiteSpace.AtLeastOnce()
-            select new TpEmptyInstruction();
+           select new TpEmptyInstruction();
 }
 
 public sealed record TpInstructionComment(string Comment) : TpInstruction(0), ITpParser<TpInstructionComment>
@@ -100,7 +100,7 @@ public sealed record TpInstructionComment(string Comment) : TpInstruction(0), IT
         select commentLines.Aggregate((acc, com) => acc + com);
 
 
-    public new static Parser<TpInstructionComment> GetParser() 
+    public new static Parser<TpInstructionComment> GetParser()
         => from comment in CommentParser.Or(MultiLineComment)
-            select new TpInstructionComment(comment);
+           select new TpInstructionComment(comment);
 }
