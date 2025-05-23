@@ -1,6 +1,6 @@
 ﻿using Sprache;
 
-namespace AGT.TPLangParser.TPLang;
+namespace TPLangParser.TPLang;
 public abstract record TpComparisonExpression(TpComparisonOperator Operator, TpValue Lhs, TpValue Rhs)
     : ITpParser<TpComparisonExpression>
 {

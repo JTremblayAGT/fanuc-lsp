@@ -1,6 +1,6 @@
 ﻿using Sprache;
 
-namespace AGT.TPLangParser.TPLang.Instructions;
+namespace TPLangParser.TPLang.Instructions;
 
 public abstract record TpAutoBackwardExitInstruction() : TpInstruction(0), ITpParser<TpAutoBackwardExitInstruction>
 {

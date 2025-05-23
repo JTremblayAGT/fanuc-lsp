@@ -15,4 +15,8 @@
     <PackageReference Include="UnderAutomation.Fanuc" Version="1.15.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\TPLangParser\TPLangParser.csproj" />
+  </ItemGroup>
+
 </Project>

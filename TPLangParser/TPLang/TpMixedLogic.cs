@@ -1,6 +1,6 @@
 ﻿using Sprache;
 
-namespace AGT.TPLangParser.TPLang;
+namespace TPLangParser.TPLang;
 
 // Mixed logic's grammar is recursive and the regular parser pattern in this project causes a stack overflow
 internal readonly struct TpMixedLogicExpressionParser

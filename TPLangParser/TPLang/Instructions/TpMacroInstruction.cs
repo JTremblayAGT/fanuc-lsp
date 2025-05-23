@@ -1,6 +1,6 @@
 ﻿using Sprache;
 
-namespace AGT.TPLangParser.TPLang.Instructions;
+namespace TPLangParser.TPLang.Instructions;
 
 public record TpMacroInstruction(string ProgramName) : TpInstruction(0), ITpParser<TpMacroInstruction>
 {

@@ -25,7 +25,7 @@ public class TextDocumentSyncOptions
     /// Gets or sets the synchronization kind.
     /// </summary>
     [JsonPropertyName("change")]
-    public TextDocumentSyncKind Change { get; set; } = TextDocumentSyncKind.Incremental;
+    public TextDocumentSyncKind Change { get; set; } = TextDocumentSyncKind.Full;
 
     /// <summary>
     /// Gets or sets a value indicating whether to open close notifications.
@@ -37,6 +37,8 @@ public class TextDocumentSyncOptions
 public class CompletionOptions
 {
     // TODO: leave this empty for now, see if we need to add anything later
+    [JsonPropertyName("triggerCharacters")]
+    public string[] TriggerCharacters { get; set; } = [];
 }
 
 public class ServerCapabilities

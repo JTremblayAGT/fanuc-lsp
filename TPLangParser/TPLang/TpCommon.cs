@@ -1,7 +1,7 @@
-﻿using AGT.TPLangParser.TPLang.Instructions;
+﻿using TPLangParser.TPLang.Instructions;
 using Sprache;
 
-namespace AGT.TPLangParser.TPLang;
+namespace TPLangParser.TPLang;
 
 public enum TpUnit
 {

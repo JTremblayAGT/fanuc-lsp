@@ -1,20 +1,29 @@
-﻿using Sprache;
+﻿using TPLangParser.TPLang;
+using Sprache;
 
-namespace AGT.TPLangParser.TPLang;
+namespace TPLangParser.TPLang;
 
-public sealed record TpProgramAttributes(Dictionary<string, string> Attributes)
-    : ITpParser<TpProgramAttributes>
+public sealed record TpHeaderAttribute(string Name, string Value) : TpInstruction(0), ITpParser<TpHeaderAttribute>
 {
-    private static readonly Parser<(string, string)> Attribute =
+    private static readonly Parser<TpHeaderAttribute> Inner =
         from key in TpCommon.Identifier
         from separator in Parse.Chars("=:")
         from value in Parse.AnyChar.Until(Parse.Char(';')).Text()
-        select (key, value);
+        select new TpHeaderAttribute(key, value);
+
+    public new static Parser<TpHeaderAttribute> GetParser()
+        => from kvp in Inner.WithLineNumber()
+            select kvp.Value with { LineNumber = kvp.LineNumber };
+}
+
+public sealed record TpProgramAttributes(Dictionary<string, TpHeaderAttribute> Attributes)
+    : ITpParser<TpProgramAttributes>
+{
 
     public static Parser<TpProgramAttributes> GetParser()
         => from attrTag in Parse.String("/ATTR").Token()
-           from attributes in Attribute.Many()
-           select new TpProgramAttributes(attributes.ToDictionary());
+           from attributes in TpHeaderAttribute.GetParser().Many()
+           select new TpProgramAttributes(attributes.ToDictionary(attr => attr.Name));
 }
 
 public sealed record TpProgramAppl(Dictionary<string, string> Attributes) : ITpParser<TpProgramAppl>

@@ -1,6 +1,6 @@
 ﻿using Sprache;
 
-namespace AGT.TPLangParser.TPLang.Instructions;
+namespace TPLangParser.TPLang.Instructions;
 
 public sealed record TpWeldInstruction(TpArcWeldingOptionType Type, TpWeldInstructionArgs Args)
     : TpInstruction(0), ITpParser<TpInstruction>

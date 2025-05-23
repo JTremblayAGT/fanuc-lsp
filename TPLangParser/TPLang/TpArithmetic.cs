@@ -1,6 +1,6 @@
 ﻿using Sprache;
 
-namespace AGT.TPLangParser.TPLang;
+namespace TPLangParser.TPLang;
 // Recursive grammar similar to mixed logic expressions
 public record TpArithmeticExpression
     : ITpParser<TpArithmeticExpression>

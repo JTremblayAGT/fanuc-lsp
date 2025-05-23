@@ -122,16 +122,27 @@ public class TextDocumentCodeActionRequest : RequestMessage
 public class TextDocumentCodeActionResponse : ResponseMessage
 {
     [JsonPropertyName("result")]
-    public CodeAction[] Result { get; set; } = Array.Empty<CodeAction>();
+    public CodeAction[] Result { get; set; } = [];
 }
 
 #endregion
 
 #region Completion
 
+public enum TriggerKind
+{
+    Invoked = 1,
+    TriggerCharacter = 2,
+    TriggerForIncompleteCompletions = 3
+}
+
 public class CompletionContext
 {
-    // TODO: Implement CompletionContext properties
+    [JsonPropertyName("triggerKind")]
+    public TriggerKind TriggerKind { get; set; } = TriggerKind.Invoked;
+
+    [JsonPropertyName("triggerCharacter")]
+    public string? TriggerCharacter { get; set; } = null;
 }
 
 public class TextDocumentCompletionParams
@@ -146,7 +157,13 @@ public class TextDocumentCompletionRequest : RequestMessage
     public TextDocumentCompletionParams Params { get; set; } = new();
 }
 
-public class TextDocumentCompletionItem
+public enum InsertTextFormat
+{
+    PlainText = 1,
+    Snippet = 2
+}
+
+public class CompletionItem
 {
     [JsonPropertyName("label")]
     public string Label { get; set; } = string.Empty;
@@ -156,12 +173,53 @@ public class TextDocumentCompletionItem
 
     [JsonPropertyName("documentation")]
     public string Documentation { get; set; } = string.Empty;
+
+    [JsonPropertyName("kind")]
+    public CompletionItemKind Kind { get; set; } = CompletionItemKind.Text;
+
+    [JsonPropertyName("insertText")]
+    public string InsertText { get; set; } = string.Empty;
+
+    [JsonPropertyName("sortText")]
+    public string SortText { get; set; } = string.Empty;
+
+    [JsonPropertyName("insertTextFormat")]
+    public InsertTextFormat InsertTextFormat { get; set; } = InsertTextFormat.PlainText;
+}
+
+public enum CompletionItemKind
+{
+    Text = 1,
+    Method = 2,
+    Function = 3,
+    Constructor = 4,
+    Field = 5,
+    Variable = 6,
+    Class = 7,
+    Interface = 8,
+    Module = 9,
+    Property = 10,
+    Unit = 11,
+    Value = 12,
+    Enum = 13,
+    Keyword = 14,
+    Snippet = 15,
+    Color = 16,
+    File = 17,
+    Reference = 18,
+    Folder = 19,
+    EnumMember = 20,
+    Constant = 21,
+    Struct = 22,
+    Event = 23,
+    Operator = 24,
+    TypeParameter = 25
 }
 
 public class TextDocumentCompletionResponse : ResponseMessage
 {
     [JsonPropertyName("result")]
-    public TextDocumentCompletionItem[] Result { get; set; } = Array.Empty<TextDocumentCompletionItem>();
+    public CompletionItem[] Result { get; set; } = [];
 }
 
 #endregion

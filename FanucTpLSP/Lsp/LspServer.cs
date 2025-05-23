@@ -1,11 +1,12 @@
 using FanucTpLsp.JsonRPC;
+using FanucTpLsp.Lsp.Completion;
 using FanucTpLsp.Lsp.State;
 
 namespace FanucTpLsp.Lsp;
 
 public class LspServer(string logFilePath)
 {
-    private LspServerState _state = new();
+    private LspServerState _state = new(logFilePath);
 
     public bool Initialize()
     {
@@ -50,11 +51,11 @@ public class LspServer(string logFilePath)
         var response = new InitializeResponse
         {
             Id = request.Id,
-            Result = new InitializeResult
+            Result = new()
             {
                 Capabilities = new()
                 {
-                    TextDocumentSync = new TextDocumentSyncOptions
+                    TextDocumentSync = new()
                     {
                         Change = TextDocumentSyncKind.Incremental,
                         OpenClose = true
@@ -62,7 +63,18 @@ public class LspServer(string logFilePath)
                     HoverProvider = true,      // TODO: look into this
                     DefinitionProvider = true, // TODO: look into this
                     CodeActionProvider = true, // TODO: look into this
-                    CompletionProvider = new(),// TODO: look into this
+                    CompletionProvider = new()
+                    {
+                        TriggerCharacters =
+                        [
+                            " ",
+                            "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
+                            "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
+                            "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
+                            "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
+                            "[", "]"  // Also adding bracket characters for position/register triggers
+                        ]
+                    },
                 },
                 ServerInfo = new()
                 {
@@ -71,7 +83,6 @@ public class LspServer(string logFilePath)
                 }
             }
         };
-
 
         return initialized ? response : null;
     }
@@ -102,7 +113,8 @@ public class LspServer(string logFilePath)
             return null;
         }
 
-        _state.OpenedTextDocuments.Add(notification.Params.TextDocument.Uri, notification.Params.TextDocument);
+        _state.OpenedTextDocuments.Add(notification.Params.TextDocument.Uri,
+            new(notification.Params.TextDocument, new()));
 
         return null;
     }
@@ -135,23 +147,34 @@ public class LspServer(string logFilePath)
         {
             throw new JsonRpcException(ErrorCodes.ParseError, "Failed to decode TextDocumentDidChangeParams");
         }
-        LogMessage($"[TextDocumentDidChange]: {notification.Params.TextDocument.Uri}");
 
-        if (!_state.OpenedTextDocuments.ContainsKey(notification.Params.TextDocument.Uri))
-        {
-            LogMessage($"[TextDocumentDidChange]: Document not opened: {notification.Params.TextDocument.Uri}");
-            return null;
-        }
+        var changedDocumentUri = notification.Params.TextDocument.Uri;
+        LogMessage($"[TextDocumentDidChange]: {changedDocumentUri}");
 
-        // TODO: handle change (update contents)
-        // TODO: run tools and return diagnostics (e.g. syntax check, etc.)
 
-        // Notifications that are sent by the server inherit from ResponseMessage and specify the method name
+        _state.UpdateDocumentText(changedDocumentUri, notification.Params.ContentChanges);
+
         return null;
     }
 
     private ResponseMessage? HandleTextDocumentDidSave(string json)
     {
+        // TODO: Handle save -> clear temp buffer and update TextDocument
+
+        var request = JsonRpcDecoder.Decode<TextDocumentDidSaveNotification>(json);
+        if (request == null)
+        {
+            throw new JsonRpcException(ErrorCodes.ParseError, "Failed to decode TextDocumentDidSaveNotification");
+        }
+        LogMessage($"[TextDocumentDidSave]: {request.Params.Uri}");
+        if (!_state.OpenedTextDocuments.TryGetValue(request.Params.Uri, out var documentState))
+        {
+            LogMessage($"[TextDocumentDidChange]: Document not opened: {request.Params.Uri}");
+            return null;
+        }
+
+        // Might not actually need to do anything
+
         return null;
     }
 
@@ -210,13 +233,13 @@ public class LspServer(string logFilePath)
 
         // TODO: we'll have to find the program in project folder and open it in the current buffer
 
-        return new TextDocumentDefinitionResponse
+        return new()
         {
             Id = request.Id,
-            Result = new TextDocumentLocation
+            Result = new()
             {
                 Uri = request.Params.TextDocument.Uri,
-                Range = new TextDocumentContentRange
+                Range = new()
                 {
                     Start = request.Params.Position,
                     End = request.Params.Position,
@@ -243,7 +266,7 @@ public class LspServer(string logFilePath)
 
         // TODO: implement code actions (e.g. refactoring, line renumbering, syncing comments with robot, etc.)
 
-        return new TextDocumentCodeActionResponse
+        return new()
         {
             Id = request.Id,
             Result = []
@@ -259,12 +282,50 @@ public class LspServer(string logFilePath)
             throw new JsonRpcException(ErrorCodes.ParseError, "Failed to decode TextDocumentCompletionRequest");
         }
 
-        // TODO: will need to look into the context thing and use TpLangParser
+        if (!_state.OpenedTextDocuments.TryGetValue(_state.LastChangedDocumentUri, out var documentState))
+        {
+            LogMessage($"[TextDocumentCompletion]: Document not opened: {_state.LastChangedDocumentUri}");
+            return null;
+        }
 
-        return new TextDocumentCompletionResponse
+        // Get the document content
+        var document = documentState.TextDocument;
+        var lastEdit = documentState.LastEditPosition;
+
+        // If we don't have document content, we can't provide completions
+        if (string.IsNullOrEmpty(document.Text))
+        {
+            return new()
+            {
+                Id = request.Id,
+                Result = []
+            };
+        }
+
+        // Split the document into lines
+        var lines = document.Text.Split('\n');
+
+        // Make sure the requested position is valid
+        if (lastEdit.Line < 1 || lastEdit.Line >= lines.Length)
+        {
+            return new()
+            {
+                Id = request.Id,
+                Result = []
+            };
+        }
+
+        // Get the current line text
+        var currentLine = lines[lastEdit.Line];
+
+        // Make sure the requested character position is valid
+        var character = Math.Min(lastEdit.Character, currentLine.Length);
+
+        return new()
         {
             Id = request.Id,
-            Result = []
+            // TODO: need to handle other instruction types
+            Result = TpMotionInstructionCompletion.GetCompletions(currentLine, character)
         };
     }
 
@@ -272,7 +333,7 @@ public class LspServer(string logFilePath)
     {
         // Handle the shutdown request
         LogMessage("Server is shutting down.");
-        System.Environment.Exit(0);
+        Environment.Exit(0);
 
         // Unreachable code, but required for the method signature
         return null;

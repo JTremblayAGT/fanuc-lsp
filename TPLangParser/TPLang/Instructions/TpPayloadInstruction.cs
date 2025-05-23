@@ -1,6 +1,6 @@
 ﻿using Sprache;
 
-namespace AGT.TPLangParser.TPLang.Instructions;
+namespace TPLangParser.TPLang.Instructions;
 
 public sealed record TpPayloadInstruction(TpAccess Access) : TpInstruction(0), ITpParser<TpPayloadInstruction>
 {

@@ -1,7 +1,7 @@
 ﻿using Sprache;
-using AGT.TPLangParser.TPLang;
+using TPLangParser.TPLang;
 
-namespace AGT.TPLangParser.Tests;
+namespace TPLangParser.Tests;
 
 public class TpMixedLogicTests
 {
