@@ -36,7 +36,7 @@ public struct TpCommon
 }
 
 public sealed record TpTokenPosition(int Line, int Column);
-public record TpPositionedToken(TpTokenPosition Position);
+public record TpWithPosition(TpTokenPosition Start, TpTokenPosition End);
 
 public static class TpParserExtensions
 {
@@ -49,7 +49,24 @@ public static class TpParserExtensions
     public static Parser<TParsedType> BetweenBraces<TParsedType>(this Parser<TParsedType> parser)
         => parser.Contained(TpCommon.Keyword("{"), TpCommon.Keyword("}"));
 
-    public static Parser<(TParsedType Value, TpTokenPosition Position)> WithPosition<TParsedType>(this Parser<TParsedType> parser)
+    public static Parser<(TParsedType Value, TpTokenPosition Position)> WithStartPosition<TParsedType>(this Parser<TParsedType> parser)
+        => input =>
+        {
+            var result = parser(input);
+            if (result.WasSuccessful)
+            {
+                return Result.Success<(TParsedType Value, TpTokenPosition Position)>
+                (
+                    (result.Value, new(input.Line, input.Column)),
+                    result.Remainder
+                );
+            }
+
+            return Result.Failure<(TParsedType Value, TpTokenPosition Position)>
+                (input, $"Unexpected character '{result.Remainder.Current}'", []);
+        };
+
+    public static Parser<(TParsedType Value, TpTokenPosition Position)> WithEndPosition<TParsedType>(this Parser<TParsedType> parser)
         => input =>
         {
             var result = parser(input);
@@ -172,12 +189,12 @@ public sealed record TpAccessMultiple(TpValue Number, TpValue Item, string? Comm
             ).BetweenBrackets();
 }
 
-public abstract record TpGenericRegister(TpAccess Access) : TpPositionedToken(new TpTokenPosition(0, 0)), ITpParser<TpGenericRegister>
+public abstract record TpGenericRegister(TpAccess Access) : TpWithPosition(new(0, 0), new(0, 0)), ITpParser<TpGenericRegister>
 {
-    protected static Parser<T> GetParserFor<T>(string keyword, Func<TpAccess, TpTokenPosition, T> builderFunc)
-        => from kwPos in TpCommon.Keyword(keyword).WithPosition()
-           from access in TpAccess.GetParser()
-           select builderFunc(access, kwPos.Position);
+    protected static Parser<T> GetParserFor<T>(string keyword, Func<TpAccess, TpTokenPosition, TpTokenPosition, T> builderFunc)
+        => from kwPos in TpCommon.Keyword(keyword).WithStartPosition()
+           from access in TpAccess.GetParser().WithEndPosition()
+           select builderFunc(access.Value, kwPos.Position, access.Position);
 
     public static Parser<TpGenericRegister> GetParser()
         => TpRegister.GetParser().Select(TpGenericRegister (reg) => reg)
@@ -194,7 +211,7 @@ public record TpPosition(TpAccess Access)
     public const string Keyword = "P";
 
     private static readonly Parser<TpPosition> Parser =
-        GetParserFor(Keyword, (access, pos) => new TpPosition(access) with { Position = pos });
+        GetParserFor(Keyword, (access, start, end) => new TpPosition(access) with { Start = start, End = end });
 
     public new static Parser<TpPosition> GetParser()
         => TpPositionRegister.GetParser().Or(Parser);
@@ -206,7 +223,7 @@ public record TpRegister(TpAccess Access)
     public const string Keyword = "R";
 
     public new static Parser<TpRegister> GetParser()
-        => GetParserFor(Keyword, (access, pos) => new TpRegister(access) with { Position = pos });
+        => GetParserFor(Keyword, (access, start, end) => new TpRegister(access) with { Start = start, End = end });
 }
 
 // A PR can also be used as a position for motion instruction
@@ -216,12 +233,12 @@ public sealed record TpPositionRegister(TpAccess Access)
     public new const string Keyword = "PR";
 
     public static readonly Parser<TpPositionRegister> Element
-        = from kwPos in TpCommon.Keyword(Keyword).WithPosition()
-          from access in TpAccessMultiple.GetParser()
-          select new TpPositionRegister(access) with { Position = kwPos.Position };
+        = from kwPos in TpCommon.Keyword(Keyword).WithStartPosition()
+          from access in TpAccessMultiple.GetParser().WithEndPosition()
+          select new TpPositionRegister(access.Value) with { Start = kwPos.Position, End = access.Position };
 
     public new static Parser<TpPositionRegister> GetParser()
-        => GetParserFor(Keyword, (access, pos) => new TpPositionRegister(access) with { Position = pos });
+        => GetParserFor(Keyword, (access, start, end) => new TpPositionRegister(access) with { Start = start, End = end });
 }
 
 public sealed record TpArgumentRegister(TpAccess Access)
@@ -230,7 +247,7 @@ public sealed record TpArgumentRegister(TpAccess Access)
     public new const string Keyword = "AR";
 
     public new static Parser<TpArgumentRegister> GetParser()
-        => GetParserFor(Keyword, (access, pos) => new TpArgumentRegister(access) with { Position = pos });
+        => GetParserFor(Keyword, (access, start, end) => new TpArgumentRegister(access) with { Start = start, End = end });
 }
 
 public sealed record TpStringRegister(TpAccess Access)
@@ -239,17 +256,17 @@ public sealed record TpStringRegister(TpAccess Access)
     public const string Keyword = "SR";
 
     public new static Parser<TpStringRegister> GetParser()
-        => GetParserFor(Keyword, (access, pos) => new TpStringRegister(access) with { Position = pos });
+        => GetParserFor(Keyword, (access, start, end) => new TpStringRegister(access) with { Start = start, End = end });
 }
 
-public sealed record TpFlag(TpAccess Access) : TpPositionedToken(new TpTokenPosition(0, 0)), ITpParser<TpFlag>
+public sealed record TpFlag(TpAccess Access) : TpWithPosition(new(0, 0), new(0, 0)), ITpParser<TpFlag>
 {
     public const string Keyword = "F";
 
     public static Parser<TpFlag> GetParser()
-        => from kwPos in TpCommon.Keyword(Keyword).WithPosition()
-           from access in TpAccess.GetParser()
-           select new TpFlag(access) with { Position = kwPos.Position };
+        => from kwPos in TpCommon.Keyword(Keyword).WithStartPosition()
+           from access in TpAccess.GetParser().WithEndPosition()
+           select new TpFlag(access.Value) with { Start = kwPos.Position, End = access.Position };
 }
 
 public enum TpIOType
@@ -278,19 +295,20 @@ public interface IIOPort
     public static abstract char Prefix();
 }
 
-public abstract record TpIOPort(TpIOType Type, TpAccess PortNumber) : TpPositionedToken(new TpTokenPosition(0, 0)), ITpParser<TpIOPort>, IIOPort
+public abstract record TpIOPort(TpIOType Type, TpAccess PortNumber)
+    : TpWithPosition(new(0, 0), new(0, 0)), ITpParser<TpIOPort>, IIOPort
 {
-    protected static Parser<TpIOPort> MakeParser(char symbol, Func<TpIOType, TpAccess, TpTokenPosition, TpIOPort> builder)
-        => from keyword in Parse.Char(symbol).WithPosition()
+    protected static Parser<TpIOPort> MakeParser(char symbol, Func<TpIOType, TpAccess, TpTokenPosition, TpTokenPosition, TpIOPort> builder)
+        => from keyword in Parse.Char(symbol).WithStartPosition()
            from ioType in TpIOTypeParser.Parser
-           from portNum in TpAccess.GetParser()
-           select builder(ioType, portNum, keyword.Position);
+           from portNum in TpAccess.GetParser().WithEndPosition()
+           select builder(ioType, portNum.Value, keyword.Position, portNum.Position);
 
-    public static Parser<TpIOPort> MakeParser(char symbol, TpIOType type, Func<TpAccess, TpTokenPosition, TpIOPort> builder)
-        => from keyword in Parse.Char(symbol).WithPosition()
+    public static Parser<TpIOPort> MakeParser(char symbol, TpIOType type, Func<TpAccess, TpTokenPosition, TpTokenPosition, TpIOPort> builder)
+        => from keyword in Parse.Char(symbol).WithStartPosition()
            from ioType in TpIOTypeParser.GetParserFor(type)
-           from portNum in TpAccess.GetParser()
-           select builder(portNum, keyword.Position);
+           from portNum in TpAccess.GetParser().WithEndPosition()
+           select builder(portNum.Value, keyword.Position, portNum.Position);
 
     public static Parser<TpIOPort> GetParser()
         => TpOnOffIOPort.GetParser()
@@ -302,19 +320,19 @@ public abstract record TpIOPort(TpIOType Type, TpAccess PortNumber) : TpPosition
 public abstract record TpOnOffIOPort(TpIOType Type, TpAccess PortNumber) : TpIOPort(Type, PortNumber), ITpParser<TpIOPort>
 {
     public new static Parser<TpIOPort> GetParser()
-        => MakeParser(TpDigitalIOPort.Prefix(), (type, i, pos) => new TpDigitalIOPort(type, i) with { Position = pos })
-            .Or(MakeParser(TpRobotIOPort.Prefix(), (type, i, pos) => new TpRobotIOPort(type, i) with { Position = pos }))
-            .Or(MakeParser(TpUopIOPort.Prefix(), (type, i, pos) => new TpUopIOPort(type, i) with { Position = pos }))
-            .Or(MakeParser(TpSopIOPort.Prefix(), (type, i, pos) => new TpSopIOPort(type, i) with { Position = pos }));
+        => MakeParser(TpDigitalIOPort.Prefix(), (type, i, start, end) => new TpDigitalIOPort(type, i) with { Start = start, End = end })
+            .Or(MakeParser(TpRobotIOPort.Prefix(), (type, i, start, end) => new TpRobotIOPort(type, i) with { Start = start, End = end }))
+            .Or(MakeParser(TpUopIOPort.Prefix(), (type, i, start, end) => new TpUopIOPort(type, i) with { Start = start, End = end }))
+            .Or(MakeParser(TpSopIOPort.Prefix(), (type, i, start, end) => new TpSopIOPort(type, i) with { Start = start, End = end }));
 }
 
 public abstract record TpNumericalIOPort(TpIOType Type, TpAccess PortNumber)
     : TpIOPort(Type, PortNumber), ITpParser<TpIOPort>
 {
     public new static Parser<TpIOPort> GetParser()
-        => MakeParser(TpAnalogIOPort.Prefix(), (type, i, pos) => new TpAnalogIOPort(type, i) with { Position = pos })
-        .Or(MakeParser(TpGroupIOPort.Prefix(), (type, i, pos) => new TpGroupIOPort(type, i) with { Position = pos }))
-        .Or(MakeParser(TpWeldingIOPort.Prefix(), (type, i, pos) => new TpWeldingIOPort(type, i) with { Position = pos }))
+        => MakeParser(TpAnalogIOPort.Prefix(), (type, i, start, end) => new TpAnalogIOPort(type, i) with { Start = start, End = end })
+        .Or(MakeParser(TpGroupIOPort.Prefix(), (type, i, start, end) => new TpGroupIOPort(type, i) with { Start = start, End = end }))
+        .Or(MakeParser(TpWeldingIOPort.Prefix(), (type, i, start, end) => new TpWeldingIOPort(type, i) with { Start = start, End = end }))
         .Token();
 }
 
@@ -380,14 +398,14 @@ public sealed record TpWeldingIOPort(TpIOType Type, TpAccess PortNumber) : TpNum
     public new static char Prefix() => 'W';
 }
 
-public sealed record TpLabel(TpAccess LabelNumber) : TpPositionedToken(new TpTokenPosition(0, 0)), ITpParser<TpLabel>
+public sealed record TpLabel(TpAccess LabelNumber) : TpWithPosition(new(0, 0), new(0, 0)), ITpParser<TpLabel>
 {
     public const string Keyword = "LBL";
 
     public static Parser<TpLabel> GetParser()
-        => from keyword in TpCommon.Keyword(Keyword).WithPosition()
-           from labelNumber in TpAccessDirect.GetParser().Or(TpAccessIndirect.GetParser())
-           select new TpLabel(labelNumber) with { Position = keyword.Position };
+        => from keyword in TpCommon.Keyword(Keyword).WithStartPosition()
+           from labelNumber in TpAccessDirect.GetParser().Or(TpAccessIndirect.GetParser()).WithEndPosition()
+           select new TpLabel(labelNumber.Value) with { Start = keyword.Position, End = labelNumber.Position };
 
 }
 public abstract record TpWeldInstructionArgs : ITpParser<TpWeldInstructionArgs>
@@ -755,7 +773,7 @@ public record TpValueRegister(TpGenericRegister Register) : TpValue, ITpParser<T
 public record TpValueIOPort(TpIOPort IOPort) : TpValue, ITpParser<TpValue>
 {
     public static Parser<TpValueIOPort> MakeParser<TIOType>(char symbol, TpIOType type) where TIOType : TpIOPort, new()
-        => TpIOPort.MakeParser(symbol, type, (idx, pos) => new TIOType { Type = type, PortNumber = idx, Position = pos })
+        => TpIOPort.MakeParser(symbol, type, (idx, start, end) => new TIOType { Type = type, PortNumber = idx, Start = start, End = end })
             .Select(ioPort => new TpValueIOPort(ioPort));
 
     public new static Parser<TpValue> GetParser()

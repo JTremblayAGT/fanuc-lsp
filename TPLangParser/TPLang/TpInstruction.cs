@@ -14,7 +14,7 @@ public static class InstructionParsingExtensions
                 return Result.Success((result.Value, result.Remainder.Line), result.Remainder);
             }
 
-            return Result.Failure<(T Value, int LineNumber)>(input,
+            return Result.Failure<(T Value, int LineNumber)>(result.Remainder,
                 $"Unexpected character '{result.Remainder.Current}'", []);
         };
 

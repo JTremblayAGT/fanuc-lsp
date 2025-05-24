@@ -4,5 +4,5 @@ namespace FanucTpLsp.Lsp.Definition;
 
 internal interface IDefinitionProvider
 {
-    public TextDocumentLocation? GetDefinitionLocation(TpProgram program, ContentRange range, TextDocumentItem document);
+    public TextDocumentLocation? GetDefinitionLocation(TpProgram program, ContentPosition position, TextDocumentItem document);
 }

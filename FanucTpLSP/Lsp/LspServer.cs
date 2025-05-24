@@ -203,9 +203,6 @@ public class LspServer(string logFilePath)
         }
         LogMessage($"[TextDocumentDefinition]: {request.Params.TextDocument.Uri}");
 
-
-        // TODO: we'll have to find the program in project folder and open it in the current buffer
-
         return new()
         {
             Id = request.Id,

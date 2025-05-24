@@ -127,30 +127,39 @@ internal class LspServerState(string logFilePath)
         );
     }
 
+    // TODO: might want to return an array
     public TextDocumentLocation? GetLocation(string uri, ContentPosition position)
     {
-        if (!OpenedTextDocuments.ContainsKey(uri))
+        if (OpenedTextDocuments.TryGetValue(uri, out var documentState))
         {
-            LogMessage($"[TextDocumentDefinition]: Document not opened: {uri}");
-            return null;
+            return definitionProviders
+                .Select(provider
+                    => provider.GetDefinitionLocation(documentState.Program!, position, documentState.TextDocument))
+                .FirstOrDefault(res => res is not null);
         }
 
+        LogMessage($"[TextDocumentDefinition]: Document not opened: {uri}");
         return null;
+
     }
 
+    // TODO: might want to return an array
     public HoverResult? GetHoverResult(string uri, ContentPosition position)
     {
-        if (!OpenedTextDocuments.ContainsKey(uri))
+        if (OpenedTextDocuments.TryGetValue(uri, out var documentState))
         {
-            LogMessage($"[TextDocumentDidHover]: Document not opened: {uri}");
-            return null;
+            return hoverProviders
+                .Select(provider => provider.GetHoverResult(documentState.Program!, position))
+                .FirstOrDefault(res => res is not null);
         }
+
+        LogMessage($"[TextDocumentDidHover]: Document not opened: {uri}");
+        return null;
 
         // TODO: Hovering a program name will pull the comment at the beginning of the /MN section
         // TODO: Hovering a JMP LBL or Skip,LBL (or SkipJump,LBL) will display the comment of the label as well as it's line number
         // TODO: (Much later) Gets the value stored in the register through SNPX
 
-        return null;
     }
 
     public IResult<TpProgram> UpdateParsedProgram(string uri)
