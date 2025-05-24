@@ -278,19 +278,19 @@ public interface IIOPort
     public static abstract char Prefix();
 }
 
-public abstract record TpIOPort(TpIOType Type, TpAccess PortNumber) : ITpParser<TpIOPort>, IIOPort
+public abstract record TpIOPort(TpIOType Type, TpAccess PortNumber) : TpPositionedToken(new TpTokenPosition(0, 0)), ITpParser<TpIOPort>, IIOPort
 {
-    protected static Parser<TpIOPort> MakeParser(char symbol, Func<TpIOType, TpAccess, TpIOPort> builder)
-        => from keyword in Parse.Char(symbol)
+    protected static Parser<TpIOPort> MakeParser(char symbol, Func<TpIOType, TpAccess, TpTokenPosition, TpIOPort> builder)
+        => from keyword in Parse.Char(symbol).WithPosition()
            from ioType in TpIOTypeParser.Parser
            from portNum in TpAccess.GetParser()
-           select builder(ioType, portNum);
+           select builder(ioType, portNum, keyword.Position);
 
-    public static Parser<TpIOPort> MakeParser(char symbol, TpIOType type, Func<TpAccess, TpIOPort> builder)
-        => from keyword in Parse.Char(symbol)
+    public static Parser<TpIOPort> MakeParser(char symbol, TpIOType type, Func<TpAccess, TpTokenPosition, TpIOPort> builder)
+        => from keyword in Parse.Char(symbol).WithPosition()
            from ioType in TpIOTypeParser.GetParserFor(type)
            from portNum in TpAccess.GetParser()
-           select builder(portNum);
+           select builder(portNum, keyword.Position);
 
     public static Parser<TpIOPort> GetParser()
         => TpOnOffIOPort.GetParser()
@@ -302,19 +302,19 @@ public abstract record TpIOPort(TpIOType Type, TpAccess PortNumber) : ITpParser<
 public abstract record TpOnOffIOPort(TpIOType Type, TpAccess PortNumber) : TpIOPort(Type, PortNumber), ITpParser<TpIOPort>
 {
     public new static Parser<TpIOPort> GetParser()
-        => MakeParser(TpDigitalIOPort.Prefix(), (type, i) => new TpDigitalIOPort(type, i))
-            .Or(MakeParser(TpRobotIOPort.Prefix(), (type, i) => new TpRobotIOPort(type, i)))
-            .Or(MakeParser(TpUopIOPort.Prefix(), (type, i) => new TpUopIOPort(type, i)))
-            .Or(MakeParser(TpSopIOPort.Prefix(), (type, i) => new TpSopIOPort(type, i)));
+        => MakeParser(TpDigitalIOPort.Prefix(), (type, i, pos) => new TpDigitalIOPort(type, i) with { Position = pos })
+            .Or(MakeParser(TpRobotIOPort.Prefix(), (type, i, pos) => new TpRobotIOPort(type, i) with { Position = pos }))
+            .Or(MakeParser(TpUopIOPort.Prefix(), (type, i, pos) => new TpUopIOPort(type, i) with { Position = pos }))
+            .Or(MakeParser(TpSopIOPort.Prefix(), (type, i, pos) => new TpSopIOPort(type, i) with { Position = pos }));
 }
 
 public abstract record TpNumericalIOPort(TpIOType Type, TpAccess PortNumber)
     : TpIOPort(Type, PortNumber), ITpParser<TpIOPort>
 {
     public new static Parser<TpIOPort> GetParser()
-        => MakeParser(TpAnalogIOPort.Prefix(), (type, i) => new TpAnalogIOPort(type, i))
-        .Or(MakeParser(TpGroupIOPort.Prefix(), (type, i) => new TpGroupIOPort(type, i)))
-        .Or(MakeParser(TpWeldingIOPort.Prefix(), (type, i) => new TpWeldingIOPort(type, i)))
+        => MakeParser(TpAnalogIOPort.Prefix(), (type, i, pos) => new TpAnalogIOPort(type, i) with { Position = pos })
+        .Or(MakeParser(TpGroupIOPort.Prefix(), (type, i, pos) => new TpGroupIOPort(type, i) with { Position = pos }))
+        .Or(MakeParser(TpWeldingIOPort.Prefix(), (type, i, pos) => new TpWeldingIOPort(type, i) with { Position = pos }))
         .Token();
 }
 
@@ -380,14 +380,14 @@ public sealed record TpWeldingIOPort(TpIOType Type, TpAccess PortNumber) : TpNum
     public new static char Prefix() => 'W';
 }
 
-public sealed record TpLabel(TpAccess LabelNumber) : ITpParser<TpLabel>
+public sealed record TpLabel(TpAccess LabelNumber) : TpPositionedToken(new TpTokenPosition(0, 0)), ITpParser<TpLabel>
 {
     public const string Keyword = "LBL";
 
     public static Parser<TpLabel> GetParser()
-        => from keyword in TpCommon.Keyword(Keyword)
+        => from keyword in TpCommon.Keyword(Keyword).WithPosition()
            from labelNumber in TpAccessDirect.GetParser().Or(TpAccessIndirect.GetParser())
-           select new TpLabel(labelNumber);
+           select new TpLabel(labelNumber) with { Position = keyword.Position };
 
 }
 public abstract record TpWeldInstructionArgs : ITpParser<TpWeldInstructionArgs>
@@ -658,14 +658,18 @@ public record TpValuePosition(TpPosition Pos) : TpValue, ITpParser<TpValue>
 
 public record TpValueLpos : TpValue, ITpParser<TpValue>
 {
+    public const string Keyword = "LPOS";
+
     public new static Parser<TpValue> GetParser()
-        => TpCommon.Keyword("LPOS").Return(new TpValueLpos());
+        => TpCommon.Keyword(Keyword).Return(new TpValueLpos());
 }
 
 public record TpValueJpos : TpValue, ITpParser<TpValue>
 {
+    public const string Keyword = "JPOS";
+
     public new static Parser<TpValue> GetParser()
-        => TpCommon.Keyword("JPOS").Return(new TpValueJpos());
+        => TpCommon.Keyword(Keyword).Return(new TpValueJpos());
 }
 
 public record TpValueUFrame(TpUserFrame UserFrame) : TpValue, ITpParser<TpValue>
@@ -751,7 +755,7 @@ public record TpValueRegister(TpGenericRegister Register) : TpValue, ITpParser<T
 public record TpValueIOPort(TpIOPort IOPort) : TpValue, ITpParser<TpValue>
 {
     public static Parser<TpValueIOPort> MakeParser<TIOType>(char symbol, TpIOType type) where TIOType : TpIOPort, new()
-        => TpIOPort.MakeParser(symbol, type, idx => new TIOType { Type = type, PortNumber = idx })
+        => TpIOPort.MakeParser(symbol, type, (idx, pos) => new TIOType { Type = type, PortNumber = idx, Position = pos })
             .Select(ioPort => new TpValueIOPort(ioPort));
 
     public new static Parser<TpValue> GetParser()

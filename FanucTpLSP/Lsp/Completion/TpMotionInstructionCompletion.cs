@@ -1,11 +1,9 @@
-﻿using System.Text.RegularExpressions;
-
-using TPLangParser.TPLang;
+﻿using TPLangParser.TPLang;
 using TPLangParser.TPLang.Instructions;
 
 namespace FanucTpLsp.Lsp.Completion;
 
-public class TpMotionInstructionCompletion
+public class TpMotionInstructionCompletion : ICompletionProvider
 {
     private static readonly string[] MotionTypes = ["J", "L", "C", "A", "S"];
     private static readonly string[] SpeedUnits = ["%", "sec", "inch/min", "deg/sec", "mm/sec", "cm/min", "WELD_SPEED"];
@@ -18,46 +16,14 @@ public class TpMotionInstructionCompletion
     ];
 
     // Main completion method
-    public static CompletionItem[] GetCompletions(string lineText, int column)
+    public CompletionItem[] GetCompletions(TpProgram program, string lineText, int column)
     {
         var prefix = lineText[..column];
-        var tokens = TokenizeInput(prefix);
+        var tokens = CompletionProviderUtils.TokenizeInput(prefix);
 
         return GetContextSensitiveCompletions(tokens, prefix);
     }
 
-    // Break down the input into tokens for analysis
-    private static List<string> TokenizeInput(string input)
-    {
-        // First, remove line number if present (format: "123: ")
-        var lineWithoutNumber = RemoveLineNumber(input);
-
-        // Simple tokenization - split by whitespace but preserve quoted strings
-        var tokens = new List<string>();
-        const string pattern = """
-                                   [^\s"]+|"[^"]*\"
-                                   """;
-        var matches = Regex.Matches(lineWithoutNumber, pattern);
-
-        foreach (Match match in matches)
-        {
-            tokens.Add(match.Value);
-        }
-
-        return tokens;
-    }
-
-    // Remove line number prefix if present (format: "123: ")
-    private static string RemoveLineNumber(string input)
-    {
-        // Match pattern like "123: " at the beginning of the line
-        const string lineNumberPattern = @"^\s*\d+\s*:";
-        var match = Regex.Match(input, lineNumberPattern);
-
-        return match.Success ?
-            // Strip off the line number and the colon
-            input[match.Value.Length..].TrimStart() : input;
-    }
 
     private static CompletionItem[] GetContextSensitiveCompletions(List<string> tokens, string prefix)
     {
@@ -311,6 +277,12 @@ public class TpMotionInstructionCompletion
 
     private static CompletionItem[] GetMotionOptionCompletions(List<string> tokens)
     {
+        // Don't suggest motion options when entering arguments
+        if (tokens.Last().EndsWith("[]") || tokens.Last().EndsWith("[]"))
+        {
+            return [];
+        }
+
         var completions = new List<CompletionItem>();
         var existingOptions = tokens.Where(t => MotionOptions.Any(t.StartsWith)).ToList();
 

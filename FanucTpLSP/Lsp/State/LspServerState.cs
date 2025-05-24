@@ -1,4 +1,5 @@
 using TPLangParser.TPLang;
+using FanucTpLsp.Lsp.Completion;
 
 using Sprache;
 
@@ -16,6 +17,11 @@ internal class LspServerState(string logFilePath)
     public bool IsShutdown { get; set; } = false;
     public string LastChangedDocumentUri { get; set; } = string.Empty;
     public Dictionary<string, TextDocumentState> OpenedTextDocuments { get; set; } = new();
+
+    private static readonly List<ICompletionProvider> CompletionProviders = [
+        new TpLabelCompletion(),
+        new TpMotionInstructionCompletion(),
+    ];
 
     public bool OnDocumentOpen(TextDocumentItem document)
     {
@@ -86,6 +92,47 @@ internal class LspServerState(string logFilePath)
             Program = result.WasSuccessful ? result.Value : documentState.Program
         };
         LastChangedDocumentUri = uri;
+    }
+
+    public CompletionItem[] GetCompletionItems()
+    {
+        if (!OpenedTextDocuments.TryGetValue(LastChangedDocumentUri, out var documentState))
+        {
+            LogMessage($"[TextDocumentCompletion]: Document not opened: {LastChangedDocumentUri}");
+            return [];
+        }
+
+        // Get the document content
+        var document = documentState.TextDocument;
+        var lastEdit = documentState.LastEditPosition;
+
+        // If we don't have document content, we can't provide completions
+        if (string.IsNullOrEmpty(document.Text))
+        {
+            return [];
+        }
+
+        // Split the document into lines
+        var lines = document.Text.Split('\n');
+
+        // Make sure the requested position is valid
+        if (lastEdit.Line < 1 || lastEdit.Line >= lines.Length)
+        {
+            return [];
+        }
+
+        // Get the current line text
+        var currentLine = lines[lastEdit.Line];
+
+        // Make sure the requested character position is valid
+        var character = Math.Min(lastEdit.Character, currentLine.Length);
+
+        return CompletionProviders.Aggregate(
+                new CompletionItem[] { },
+                (accumulator, completionProvider)
+                => accumulator.Concat<CompletionItem>(
+                        completionProvider.GetCompletions(documentState.Program!, currentLine, character)).ToArray()
+        );
     }
 
     /// <summary>

@@ -280,50 +280,10 @@ public class LspServer(string logFilePath)
             throw new JsonRpcException(ErrorCodes.ParseError, "Failed to decode TextDocumentCompletionRequest");
         }
 
-        if (!_state.OpenedTextDocuments.TryGetValue(_state.LastChangedDocumentUri, out var documentState))
-        {
-            LogMessage($"[TextDocumentCompletion]: Document not opened: {_state.LastChangedDocumentUri}");
-            return null;
-        }
-
-        // Get the document content
-        var document = documentState.TextDocument;
-        var lastEdit = documentState.LastEditPosition;
-
-        // If we don't have document content, we can't provide completions
-        if (string.IsNullOrEmpty(document.Text))
-        {
-            return new()
-            {
-                Id = request.Id,
-                Result = []
-            };
-        }
-
-        // Split the document into lines
-        var lines = document.Text.Split('\n');
-
-        // Make sure the requested position is valid
-        if (lastEdit.Line < 1 || lastEdit.Line >= lines.Length)
-        {
-            return new()
-            {
-                Id = request.Id,
-                Result = []
-            };
-        }
-
-        // Get the current line text
-        var currentLine = lines[lastEdit.Line];
-
-        // Make sure the requested character position is valid
-        var character = Math.Min(lastEdit.Character, currentLine.Length);
-
         return new()
         {
             Id = request.Id,
-            // TODO: need to handle other instruction types
-            Result = TpMotionInstructionCompletion.GetCompletions(currentLine, character)
+            Result = _state.GetCompletionItems()
         };
     }
 
