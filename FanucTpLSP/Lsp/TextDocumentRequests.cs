@@ -10,7 +10,7 @@ public class TextDocumentPositionParams
     public TextDocumentIdentifier TextDocument { get; set; } = new();
 
     [JsonPropertyName("position")]
-    public TextDocumentContentPosition Position { get; set; } = new();
+    public ContentPosition Position { get; set; } = new();
 }
 
 #region Hover
@@ -36,13 +36,13 @@ public class HoverResult
     public MarkupContent Contents { get; set; } = new();
 
     [JsonPropertyName("range")]
-    public TextDocumentContentRange Range { get; set; } = new();
+    public ContentRange Range { get; set; } = new();
 }
 
 public class TextDocumentHoverResponse : ResponseMessage
 {
     [JsonPropertyName("result")]
-    public HoverResult Result { get; set; } = new();
+    public HoverResult? Result { get; set; } = new();
 }
 
 #endregion
@@ -61,13 +61,13 @@ public class TextDocumentLocation
     public string Uri { get; set; } = string.Empty;
 
     [JsonPropertyName("range")]
-    public TextDocumentContentRange Range { get; set; } = new();
+    public ContentRange Range { get; set; } = new();
 }
 
 public class TextDocumentDefinitionResponse : ResponseMessage
 {
     [JsonPropertyName("result")]
-    public TextDocumentLocation Result { get; set; } = new();
+    public TextDocumentLocation? Result { get; set; } = new();
 }
 
 #endregion
@@ -107,7 +107,7 @@ public class TextDocumentCodeActionParams
     public TextDocumentIdentifier TextDocument { get; set; } = new();
 
     [JsonPropertyName("range")]
-    public TextDocumentContentRange Range { get; set; } = new();
+    public ContentRange Range { get; set; } = new();
 
     [JsonPropertyName("context")]
     public CodeActionContext Context { get; set; } = new();

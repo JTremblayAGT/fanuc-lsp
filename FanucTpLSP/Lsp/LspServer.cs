@@ -1,6 +1,7 @@
 using FanucTpLsp.JsonRPC;
-using FanucTpLsp.Lsp.Completion;
 using FanucTpLsp.Lsp.State;
+using Sprache;
+using TPLangParser.TPLang;
 
 namespace FanucTpLsp.Lsp;
 
@@ -12,12 +13,11 @@ public class LspServer(string logFilePath)
     {
         _state.IsInitialized = true;
 
-        // TODO: proper initialization logic (go through project)
+        // TODO: project initialization stuff
 
         return _state.IsInitialized;
     }
 
-    // TODO: returning null is fine but need to throw exceptions if request failed
     public ResponseMessage? HandleRequest(string method, string json)
         => method switch
         {
@@ -58,11 +58,12 @@ public class LspServer(string logFilePath)
                     TextDocumentSync = new()
                     {
                         Change = TextDocumentSyncKind.Incremental,
-                        OpenClose = true
+                        OpenClose = true,
+                        Save = true,
                     },
                     HoverProvider = true,      // TODO: look into this
                     DefinitionProvider = true, // TODO: look into this
-                    CodeActionProvider = true, // TODO: look into this
+                    CodeActionProvider = false, // TODO: look into this
                     CompletionProvider = new()
                     {
                         TriggerCharacters =
@@ -113,9 +114,9 @@ public class LspServer(string logFilePath)
             return null;
         }
 
-        var compiled = _state.OnDocumentOpen(notification.Params.TextDocument);
+        var result = _state.OnDocumentOpen(notification.Params.TextDocument);
 
-        return null;
+        return ParseResultToDiagnostics(result, notification.Params.TextDocument.Uri);
     }
 
     private ResponseMessage? HandleTextDocumentDidClose(string json)
@@ -155,25 +156,24 @@ public class LspServer(string logFilePath)
         return null;
     }
 
-    private ResponseMessage? HandleTextDocumentDidSave(string json)
+    private PublishDiagnosticsNotification? HandleTextDocumentDidSave(string json)
     {
-        // TODO: Handle save -> clear temp buffer and update TextDocument
-
         var request = JsonRpcDecoder.Decode<TextDocumentDidSaveNotification>(json);
         if (request == null)
         {
             throw new JsonRpcException(ErrorCodes.ParseError, "Failed to decode TextDocumentDidSaveNotification");
         }
-        LogMessage($"[TextDocumentDidSave]: {request.Params.Uri}");
-        if (!_state.OpenedTextDocuments.TryGetValue(request.Params.Uri, out var documentState))
+        LogMessage($"[TextDocumentDidSave]: {request.Params.TextDocument.Uri}");
+        if (!_state.OpenedTextDocuments.TryGetValue(request.Params.TextDocument.Uri, out var documentState))
         {
-            LogMessage($"[TextDocumentDidChange]: Document not opened: {request.Params.Uri}");
+            LogMessage($"[TextDocumentDidChange]: Document not opened: {request.Params.TextDocument.Uri}");
             return null;
         }
 
         // Might not actually need to do anything
+        var result = _state.UpdateParsedProgram(request.Params.TextDocument.Uri);
 
-        return null;
+        return ParseResultToDiagnostics(result, request.Params.TextDocument.Uri);
     }
 
     private TextDocumentHoverResponse? HandleTextDocumentDidHover(string json)
@@ -185,31 +185,11 @@ public class LspServer(string logFilePath)
             throw new JsonRpcException(ErrorCodes.ParseError, "Failed to decode TextDocumentDidHoverNotification");
         }
         LogMessage($"[TextDocumentDidHover]: {request.Params.TextDocument.Uri}");
-        // TODO: implement this
-        if (!_state.OpenedTextDocuments.ContainsKey(request.Params.TextDocument.Uri))
-        {
-            LogMessage($"[TextDocumentDidHover]: Document not opened: {request.Params.TextDocument.Uri}");
-            return null;
-        }
-
-        // TODO: Hovering a program name will pull the comment at the beginning of the /MN section
 
         return new TextDocumentHoverResponse
         {
             Id = request.Id,
-            Result = new HoverResult
-            {
-                Contents = new MarkupContent
-                {
-                    Kind = "plaintext",
-                    Value = "Oi I just did the thing!"
-                },
-                Range = new TextDocumentContentRange
-                {
-                    Start = request.Params.Position,
-                    End = request.Params.Position,
-                }
-            },
+            Result = _state.GetHoverResult(request.Params.TextDocument.Uri, request.Params.Position),
         };
     }
 
@@ -223,26 +203,13 @@ public class LspServer(string logFilePath)
         }
         LogMessage($"[TextDocumentDefinition]: {request.Params.TextDocument.Uri}");
 
-        if (!_state.OpenedTextDocuments.ContainsKey(request.Params.TextDocument.Uri))
-        {
-            LogMessage($"[TextDocumentDefinition]: Document not opened: {request.Params.TextDocument.Uri}");
-            return null;
-        }
 
         // TODO: we'll have to find the program in project folder and open it in the current buffer
 
         return new()
         {
             Id = request.Id,
-            Result = new()
-            {
-                Uri = request.Params.TextDocument.Uri,
-                Range = new()
-                {
-                    Start = request.Params.Position,
-                    End = request.Params.Position,
-                }
-            },
+            Result = _state.GetLocation(request.Params.TextDocument.Uri, request.Params.Position),
         };
     }
 
@@ -296,6 +263,33 @@ public class LspServer(string logFilePath)
         // Unreachable code, but required for the method signature
         return null;
     }
+
+    private static PublishDiagnosticsNotification? ParseResultToDiagnostics(IResult<TpProgram> result, string uri)
+        => result switch
+        {
+            { WasSuccessful: false } => new()
+            {
+                Params = new()
+                {
+                    Uri = uri,
+                    Diagnostics =
+                    [
+                        new()
+                        {
+                            Message = result.Message,
+                            Source = "CheckTp",
+                            Severity = DiagnosticSeverity.Error,
+                            Range = new()
+                            {
+                                Start = new(){ Line = result.Remainder.Line - 1, Character = result.Remainder.Column - 1 },
+                                End = new(){ Line = result.Remainder.Line - 1, Character = result.Remainder.Column - 1 },
+                            }
+                        }
+                    ]
+                }
+            },
+            { WasSuccessful: true } => null,
+        };
 
     private void LogMessage(string message)
     {

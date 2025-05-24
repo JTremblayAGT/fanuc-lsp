@@ -67,6 +67,7 @@ public class ResponseError
 [JsonDerivedType(typeof(TextDocumentDefinitionResponse))]
 [JsonDerivedType(typeof(TextDocumentCodeActionResponse))]
 [JsonDerivedType(typeof(TextDocumentCompletionResponse))]
+[JsonDerivedType(typeof(PublishDiagnosticsNotification))]
 public class ResponseMessage : Message
 {
     [JsonPropertyName("id")]

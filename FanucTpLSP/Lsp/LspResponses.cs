@@ -32,6 +32,9 @@ public class TextDocumentSyncOptions
     /// </summary>
     [JsonPropertyName("openClose")]
     public bool OpenClose { get; set; } = true;
+
+    [JsonPropertyName("save")]
+    public bool Save { get; set; } = true;
 }
 
 public class CompletionOptions

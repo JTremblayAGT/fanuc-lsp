@@ -45,7 +45,7 @@ public class TextDocumentDidCloseParams
     public TextDocumentItem TextDocument { get; set; } = new();
 }
 
-public class TextDocumentContentPosition
+public class ContentPosition
 {
     [JsonPropertyName("line")]
     public int Line { get; set; } = 0;
@@ -54,19 +54,19 @@ public class TextDocumentContentPosition
     public int Character { get; set; } = 0;
 }
 
-public class TextDocumentContentRange
+public class ContentRange
 {
     [JsonPropertyName("start")]
-    public TextDocumentContentPosition Start { get; set; } = new();
+    public ContentPosition Start { get; set; } = new();
 
     [JsonPropertyName("end")]
-    public TextDocumentContentPosition End { get; set; } = new();
+    public ContentPosition End { get; set; } = new();
 }
 
 public class TextDocumentContentChangeEvent
 {
     [JsonPropertyName("range")]
-    public TextDocumentContentRange Range { get; set; } = new();
+    public ContentRange Range { get; set; } = new();
 
     [JsonPropertyName("text")]
     public string Text { get; set; } = string.Empty;
@@ -81,6 +81,12 @@ public class TextDocumentDidChangeParams
     public TextDocumentContentChangeEvent[] ContentChanges { get; set; } = [];
 }
 
+public class TextDocumentDidSaveParams
+{
+    [JsonPropertyName("textDocument")]
+    public TextDocumentIdentifier TextDocument { get; set; } = new();
+}
+
 public enum DiagnosticSeverity
 {
     Error = 1,
@@ -92,7 +98,7 @@ public enum DiagnosticSeverity
 public class Diagnostic
 {
     [JsonPropertyName("range")]
-    public TextDocumentContentRange Range { get; set; } = new();
+    public ContentRange Range { get; set; } = new();
 
     [JsonPropertyName("severity")]
     public DiagnosticSeverity Severity { get; set; } = DiagnosticSeverity.Error;
@@ -138,10 +144,10 @@ public class TextDocumentDidChangeNotification : RequestMessage
 public class TextDocumentDidSaveNotification : RequestMessage
 {
     [JsonPropertyName("params")]
-    public TextDocumentIdentifier Params { get; set; } = new();
+    public TextDocumentDidSaveParams Params { get; set; } = new();
 }
 
-public class TextDocumentPublishDiagnosticsNotification : ResponseMessage
+public class PublishDiagnosticsNotification : ResponseMessage
 {
     [JsonPropertyName("method")]
     public string Method { get; set; } = "textDocument/publishDiagnostics";

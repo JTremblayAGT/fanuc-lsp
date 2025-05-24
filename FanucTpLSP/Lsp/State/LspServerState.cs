@@ -1,5 +1,7 @@
 using TPLangParser.TPLang;
 using FanucTpLsp.Lsp.Completion;
+using FanucTpLsp.Lsp.Definition;
+using FanucTpLsp.Lsp.Hover;
 
 using Sprache;
 
@@ -7,7 +9,7 @@ namespace FanucTpLsp.Lsp.State;
 
 internal record TextDocumentState(
     TextDocumentItem TextDocument,
-    TextDocumentContentPosition LastEditPosition,
+    ContentPosition LastEditPosition,
     TpProgram? Program
 );
 
@@ -18,25 +20,26 @@ internal class LspServerState(string logFilePath)
     public string LastChangedDocumentUri { get; set; } = string.Empty;
     public Dictionary<string, TextDocumentState> OpenedTextDocuments { get; set; } = new();
 
-    private static readonly List<ICompletionProvider> CompletionProviders = [
+    private static readonly List<ICompletionProvider> CompletionProviders =
+    [
         new TpLabelCompletion(),
         new TpMotionInstructionCompletion(),
     ];
 
-    public bool OnDocumentOpen(TextDocumentItem document)
+    private static readonly List<IDefinitionProvider> definitionProviders =
+    [
+        new TpLabelDefinitionProvider()
+    ];
+
+    private static readonly List<IHoverProvider> hoverProviders =
+    [];
+
+    public IResult<TpProgram> OnDocumentOpen(TextDocumentItem document)
     {
-        var result = TpProgram.GetParser().TryParse(document.Text);
-        if (!result.WasSuccessful)
-        {
-            // TODO: should actually publish a diagnostic error
-        }
-
-        var program = result.WasSuccessful ? result.Value : default(TpProgram);
-
         OpenedTextDocuments.Add(document.Uri,
-            new(document, new(), program));
+            new(document, new(), default(TpProgram)));
 
-        return result.WasSuccessful;
+        return UpdateParsedProgram(document.Uri);
     }
 
     public void UpdateDocumentText(string uri, TextDocumentContentChangeEvent[] changes)
@@ -79,17 +82,10 @@ internal class LspServerState(string logFilePath)
         var document = documentState.TextDocument;
         document.Text = text;
 
-        var result = TpProgram.GetParser().TryParse(document.Text);
-        if (!result.WasSuccessful)
-        {
-            // TODO: should actually publish a diagnostic error
-        }
-
         OpenedTextDocuments[uri] = documentState with
         {
             LastEditPosition = lastEditPosition,
             TextDocument = document,
-            Program = result.WasSuccessful ? result.Value : documentState.Program
         };
         LastChangedDocumentUri = uri;
     }
@@ -121,24 +117,60 @@ internal class LspServerState(string logFilePath)
             return [];
         }
 
-        // Get the current line text
         var currentLine = lines[lastEdit.Line];
-
-        // Make sure the requested character position is valid
         var character = Math.Min(lastEdit.Character, currentLine.Length);
 
         return CompletionProviders.Aggregate(
-                new CompletionItem[] { },
-                (accumulator, completionProvider)
-                => accumulator.Concat<CompletionItem>(
-                        completionProvider.GetCompletions(documentState.Program!, currentLine, character)).ToArray()
+            new CompletionItem[] { }, (accumulator, completionProvider)
+                => accumulator.Concat(completionProvider.GetCompletions(documentState.Program!, currentLine, character))
+                    .ToArray()
         );
+    }
+
+    public TextDocumentLocation? GetLocation(string uri, ContentPosition position)
+    {
+        if (!OpenedTextDocuments.ContainsKey(uri))
+        {
+            LogMessage($"[TextDocumentDefinition]: Document not opened: {uri}");
+            return null;
+        }
+
+        return null;
+    }
+
+    public HoverResult? GetHoverResult(string uri, ContentPosition position)
+    {
+        if (!OpenedTextDocuments.ContainsKey(uri))
+        {
+            LogMessage($"[TextDocumentDidHover]: Document not opened: {uri}");
+            return null;
+        }
+
+        // TODO: Hovering a program name will pull the comment at the beginning of the /MN section
+        // TODO: Hovering a JMP LBL or Skip,LBL (or SkipJump,LBL) will display the comment of the label as well as it's line number
+        // TODO: (Much later) Gets the value stored in the register through SNPX
+
+        return null;
+    }
+
+    public IResult<TpProgram> UpdateParsedProgram(string uri)
+        => UpdateParsedProgram(OpenedTextDocuments[uri]);
+
+    private IResult<TpProgram> UpdateParsedProgram(TextDocumentState documentState)
+    {
+        var document = documentState.TextDocument;
+        var result = TpProgram.GetParser().TryParse(document.Text);
+        OpenedTextDocuments[document.Uri] = documentState with
+        {
+            Program = result.WasSuccessful ? result.Value : documentState.Program
+        };
+        return result;
     }
 
     /// <summary>
     /// Converts a line and character position to an offset in the text
     /// </summary>
-    private static int GetOffsetFromPosition(string text, TextDocumentContentPosition position)
+    private static int GetOffsetFromPosition(string text, ContentPosition position)
     {
         // Split the text into lines
         var lines = text.Split('\n');
@@ -166,12 +198,12 @@ internal class LspServerState(string logFilePath)
     /// <summary>
     /// Calculates the position after text has been inserted at a given position
     /// </summary>
-    private static TextDocumentContentPosition CalculatePositionAfterEdit(string text, TextDocumentContentPosition startPosition, string insertedText)
+    private static ContentPosition CalculatePositionAfterEdit(string text, ContentPosition startPosition, string insertedText)
     {
         // If there are no newlines in the inserted text, we can simply add the length
         if (!insertedText.Contains('\n'))
         {
-            return new TextDocumentContentPosition
+            return new ContentPosition
             {
                 Line = startPosition.Line,
                 Character = startPosition.Character + insertedText.Length
@@ -180,7 +212,7 @@ internal class LspServerState(string logFilePath)
 
         // If there are newlines, we need to calculate the new position
         var insertedLines = insertedText.Split('\n');
-        return new TextDocumentContentPosition
+        return new ContentPosition
         {
             Line = startPosition.Line + insertedLines.Length - 1,
             Character = insertedLines[^1].Length + (insertedLines.Length == 1 ? startPosition.Character : 0)

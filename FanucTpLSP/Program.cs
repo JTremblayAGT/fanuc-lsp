@@ -18,6 +18,7 @@ var writer = new StreamWriter(stdout, Encoding.UTF8);
 // Log server start
 LogMessage(logFilePath, $"Server started at {DateTime.Now}");
 
+// TODO: Make the server connect to the robot defined in some config file in project root
 var server = new LspServer(logFilePath);
 
 while (true)
