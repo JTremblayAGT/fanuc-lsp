@@ -7,7 +7,7 @@ namespace FanucTpLsp.Lsp;
 
 public class LspServer(string logFilePath)
 {
-    private LspServerState _state = new(logFilePath);
+    private readonly LspServerState _state = new(logFilePath);
 
     public ResponseMessage? HandleRequest(string method, string json)
         => method switch

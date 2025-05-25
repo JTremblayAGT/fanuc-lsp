@@ -238,7 +238,7 @@ public sealed record TpProgram(TpProgramHeader Header, TpProgramMain Main, TpPro
     public static Parser<TpProgram> GetParser()
         => from header in TpProgramHeader.GetParser()
            from main in TpProgramMain.GetParser()
-           from positions in TpProgramPositions.GetParser()
+           from positions in TpProgramPositions.GetParser().Optional()
            from endTag in TpCommon.Keyword("/END")
-           select new TpProgram(header, main, positions);
+           select new TpProgram(header, main, positions.GetOrElse(new([])));
 }

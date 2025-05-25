@@ -263,40 +263,52 @@ internal class LspServerState(string logFilePath)
         };
     }
 
-    private static Dictionary<string, TextDocumentState> FindLsAndKlFiles()
+    private T? ValueOr<T>(IResult<T> result, T? or)
+        => result.WasSuccessful ? result.Value : or;
+
+    private Dictionary<string, TextDocumentState> FindLsAndKlFiles()
     {
-        string currentDirectory = Directory.GetCurrentDirectory();
+        var currentDirectory = Directory.GetCurrentDirectory();
+        LogMessage($"Searching directory for files: {currentDirectory}");
         try
         {
             // Use SearchOption.AllDirectories to recursively search all subdirectories
-            var lsFiles = Directory.EnumerateFiles(currentDirectory, "*.ls", SearchOption.AllDirectories)
-                .Select(file => new TextDocumentState(new TextDocumentItem
+            var lsFiles = Directory.EnumerateFiles(Path.Combine(currentDirectory, "TPP"), "*.ls", SearchOption.AllDirectories).ToList();
+            LogMessage($"Found ${lsFiles.Count} LS files.");
+
+            var klFiles = Directory.EnumerateFiles(Path.Combine(currentDirectory, "KAREL"), "*.kl", SearchOption.AllDirectories).ToList();
+            LogMessage($"Found ${klFiles.Count} KL files.");
+
+            Dictionary<string, TextDocumentState> dict = new();
+            foreach (var path in lsFiles)
+            {
+                var text = File.ReadAllText(path);
+                dict.Add(path, new(new()
                 {
-                    Uri = file,
+                    Uri = path,
                     LanguageId = "tp",
                     Version = 0,
-                    Text = File.ReadAllText(file)
-                }, new(), DocumentType.Tp, default(TpProgram)))
-                .Select(state => state with
+                    Text = text
+                }, new(), DocumentType.Tp, ValueOr(TpProgram.GetParser().TryParse(text), null)));
+            }
+            foreach (var path in klFiles)
+            {
+                var text = File.ReadAllText(path);
+                dict.Add(path, new(new()
                 {
-                    Program = TpProgram.GetParser().TryParse(state.TextDocument.Text).Value
-                });
-
-            var klFiles = Directory.EnumerateFiles(currentDirectory, "*.kl", SearchOption.AllDirectories)
-                .Select(file => new TextDocumentState(new TextDocumentItem
-                {
-                    Uri = file,
+                    Uri = path,
                     LanguageId = "karel",
                     Version = 0,
-                    Text = File.ReadAllText(file)
-                }, new(), DocumentType.Karel, default(TpProgram)));
+                    Text = text
+                }, new(), DocumentType.Karel, null));
+            }
 
-            // Combine results into a single list and return
-            return lsFiles.Concat(klFiles).ToDictionary(fileState => fileState.TextDocument.Uri);
+            return dict;
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error searching for files: {ex.Message}");
+            LogMessage($"Error while searching:{ex.GetType()} {ex.Message}");
             return [];
         }
     }
