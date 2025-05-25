@@ -9,15 +9,6 @@ public class LspServer(string logFilePath)
 {
     private LspServerState _state = new(logFilePath);
 
-    public bool Initialize()
-    {
-        _state.IsInitialized = true;
-
-        // TODO: project initialization stuff
-
-        return _state.IsInitialized;
-    }
-
     public ResponseMessage? HandleRequest(string method, string json)
         => method switch
         {
@@ -36,6 +27,8 @@ public class LspServer(string logFilePath)
             LspMethods.Shutdown => HandleShutdownRequest(),
             _ => null
         };
+
+    private bool Initialize() => _state.Initialize();
 
     private InitializeResponse? HandleInitializeRequest(string json)
     {
@@ -114,7 +107,14 @@ public class LspServer(string logFilePath)
             return null;
         }
 
-        var result = _state.OnDocumentOpen(notification.Params.TextDocument);
+        if (notification.Params.TextDocument.Uri.EndsWith(".kl", StringComparison.OrdinalIgnoreCase))
+        {
+            var diagnostics = _state.OnKarelDocumentOpen(notification.Params.TextDocument);
+            // TODO: build results
+            return null;
+        }
+
+        var result = _state.OnTpDocumentOpen(notification.Params.TextDocument);
 
         return ParseResultToDiagnostics(result, notification.Params.TextDocument.Uri);
     }
@@ -287,6 +287,8 @@ public class LspServer(string logFilePath)
             },
             { WasSuccessful: true } => null,
         };
+
+
 
     private void LogMessage(string message)
     {

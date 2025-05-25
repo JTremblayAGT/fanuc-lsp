@@ -7,9 +7,17 @@ using Sprache;
 
 namespace FanucTpLsp.Lsp.State;
 
-internal record TextDocumentState(
+public enum DocumentType
+{
+    Tp,
+    Karel
+}
+
+internal record TextDocumentState
+(
     TextDocumentItem TextDocument,
     ContentPosition LastEditPosition,
+    DocumentType Type,
     TpProgram? Program
 );
 
@@ -19,6 +27,7 @@ internal class LspServerState(string logFilePath)
     public bool IsShutdown { get; set; } = false;
     public string LastChangedDocumentUri { get; set; } = string.Empty;
     public Dictionary<string, TextDocumentState> OpenedTextDocuments { get; set; } = new();
+    public Dictionary<string, TextDocumentState> AllTextDocuments { get; set; } = new();
 
     private static readonly List<ICompletionProvider> CompletionProviders =
     [
@@ -28,7 +37,8 @@ internal class LspServerState(string logFilePath)
 
     private static readonly List<IDefinitionProvider> definitionProviders =
     [
-        new TpLabelDefinitionProvider()
+        new TpLabelDefinitionProvider(),
+        new TpProgramDefinitionProvider(),
     ];
 
     private static readonly List<IHoverProvider> hoverProviders =
@@ -36,12 +46,29 @@ internal class LspServerState(string logFilePath)
         new TpLabelHoverProvider()
     ];
 
-    public IResult<TpProgram> OnDocumentOpen(TextDocumentItem document)
+    public bool Initialize()
+    {
+        IsInitialized = true;
+
+        AllTextDocuments = FindLsAndKlFiles();
+
+        return IsInitialized;
+    }
+
+    public IResult<TpProgram> OnTpDocumentOpen(TextDocumentItem document)
     {
         OpenedTextDocuments.Add(document.Uri,
-            new(document, new(), default(TpProgram)));
+            new(document, new(), DocumentType.Tp, default(TpProgram)));
 
         return UpdateParsedProgram(document.Uri);
+    }
+
+    public Diagnostic[] OnKarelDocumentOpen(TextDocumentItem document)
+    {
+        OpenedTextDocuments.Add(document.Uri,
+            new(document, new(), DocumentType.Karel, default(TpProgram)));
+
+        return [];
     }
 
     public void UpdateDocumentText(string uri, TextDocumentContentChangeEvent[] changes)
@@ -136,7 +163,7 @@ internal class LspServerState(string logFilePath)
         {
             return definitionProviders
                 .Select(provider
-                    => provider.GetDefinitionLocation(documentState.Program!, position, documentState.TextDocument))
+                    => provider.GetDefinitionLocation(documentState.Program!, position, documentState.TextDocument, this))
                 .FirstOrDefault(res => res is not null);
         }
 
@@ -170,6 +197,12 @@ internal class LspServerState(string logFilePath)
     private IResult<TpProgram> UpdateParsedProgram(TextDocumentState documentState)
     {
         var document = documentState.TextDocument;
+
+        if (documentState.Type == DocumentType.Karel)
+        {
+            throw new InvalidOperationException($"Karel programs aren't parsed");
+        }
+
         var result = TpProgram.GetParser().TryParse(document.Text);
         OpenedTextDocuments[document.Uri] = documentState with
         {
@@ -228,6 +261,44 @@ internal class LspServerState(string logFilePath)
             Line = startPosition.Line + insertedLines.Length - 1,
             Character = insertedLines[^1].Length + (insertedLines.Length == 1 ? startPosition.Character : 0)
         };
+    }
+
+    private static Dictionary<string, TextDocumentState> FindLsAndKlFiles()
+    {
+        string currentDirectory = Directory.GetCurrentDirectory();
+        try
+        {
+            // Use SearchOption.AllDirectories to recursively search all subdirectories
+            var lsFiles = Directory.EnumerateFiles(currentDirectory, "*.ls", SearchOption.AllDirectories)
+                .Select(file => new TextDocumentState(new TextDocumentItem
+                {
+                    Uri = file,
+                    LanguageId = "tp",
+                    Version = 0,
+                    Text = File.ReadAllText(file)
+                }, new(), DocumentType.Tp, default(TpProgram)))
+                .Select(state => state with
+                {
+                    Program = TpProgram.GetParser().TryParse(state.TextDocument.Text).Value
+                });
+
+            var klFiles = Directory.EnumerateFiles(currentDirectory, "*.kl", SearchOption.AllDirectories)
+                .Select(file => new TextDocumentState(new TextDocumentItem
+                {
+                    Uri = file,
+                    LanguageId = "karel",
+                    Version = 0,
+                    Text = File.ReadAllText(file)
+                }, new(), DocumentType.Karel, default(TpProgram)));
+
+            // Combine results into a single list and return
+            return lsFiles.Concat(klFiles).ToDictionary(fileState => fileState.TextDocument.Uri);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error searching for files: {ex.Message}");
+            return [];
+        }
     }
 
     private void LogMessage(string message)

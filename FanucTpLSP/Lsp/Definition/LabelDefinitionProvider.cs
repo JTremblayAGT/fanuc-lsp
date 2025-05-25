@@ -1,3 +1,4 @@
+using FanucTpLsp.Lsp.State;
 using TPLangParser.TPLang;
 using TPLangParser.TPLang.Instructions;
 
@@ -5,7 +6,7 @@ namespace FanucTpLsp.Lsp.Definition;
 
 internal sealed class TpLabelDefinitionProvider : IDefinitionProvider
 {
-    public TextDocumentLocation? GetDefinitionLocation(TpProgram program, ContentPosition position, TextDocumentItem document)
+    public TextDocumentLocation? GetDefinitionLocation(TpProgram program, ContentPosition position, TextDocumentItem document, LspServerState state)
     {
         var instruction = program.Main.Instructions.Find(instr => instr.LineNumber - 1 == position.Line);
         if (instruction == null)

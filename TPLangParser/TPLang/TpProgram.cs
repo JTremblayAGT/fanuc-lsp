@@ -1,5 +1,4 @@
-﻿using TPLangParser.TPLang;
-using Sprache;
+﻿using Sprache;
 
 namespace TPLangParser.TPLang;
 
@@ -13,7 +12,7 @@ public sealed record TpHeaderAttribute(string Name, string Value) : TpInstructio
 
     public new static Parser<TpHeaderAttribute> GetParser()
         => from kvp in Inner.WithLineNumber()
-            select kvp.Value with { LineNumber = kvp.LineNumber };
+           select kvp.Value with { LineNumber = kvp.LineNumber };
 }
 
 public sealed record TpProgramAttributes(Dictionary<string, TpHeaderAttribute> Attributes)

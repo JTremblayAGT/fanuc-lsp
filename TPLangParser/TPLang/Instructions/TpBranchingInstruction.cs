@@ -1,4 +1,5 @@
 ﻿using Sprache;
+//using TPLangParser.TPLang;
 
 namespace TPLangParser.TPLang.Instructions;
 
@@ -17,7 +18,7 @@ public abstract record TpBranchingInstruction() : TpInstruction(0), ITpParser<Tp
             .Or(TpEndInstruction.GetParser());
 }
 
-public abstract record TpBranchingAction 
+public abstract record TpBranchingAction
     : TpBranchingInstruction, ITpParser<TpBranchingAction>
 {
     public new static Parser<TpBranchingAction> GetParser()
@@ -36,9 +37,9 @@ public sealed record TpLabelDefinitionInstruction(TpLabel Label)
 
 public sealed record TpEndInstruction : TpBranchingInstruction, ITpParser<TpBranchingInstruction>
 {
-    public new static Parser<TpBranchingInstruction> GetParser() 
+    public new static Parser<TpBranchingInstruction> GetParser()
         => from keyword in Parse.String("END").Token()
-            select new TpEndInstruction();
+           select new TpEndInstruction();
 }
 
 public sealed record TpJumpLabelInstruction(TpLabel Label)
@@ -46,13 +47,13 @@ public sealed record TpJumpLabelInstruction(TpLabel Label)
 {
     public new static Parser<TpBranchingAction> GetParser()
         => from keyword in Parse.String("JMP").Token()
-            from label in TpLabel.GetParser()
-            select new TpJumpLabelInstruction(label);
+           from label in TpLabel.GetParser()
+           select new TpJumpLabelInstruction(label);
 }
 
-public abstract record TpCallMethod : ITpParser<TpCallMethod>
+public abstract record TpCallMethod() : TpWithPosition(new(0, 0), new(0, 0)), ITpParser<TpCallMethod>
 {
-    public static Parser<TpCallMethod> GetParser() 
+    public static Parser<TpCallMethod> GetParser()
         => TpCallByStringRegister.GetParser()
             .Or(TpCallByName.GetParser());
 }
@@ -60,13 +61,13 @@ public abstract record TpCallMethod : ITpParser<TpCallMethod>
 public sealed record TpCallByStringRegister(TpStringRegister StringRegister)
     : TpCallMethod, ITpParser<TpCallMethod>
 {
-    public new static Parser<TpCallMethod> GetParser() 
+    public new static Parser<TpCallMethod> GetParser()
         => TpStringRegister.GetParser().Select(sr => new TpCallByStringRegister(sr));
 }
 public sealed record TpCallByName(string ProgramName)
     : TpCallMethod, ITpParser<TpCallMethod>
 {
-    public new static Parser<TpCallMethod> GetParser() 
+    public new static Parser<TpCallMethod> GetParser()
         => TpCommon.ProgramName.Select(name => new TpCallByName(name));
 }
 
@@ -78,9 +79,11 @@ public sealed record TpCallInstruction(TpCallMethod CallMethod, List<TpValue> Ar
 
     public new static Parser<TpBranchingAction> GetParser()
         => from keyword in TpCommon.Keyword("CALL")
-            from programName in TpCallMethod.GetParser()
-            from args in Args.Optional()
-            select new TpCallInstruction(programName, args.GetOrElse([]).ToList());
+           from programName in TpCallMethod.GetParser().WithStartPosition().WithEndPosition()
+           from args in Args.Optional()
+           select new TpCallInstruction(programName.Value.Value with
+           { Start = programName.Value.Position, End = programName.Position },
+                   args.GetOrElse([]).ToList());
 }
 
 public sealed record TpMixedLogicAssignmentBranchingAction(TpMixedLogicInstruction Instruction)
@@ -88,7 +91,7 @@ public sealed record TpMixedLogicAssignmentBranchingAction(TpMixedLogicInstructi
 {
     public new static Parser<TpBranchingAction> GetParser()
         => from mixedLogicAssignment in TpMixedLogicAssignment.GetParser()
-            select new TpMixedLogicAssignmentBranchingAction(mixedLogicAssignment);
+           select new TpMixedLogicAssignmentBranchingAction(mixedLogicAssignment);
 }
 
 public sealed record TpPulseBranchingAction(TpValueOnOffIOPort IoPort, TpValuePulse Pulse)
@@ -96,9 +99,9 @@ public sealed record TpPulseBranchingAction(TpValueOnOffIOPort IoPort, TpValuePu
 {
     public new static Parser<TpBranchingAction> GetParser()
         => from ioPort in TpValueOnOffIOPort.GetParser()
-            from sep in TpCommon.Keyword("=")
-            from pulse in TpValuePulse.GetParser()
-            select new TpPulseBranchingAction(ioPort, (TpValuePulse)pulse);
+           from sep in TpCommon.Keyword("=")
+           from pulse in TpValuePulse.GetParser()
+           select new TpPulseBranchingAction(ioPort, (TpValuePulse)pulse);
 }
 
 public abstract record TpIfExpression : ITpParser<TpIfExpression>
@@ -129,10 +132,10 @@ public sealed record TpIfInstruction(
 {
     public new static Parser<TpBranchingInstruction> GetParser()
         => from keyword in Parse.String("IF").Token()
-            from expression in TpIfExpression.GetParser()
-            from comma in Parse.Char(',').Token()
-            from action in TpBranchingAction.GetParser()
-            select new TpIfInstruction(expression, action);
+           from expression in TpIfExpression.GetParser()
+           from comma in Parse.Char(',').Token()
+           from action in TpBranchingAction.GetParser()
+           select new TpIfInstruction(expression, action);
 }
 
 public record TpSelectCase(TpValue Value, TpBranchingAction Action) : ITpParser<TpSelectCase>
@@ -149,7 +152,7 @@ public record TpSelectCase(TpValue Value, TpBranchingAction Action) : ITpParser<
         from action in TpBranchingAction.GetParser()
         select new TpSelectCase(value, action);
 
-    public static Parser<TpSelectCase> GetParser() 
+    public static Parser<TpSelectCase> GetParser()
         => InternalParser.Or(TpSelectElseCase.GetParser());
 }
 
@@ -157,14 +160,14 @@ public sealed record TpSelectElseCase(TpBranchingAction Action) : TpSelectCase(n
 {
     public new static Parser<TpSelectCase> GetParser()
         => from keyword in TpCommon.Keyword("ELSE")
-            from sep in TpCommon.Keyword(",")
-            from action in TpBranchingAction.GetParser()
-            select new TpSelectElseCase(action);
+           from sep in TpCommon.Keyword(",")
+           from action in TpBranchingAction.GetParser()
+           select new TpSelectElseCase(action);
 }
 public sealed record TpSelectCaseInstruction(TpSelectCase SelectCase)
     : TpBranchingInstruction, ITpParser<TpBranchingInstruction>
 {
-    public new static Parser<TpBranchingInstruction> GetParser() 
+    public new static Parser<TpBranchingInstruction> GetParser()
         => TpSelectCase.GetParser().Select(selCase => new TpSelectCaseInstruction(selCase));
 }
 
@@ -174,31 +177,31 @@ public sealed record TpSelectInstruction(
 {
     public new static Parser<TpBranchingInstruction> GetParser()
         => from keyword in Parse.String("SELECT").Token()
-            from register in TpRegister.GetParser()
-            from firstCase in TpSelectCase.GetParser()
-            select new TpSelectInstruction(register, firstCase);
+           from register in TpRegister.GetParser()
+           from firstCase in TpSelectCase.GetParser()
+           select new TpSelectInstruction(register, firstCase);
 }
 
-public sealed record TpIfThenInstruction(TpMixedLogicExpression Expression) 
+public sealed record TpIfThenInstruction(TpMixedLogicExpression Expression)
     : TpBranchingInstruction, ITpParser<TpBranchingInstruction>
 {
-    public new static Parser<TpBranchingInstruction> GetParser() 
+    public new static Parser<TpBranchingInstruction> GetParser()
         => from keyword in Parse.String("IF").Token()
-            from expression in TpMixedLogicExpression.GetParser()
-            from tail in Parse.String("THEN").Token()
-            select new TpIfThenInstruction(expression);
+           from expression in TpMixedLogicExpression.GetParser()
+           from tail in Parse.String("THEN").Token()
+           select new TpIfThenInstruction(expression);
 }
 
-public sealed record TpElseInstruction 
+public sealed record TpElseInstruction
     : TpBranchingInstruction, ITpParser<TpBranchingInstruction>
 {
-    public new static Parser<TpBranchingInstruction> GetParser() 
+    public new static Parser<TpBranchingInstruction> GetParser()
         => Parse.String("ELSE").Return(new TpElseInstruction()).Token();
 }
 
-public sealed record TpEndIfInstruction 
+public sealed record TpEndIfInstruction
     : TpBranchingInstruction, ITpParser<TpBranchingInstruction>
 {
-    public new static Parser<TpBranchingInstruction> GetParser() 
+    public new static Parser<TpBranchingInstruction> GetParser()
         => Parse.String("ENDIF").Return(new TpEndIfInstruction()).Token();
 }
