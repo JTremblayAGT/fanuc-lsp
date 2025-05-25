@@ -32,7 +32,9 @@ internal class LspServerState(string logFilePath)
     ];
 
     private static readonly List<IHoverProvider> hoverProviders =
-    [];
+    [
+        new TpLabelHoverProvider()
+    ];
 
     public IResult<TpProgram> OnDocumentOpen(TextDocumentItem document)
     {
