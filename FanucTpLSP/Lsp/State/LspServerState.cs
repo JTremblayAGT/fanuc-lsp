@@ -50,6 +50,8 @@ internal class LspServerState(string logFilePath)
     {
         IsInitialized = true;
 
+        // TODO: need to make this a background task (probably with a directory watcher)
+        // in order to let the server start faster (maybe later)
         AllTextDocuments = FindLsAndKlFiles();
 
         return IsInitialized;
@@ -156,7 +158,6 @@ internal class LspServerState(string logFilePath)
         );
     }
 
-    // TODO: might want to return an array
     public TextDocumentLocation? GetLocation(string uri, ContentPosition position)
     {
         if (OpenedTextDocuments.TryGetValue(uri, out var documentState))
@@ -172,7 +173,6 @@ internal class LspServerState(string logFilePath)
 
     }
 
-    // TODO: might want to return an array
     public HoverResult? GetHoverResult(string uri, ContentPosition position)
     {
         if (OpenedTextDocuments.TryGetValue(uri, out var documentState))
@@ -186,7 +186,6 @@ internal class LspServerState(string logFilePath)
         return null;
 
         // TODO: Hovering a program name will pull the comment at the beginning of the /MN section
-        // TODO: Hovering a JMP LBL or Skip,LBL (or SkipJump,LBL) will display the comment of the label as well as it's line number
         // TODO: (Much later) Gets the value stored in the register through SNPX
 
     }
