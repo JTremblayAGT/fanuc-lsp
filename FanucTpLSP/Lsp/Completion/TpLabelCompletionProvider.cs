@@ -3,7 +3,7 @@ using TPLangParser.TPLang.Instructions;
 
 namespace FanucTpLsp.Lsp.Completion;
 
-public class TpLabelCompletion : ICompletionProvider
+public class TpLabelCompletionProvider : ICompletionProvider
 {
     public CompletionItem[] GetCompletions(TpProgram program, string lineText, int column)
     {

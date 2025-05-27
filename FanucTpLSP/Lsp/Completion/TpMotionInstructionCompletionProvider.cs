@@ -3,7 +3,7 @@ using TPLangParser.TPLang.Instructions;
 
 namespace FanucTpLsp.Lsp.Completion;
 
-public class TpMotionInstructionCompletion : ICompletionProvider
+public class TpMotionInstructionCompletionProvider : ICompletionProvider
 {
     private static readonly string[] MotionTypes = ["J", "L", "C", "A", "S"];
     private static readonly string[] SpeedUnits = ["%", "sec", "inch/min", "deg/sec", "mm/sec", "cm/min", "WELD_SPEED"];

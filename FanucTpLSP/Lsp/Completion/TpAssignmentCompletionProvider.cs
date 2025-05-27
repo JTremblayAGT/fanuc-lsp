@@ -90,16 +90,16 @@ internal class TpAssignmentCompletionProvider : ICompletionProvider
                 Label = "R[AR[n]]",
                 Detail = "Numerical register (indirect)",
                 Documentation = "Contains a numerical value",
-                InsertText = "R[R[$0]]",
+                InsertText = "R[AR[$0]]",
                 InsertTextFormat = InsertTextFormat.Snippet,
                 Kind = CompletionItemKind.Snippet
             },
             new()
             {
-                Label = "PR[n, i]",
+                Label = "PR[n,i]",
                 Detail = "Position register element",
                 Documentation = "Contains a numerical value",
-                InsertText = "PR[$1, $0]",
+                InsertText = "PR[$1,$0]",
                 InsertTextFormat = InsertTextFormat.Snippet,
                 Kind = CompletionItemKind.Snippet
             },

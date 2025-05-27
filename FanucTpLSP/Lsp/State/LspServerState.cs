@@ -31,17 +31,18 @@ internal class LspServerState(string logFilePath)
 
     private static readonly List<ICompletionProvider> CompletionProviders =
     [
-        new TpLabelCompletion(),
-        new TpMotionInstructionCompletion(),
+        new TpLabelCompletionProvider(),
+        new TpMotionInstructionCompletionProvider(),
+        new TpAssignmentCompletionProvider()
     ];
 
-    private static readonly List<IDefinitionProvider> definitionProviders =
+    private static readonly List<IDefinitionProvider> DefinitionProviders =
     [
         new TpLabelDefinitionProvider(),
         new TpProgramDefinitionProvider(),
     ];
 
-    private static readonly List<IHoverProvider> hoverProviders =
+    private static readonly List<IHoverProvider> HoverProviders =
     [
         new TpLabelHoverProvider()
     ];
@@ -162,7 +163,7 @@ internal class LspServerState(string logFilePath)
     {
         if (OpenedTextDocuments.TryGetValue(uri, out var documentState))
         {
-            return definitionProviders
+            return DefinitionProviders
                 .Select(provider
                     => provider.GetDefinitionLocation(documentState.Program!, position, documentState.TextDocument, this))
                 .FirstOrDefault(res => res is not null);
@@ -177,7 +178,7 @@ internal class LspServerState(string logFilePath)
     {
         if (OpenedTextDocuments.TryGetValue(uri, out var documentState))
         {
-            return hoverProviders
+            return HoverProviders
                 .Select(provider => provider.GetHoverResult(documentState.Program!, position))
                 .FirstOrDefault(res => res is not null);
         }
