@@ -1,4 +1,5 @@
-﻿using TPLangParser.TPLang;
+﻿using FanucTpLsp.Lsp.State;
+using TPLangParser.TPLang;
 using TPLangParser.TPLang.Instructions;
 
 namespace FanucTpLsp.Lsp.Completion;
@@ -16,7 +17,7 @@ public class TpMotionInstructionCompletionProvider : ICompletionProvider
     ];
 
     // Main completion method
-    public CompletionItem[] GetCompletions(TpProgram program, string lineText, int column)
+    public CompletionItem[] GetCompletions(TpProgram program, string lineText, int column, LspServerState serverState)
     {
         var prefix = lineText[..column];
         var tokens = CompletionProviderUtils.TokenizeInput(prefix);

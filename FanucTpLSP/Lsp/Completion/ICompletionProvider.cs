@@ -1,12 +1,12 @@
 using System.Text.RegularExpressions;
-
+using FanucTpLsp.Lsp.State;
 using TPLangParser.TPLang;
 
 namespace FanucTpLsp.Lsp.Completion;
 
 internal interface ICompletionProvider
 {
-    public CompletionItem[] GetCompletions(TpProgram program, string lineText, int column);
+    public CompletionItem[] GetCompletions(TpProgram program, string lineText, int column, LspServerState serverState);
 }
 
 internal class CompletionProviderUtils

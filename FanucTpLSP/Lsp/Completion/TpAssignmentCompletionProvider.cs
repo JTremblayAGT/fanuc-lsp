@@ -1,12 +1,13 @@
 using TPLangParser.TPLang;
 
 using Sprache;
+using FanucTpLsp.Lsp.State;
 
 namespace FanucTpLsp.Lsp.Completion;
 
 internal class TpAssignmentCompletionProvider : ICompletionProvider
 {
-    public CompletionItem[] GetCompletions(TpProgram program, string lineText, int column)
+    public CompletionItem[] GetCompletions(TpProgram program, string lineText, int column, LspServerState serverState)
         => CompletionProviderUtils.TokenizeInput(lineText[..column]) switch
         {
             [string lhs, "="] => TpValue.GetParser().TryParse(lhs) switch
@@ -38,26 +39,66 @@ internal class TpAssignmentCompletionProvider : ICompletionProvider
         };
 
     private CompletionItem[] IoCompletions(TpValueIOPort iOPort)
-        => iOPort.IOPort switch
+        => iOPort.IOPort.Type switch
         {
-            // TODO: add all options
-            TpDigitalIOPort digitalIo => [],
-            _ => [],
-        };
+            TpIOType.Output => iOPort.IOPort switch
+            {
+                // TODO: add all options
+                TpDigitalIOPort digitalIo => DigitalOutCompletions,
+                TpRobotIOPort robotIo => RobotOutCompletions,
+                TpWeldingIOPort weldIo => WeldOutCompletions,
+                _ => [],
+            },
+            _ => [] // Cannot assign to input
+        }
+        ;
 
-    // TODO: math expressions
-    // TODO: IOPort
-    private static CompletionItem[] NumericalValueCompletions
+    private static CompletionItem[] OnOffCompletions
         => [
             new()
             {
-                Label = "(-n)",
-                Detail = "Negative number constant",
+                Label = "ON",
+                Detail = "On (true)",
                 Documentation = string.Empty,
-                InsertText = "(-$0)",
-                InsertTextFormat = InsertTextFormat.Snippet,
+                InsertText = "ON",
+                InsertTextFormat = InsertTextFormat.PlainText,
                 Kind = CompletionItemKind.Constant
             },
+            new()
+            {
+                Label = "OFF",
+                Detail = "Off (false)",
+                Documentation = string.Empty,
+                InsertText = "OFF",
+                InsertTextFormat = InsertTextFormat.PlainText,
+                Kind = CompletionItemKind.Constant
+            }
+        ];
+
+    private static CompletionItem[] PulseCompletions
+        => [
+            new()
+            {
+                Label = "PULSE",
+                Detail = "Pulse",
+                Documentation = "Pulse output",
+                InsertText = "PULSE",
+                InsertTextFormat = InsertTextFormat.PlainText,
+                Kind = CompletionItemKind.Keyword
+            },
+            new()
+            {
+                Label = "PULSE [,width]",
+                Detail = "Pulse,width ",
+                Documentation = "Pulse output with specified pulse width.",
+                InsertText = "PULSE,$0sec",
+                InsertTextFormat = InsertTextFormat.Snippet,
+                Kind = CompletionItemKind.Snippet
+            },
+        ];
+
+    private static CompletionItem[] RegisterCompletions
+        => [
             new()
             {
                 Label = "R[n]",
@@ -94,6 +135,123 @@ internal class TpAssignmentCompletionProvider : ICompletionProvider
                 InsertTextFormat = InsertTextFormat.Snippet,
                 Kind = CompletionItemKind.Snippet
             },
+        ];
+
+    private static CompletionItem[] DigitalOutCompletions
+        => OnOffCompletions.Concat(PulseCompletions).Concat(RegisterCompletions).ToArray();
+
+    private static CompletionItem[] RobotOutCompletions
+        => DigitalOutCompletions;
+
+    private static CompletionItem[] WeldOutCompletions
+        => DigitalOutCompletions;
+
+    private static CompletionItem[] DigitalInCompletions
+        => [
+            new()
+            {
+                Label = "DI[n]",
+                Detail = "Digital input",
+                Documentation = string.Empty,
+                InsertText = "DI[$0]",
+                InsertTextFormat = InsertTextFormat.Snippet,
+                Kind = CompletionItemKind.Snippet
+            },
+            new()
+            {
+                Label = "DI[R[n]]",
+                Detail = "Digital input (indirect)",
+                Documentation = string.Empty,
+                InsertText = "DI[R[$0]]",
+                InsertTextFormat = InsertTextFormat.Snippet,
+                Kind = CompletionItemKind.Snippet
+            },
+            new()
+            {
+                Label = "DI[AR[n]]",
+                Detail = "Digital input (indirect)",
+                Documentation = string.Empty,
+                InsertText = "DI[AR[$0]]",
+                InsertTextFormat = InsertTextFormat.Snippet,
+                Kind = CompletionItemKind.Snippet
+            },
+        ];
+
+    private static CompletionItem[] RobotInCompletions
+        => [
+            new()
+            {
+                Label = "RI[n]",
+                Detail = "Robot input",
+                Documentation = string.Empty,
+                InsertText = "DI[$0]",
+                InsertTextFormat = InsertTextFormat.Snippet,
+                Kind = CompletionItemKind.Snippet
+            },
+            new()
+            {
+                Label = "RI[R[n]]",
+                Detail = "Robot input (indirect)",
+                Documentation = string.Empty,
+                InsertText = "RI[R[$0]]",
+                InsertTextFormat = InsertTextFormat.Snippet,
+                Kind = CompletionItemKind.Snippet
+            },
+            new()
+            {
+                Label = "RI[AR[n]]",
+                Detail = "Robot input (indirect)",
+                Documentation = string.Empty,
+                InsertText = "RI[AR[$0]]",
+                InsertTextFormat = InsertTextFormat.Snippet,
+                Kind = CompletionItemKind.Snippet
+            },
+        ];
+
+    private static CompletionItem[] WeldInCompletions
+        => [
+            new()
+            {
+                Label = "WI[n]",
+                Detail = "Weld input",
+                Documentation = string.Empty,
+                InsertText = "DI[$0]",
+                InsertTextFormat = InsertTextFormat.Snippet,
+                Kind = CompletionItemKind.Snippet
+            },
+            new()
+            {
+                Label = "WI[R[n]]",
+                Detail = "Weld input (indirect)",
+                Documentation = string.Empty,
+                InsertText = "WI[R[$0]]",
+                InsertTextFormat = InsertTextFormat.Snippet,
+                Kind = CompletionItemKind.Snippet
+            },
+            new()
+            {
+                Label = "WI[AR[n]]",
+                Detail = "Weld input (indirect)",
+                Documentation = string.Empty,
+                InsertText = "WI[AR[$0]]",
+                InsertTextFormat = InsertTextFormat.Snippet,
+                Kind = CompletionItemKind.Snippet
+            },
+        ];
+
+
+    // TODO: math expressions
+    private static CompletionItem[] NumericalValueCompletions
+        => [
+            new()
+            {
+                Label = "(-n)",
+                Detail = "Negative number constant",
+                Documentation = string.Empty,
+                InsertText = "(-$0)",
+                InsertTextFormat = InsertTextFormat.Snippet,
+                Kind = CompletionItemKind.Constant
+            },
             new()
             {
                 Label = "PR[n,i]",
@@ -124,7 +282,10 @@ internal class TpAssignmentCompletionProvider : ICompletionProvider
         ];
 
     private static CompletionItem[] RegisterAssignmentCompletions
-        => NumericalValueCompletions.Concat([
+        => RegisterCompletions
+        .Concat(DigitalInCompletions)
+        .Concat(NumericalValueCompletions)
+        .Concat([
             new()
             {
                 Label = "STRLEN SR[n]",
@@ -274,7 +435,7 @@ internal class TpAssignmentCompletionProvider : ICompletionProvider
         ];
 
     private static CompletionItem[] FlagAssignmentCompletions
-        => [
+        => OnOffCompletions.Concat([
             new()
             {
                 Label = "F[n]",
@@ -293,24 +454,6 @@ internal class TpAssignmentCompletionProvider : ICompletionProvider
                 InsertTextFormat = InsertTextFormat.Snippet,
                 Kind = CompletionItemKind.Snippet
             },
-            new()
-            {
-                Label = "ON",
-                Detail = "On (true)",
-                Documentation = string.Empty,
-                InsertText = "ON",
-                InsertTextFormat = InsertTextFormat.PlainText,
-                Kind = CompletionItemKind.Constant
-            },
-            new()
-            {
-                Label = "OFF",
-                Detail = "Off (false)",
-                Documentation = string.Empty,
-                InsertText = "OFF",
-                InsertTextFormat = InsertTextFormat.PlainText,
-                Kind = CompletionItemKind.Constant
-            }
-        ];
+        ]).ToArray();
 
 }

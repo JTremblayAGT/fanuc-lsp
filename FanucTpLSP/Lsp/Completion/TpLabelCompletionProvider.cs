@@ -1,3 +1,4 @@
+using FanucTpLsp.Lsp.State;
 using TPLangParser.TPLang;
 using TPLangParser.TPLang.Instructions;
 
@@ -5,7 +6,7 @@ namespace FanucTpLsp.Lsp.Completion;
 
 public class TpLabelCompletionProvider : ICompletionProvider
 {
-    public CompletionItem[] GetCompletions(TpProgram program, string lineText, int column)
+    public CompletionItem[] GetCompletions(TpProgram program, string lineText, int column, LspServerState serverState)
     {
         var tokens = CompletionProviderUtils.TokenizeInput(lineText[..column]);
 

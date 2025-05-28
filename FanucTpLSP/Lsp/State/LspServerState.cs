@@ -13,7 +13,7 @@ public enum DocumentType
     Karel
 }
 
-internal record TextDocumentState
+public sealed record TextDocumentState
 (
     TextDocumentItem TextDocument,
     ContentPosition LastEditPosition,
@@ -21,7 +21,7 @@ internal record TextDocumentState
     TpProgram? Program
 );
 
-internal class LspServerState(string logFilePath)
+public sealed class LspServerState(string logFilePath)
 {
     public bool IsInitialized { get; set; } = false;
     public bool IsShutdown { get; set; } = false;
@@ -33,7 +33,8 @@ internal class LspServerState(string logFilePath)
     [
         new TpLabelCompletionProvider(),
         new TpMotionInstructionCompletionProvider(),
-        new TpAssignmentCompletionProvider()
+        new TpAssignmentCompletionProvider(),
+        new TpCallCompletionProvider(),
     ];
 
     private static readonly List<IDefinitionProvider> DefinitionProviders =
@@ -154,7 +155,7 @@ internal class LspServerState(string logFilePath)
 
         return CompletionProviders.Aggregate(
             new CompletionItem[] { }, (accumulator, completionProvider)
-                => accumulator.Concat(completionProvider.GetCompletions(documentState.Program!, currentLine, character))
+                => accumulator.Concat(completionProvider.GetCompletions(documentState.Program!, currentLine, character, this))
                     .ToArray()
         );
     }
