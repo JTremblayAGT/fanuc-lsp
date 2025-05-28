@@ -25,7 +25,7 @@ public class TpLabelCompletionProvider : ICompletionProvider
                         Kind = CompletionItemKind.Snippet
                     }
                 ];
-            case { Count: 1 } when tokens.First().StartsWith(TpLabel.Keyword):
+            case [string tok] when tok.StartsWith(TpLabel.Keyword):
                 // Do not return anything for label declaration instructions
                 return [];
         }

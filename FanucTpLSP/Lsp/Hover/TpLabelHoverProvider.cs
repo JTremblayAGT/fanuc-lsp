@@ -16,19 +16,23 @@ internal sealed class TpLabelHoverProvider : IHoverProvider
         var lbl = instruction switch
         {
             TpJumpLabelInstruction jmpLbl => jmpLbl.Label,
-            TpMotionInstruction motion =>
-                motion.Options.Find(option => option is TpSkipOption or TpSkipJumpOption) switch
-                {
-                    TpSkipOption skip => skip.Label,
-                    TpSkipJumpOption skipJump => skipJump.Label,
-                    _ => null
-                },
-            TpIfInstruction branch =>
-                branch.Action switch
-                {
-                    TpJumpLabelInstruction jmpLbl => jmpLbl.Label,
-                    _ => null,
-                },
+            TpMotionInstruction motion => motion.Options.Find(option => option is TpSkipOption or TpSkipJumpOption) switch
+            {
+                TpSkipOption skip => skip.Label,
+                TpSkipJumpOption skipJump => skipJump.Label,
+                _ => null
+            },
+            TpIfInstruction branch => branch.Action switch
+            {
+                TpJumpLabelInstruction jmpLbl => jmpLbl.Label,
+                _ => null,
+            },
+            TpWaitInstruction wait => wait switch
+            {
+                TpWaitCondition waitCond => waitCond.TimeoutLabel,
+                _ => null,
+            },
+            TpMixedLogicWaitInstruction wait => wait.TimeoutLabel,
             _ => null
         };
 
