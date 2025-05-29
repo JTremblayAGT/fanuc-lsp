@@ -54,6 +54,7 @@ public sealed class LspServerState(string logFilePath)
 
         // TODO: need to make this a background task (probably with a directory watcher)
         // in order to let the server start faster (maybe later)
+        // TODO: We'll also want to index references to stuff in a worker thread
         AllTextDocuments = FindLsAndKlFiles();
 
         return IsInitialized;
