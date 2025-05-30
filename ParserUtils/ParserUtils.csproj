@@ -10,8 +10,4 @@
     <PackageReference Include="Sprache" Version="3.0.0-develop-00049" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\ParserUtils\ParserUtils.csproj" />
-  </ItemGroup>
-
 </Project>
