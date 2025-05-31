@@ -7,15 +7,16 @@ public sealed record KarelConstant(string Identifier, KarelValue Value) : WithPo
 {
     private static Parser<KarelConstant> InternalParser()
         => from ident in KarelCommon.Identifier
-            from sep in ParserUtils.ParserExtensions.Keyword("=")
-            from val in KarelValue.GetParser()
-            select new KarelConstant(ident, val);
+           from sep in ParserUtils.ParserExtensions.Keyword("=")
+           from val in KarelValue.GetParser()
+           select new KarelConstant(ident, val);
 
-    public new static Parser<KarelConstant> GetParser()
+    public static Parser<KarelConstant> GetParser()
         => InternalParser()
             .WithPosition()
             .Select(result => result.Value with
             {
-                Start = result.Start, End = result.End
+                Start = result.Start,
+                End = result.End
             });
 }

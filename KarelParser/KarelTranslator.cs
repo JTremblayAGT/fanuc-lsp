@@ -9,7 +9,7 @@ public record KarelTranslatorDirective
     protected const char Leader = '%';
 
     protected static Parser<string> Keyword(string keyword)
-        => Parse.Char(Leader).Then(_ => ParserUtils.ParserExtensions.Keyword(keyword));
+        => Parse.Char(Leader).Then(_ => KarelCommon.Keyword(keyword));
 
     private static Parser<KarelTranslatorDirective> InternalParser()
         => KarelAlphabetizeDirective.GetParser()
@@ -39,25 +39,26 @@ public record KarelTranslatorDirective
             .WithPosition()
             .Select(result => result.Value with
             {
-                Start = result.Start, End = result.End
+                Start = result.Start,
+                End = result.End
             });
 }
 
-public sealed record KarelAlphabetizeDirective 
+public sealed record KarelAlphabetizeDirective
     : KarelTranslatorDirective, IKarelParser<KarelTranslatorDirective>
 {
     public new static Parser<KarelTranslatorDirective> GetParser()
         => Keyword("ALPHABETIZE").Return(new KarelAlphabetizeDirective());
 }
 
-public sealed record KarelCmosVarsDirective 
+public sealed record KarelCmosVarsDirective
     : KarelTranslatorDirective, IKarelParser<KarelTranslatorDirective>
 {
     public new static Parser<KarelTranslatorDirective> GetParser()
         => Keyword("CMOSVARS").Return(new KarelCmosVarsDirective());
 }
 
-public sealed record KarelCmosShadowDirective 
+public sealed record KarelCmosShadowDirective
     : KarelTranslatorDirective, IKarelParser<KarelTranslatorDirective>
 {
     public new static Parser<KarelTranslatorDirective> GetParser()
@@ -69,12 +70,12 @@ public sealed record KarelCommentDirective(KarelString Comment)
 {
     public new static Parser<KarelTranslatorDirective> GetParser()
         => from kw in Keyword("COMMENT")
-           from sep in ParserUtils.ParserExtensions.Keyword("=")
+           from sep in KarelCommon.Keyword("=")
            from cmt in KarelString.GetParser()
-           select new KarelCommentDirective(cmt as KarelString);
+           select new KarelCommentDirective((KarelString)cmt);
 }
 
-public sealed record KarelCrtDeviceDirective 
+public sealed record KarelCrtDeviceDirective
     : KarelTranslatorDirective, IKarelParser<KarelTranslatorDirective>
 {
     public new static Parser<KarelTranslatorDirective> GetParser()
@@ -86,12 +87,12 @@ public sealed record KarelDefaultGroupDirective(KarelInteger GroupNumber)
 {
     public new static Parser<KarelTranslatorDirective> GetParser()
         => from kw in Keyword("DEFGROUP")
-           from sep in ParserUtils.ParserExtensions.Keyword("=")
+           from sep in KarelCommon.Keyword("=")
            from num in KarelInteger.GetParser()
-           select new KarelDefaultGroupDirective(num as KarelInteger);
+           select new KarelDefaultGroupDirective((KarelInteger)num);
 }
 
-public sealed record KarelDelayDirective 
+public sealed record KarelDelayDirective
     : KarelTranslatorDirective, IKarelParser<KarelTranslatorDirective>
 {
     public new static Parser<KarelTranslatorDirective> GetParser()
@@ -121,7 +122,7 @@ public sealed record KarelLockGroupDirective(List<KarelInteger> LockedGroups)
 {
     public new static Parser<KarelTranslatorDirective> GetParser()
         => from kw in Keyword("LOCKGROUP")
-           from sep in ParserUtils.ParserExtensions.Keyword("=")
+           from sep in KarelCommon.Keyword("=")
            from groups in KarelInteger.GetParser().DelimitedBy(Parse.Char(','))
            select new KarelLockGroupDirective(groups.OfType<KarelInteger>().ToList());
 }
@@ -131,19 +132,19 @@ public sealed record KarelNoAbortDirective(List<string> Options)
 {
     public new static Parser<KarelTranslatorDirective> GetParser()
         => from kw in Keyword("NOABORT")
-           from sep in ParserUtils.ParserExtensions.Keyword("=")
-           from options in KarelCommon.Identifier.DelimitedBy(Parse.Char(','))
+           from sep in KarelCommon.Keyword("=")
+           from options in KarelCommon.Identifier.DelimitedBy(KarelCommon.Keyword("+"))
            select new KarelNoAbortDirective(options.ToList());
 }
 
-public sealed record KarelNoBusyLampDirective 
+public sealed record KarelNoBusyLampDirective
     : KarelTranslatorDirective, IKarelParser<KarelTranslatorDirective>
 {
     public new static Parser<KarelTranslatorDirective> GetParser()
         => Keyword("NOBUSYLAMP").Return(new KarelNoBusyLampDirective());
 }
 
-public sealed record KarelNoLockGroupDirective 
+public sealed record KarelNoLockGroupDirective
     : KarelTranslatorDirective, IKarelParser<KarelTranslatorDirective>
 {
     public new static Parser<KarelTranslatorDirective> GetParser()
@@ -155,12 +156,12 @@ public sealed record KarelNoPauseDirective(List<string> Options)
 {
     public new static Parser<KarelTranslatorDirective> GetParser()
         => from kw in Keyword("NOPAUSE")
-           from sep in ParserUtils.ParserExtensions.Keyword("=")
-           from options in KarelCommon.Identifier.DelimitedBy(Parse.Char(','))
+           from sep in KarelCommon.Keyword("=")
+           from options in KarelCommon.Identifier.DelimitedBy(KarelCommon.Keyword("+"))
            select new KarelNoPauseDirective(options.ToList());
 }
 
-public sealed record KarelNoPauseShiftDirective 
+public sealed record KarelNoPauseShiftDirective
     : KarelTranslatorDirective, IKarelParser<KarelTranslatorDirective>
 {
     public new static Parser<KarelTranslatorDirective> GetParser()
@@ -172,12 +173,12 @@ public sealed record KarelPriorityDirective(KarelInteger GroupNumber)
 {
     public new static Parser<KarelTranslatorDirective> GetParser()
         => from kw in Keyword("PRIORITY")
-           from sep in ParserUtils.ParserExtensions.Keyword("=")
+           from sep in KarelCommon.Keyword("=")
            from num in KarelInteger.GetParser()
-           select new KarelPriorityDirective(num as KarelInteger);
+           select new KarelPriorityDirective((KarelInteger)num);
 }
 
-public sealed record KarelShadowVarsDirective 
+public sealed record KarelShadowVarsDirective
     : KarelTranslatorDirective, IKarelParser<KarelTranslatorDirective>
 {
     public new static Parser<KarelTranslatorDirective> GetParser()
@@ -189,9 +190,9 @@ public sealed record KarelStackSizeDirective(KarelInteger GroupNumber)
 {
     public new static Parser<KarelTranslatorDirective> GetParser()
         => from kw in Keyword("STACKSIZE")
-           from sep in ParserUtils.ParserExtensions.Keyword("=")
+           from sep in KarelCommon.Keyword("=")
            from num in KarelInteger.GetParser()
-           select new KarelStackSizeDirective(num as KarelInteger);
+           select new KarelStackSizeDirective((KarelInteger)num);
 }
 
 public sealed record KarelTimeSliceDirective(KarelInteger GroupNumber)
@@ -199,19 +200,19 @@ public sealed record KarelTimeSliceDirective(KarelInteger GroupNumber)
 {
     public new static Parser<KarelTranslatorDirective> GetParser()
         => from kw in Keyword("TIMESLICE")
-           from sep in ParserUtils.ParserExtensions.Keyword("=")
+           from sep in KarelCommon.Keyword("=")
            from num in KarelInteger.GetParser()
-           select new KarelTimeSliceDirective(num as KarelInteger);
+           select new KarelTimeSliceDirective((KarelInteger)num);
 }
 
-public sealed record KarelTpMotionDirective 
+public sealed record KarelTpMotionDirective
     : KarelTranslatorDirective, IKarelParser<KarelTranslatorDirective>
 {
     public new static Parser<KarelTranslatorDirective> GetParser()
         => Keyword("TPMOTION").Return(new KarelTpMotionDirective());
 }
 
-public sealed record KarelUninitVarsDirective 
+public sealed record KarelUninitVarsDirective
     : KarelTranslatorDirective, IKarelParser<KarelTranslatorDirective>
 {
     public new static Parser<KarelTranslatorDirective> GetParser()

@@ -16,11 +16,15 @@ public class KarelCommon
             .Token()
             .Then(ident => ident switch
             {
-                { Length: <= 12} => Parse.Return(ident),
+                { Length: <= 12 } => Parse.Return(ident),
                 _ => input => Result.Failure<string>(input,
                     $"Identifier '{ident}' has more than 12 characters.",
                     [])
             });
+
+    public static Parser<string> Keyword(string kw)
+        => ParserUtils.ParserExtensions.Keyword(kw);
+
 }
 
 public record KarelValue : WithPosition, IKarelParser<KarelValue>
@@ -45,10 +49,10 @@ public sealed record KarelInteger(int Value) : KarelValue, IKarelParser<KarelVal
 {
     public new static Parser<KarelValue> GetParser()
         => from negated in ParserUtils.ParserExtensions.Keyword("-").Optional()
-            from num in Parse.Number.Select(int.Parse)
-            select new KarelInteger(negated switch
-            {
-                { IsDefined: true } => -num,
-                _ => num
-            });
+           from num in Parse.Number.Select(int.Parse)
+           select new KarelInteger(negated switch
+           {
+               { IsDefined: true } => -num,
+               _ => num
+           });
 }

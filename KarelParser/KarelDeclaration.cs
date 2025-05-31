@@ -15,15 +15,18 @@ public record KarelDeclaration : WithPosition, IKarelParser<KarelDeclaration>
             .WithPosition()
             .Select(result => result.Value with
             {
-                Start = result.Start, End = result.End
+                Start = result.Start,
+                End = result.End
             });
 }
 
-public sealed record KarelTypeDeclaration(KarelType Type)
+public sealed record KarelTypeDeclaration(List<KarelType> Types)
     : KarelDeclaration, IKarelParser<KarelDeclaration>
 {
     public new static Parser<KarelDeclaration> GetParser()
-        => throw new NotImplementedException();
+        => from kw in ParserUtils.ParserExtensions.Keyword("TYPE")
+           from types in KarelType.GetParser().AtLeastOnce()
+           select new KarelTypeDeclaration(types.ToList());
 }
 
 public sealed record KarelVariableDeclaration(List<KarelVariable> Variable)
@@ -31,8 +34,8 @@ public sealed record KarelVariableDeclaration(List<KarelVariable> Variable)
 {
     public new static Parser<KarelDeclaration> GetParser()
         => from kw in ParserUtils.ParserExtensions.Keyword("VAR")
-            from variables in KarelVariable.GetParser().AtLeastOnce()
-            select new KarelVariableDeclaration(variables.SelectMany(var => var).ToList());
+           from variables in KarelVariable.GetParser().AtLeastOnce()
+           select new KarelVariableDeclaration(variables.SelectMany(var => var).ToList());
 }
 
 public sealed record KarelConstantDeclaration(List<KarelConstant> Constants)
@@ -40,6 +43,6 @@ public sealed record KarelConstantDeclaration(List<KarelConstant> Constants)
 {
     public new static Parser<KarelDeclaration> GetParser()
         => from kw in ParserUtils.ParserExtensions.Keyword("CONST")
-            from constants in KarelConstant.GetParser().AtLeastOnce()
-            select new KarelConstantDeclaration(constants.ToList());
+           from constants in KarelConstant.GetParser().AtLeastOnce()
+           select new KarelConstantDeclaration(constants.ToList());
 }

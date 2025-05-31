@@ -4,7 +4,7 @@ namespace ParserUtils;
 
 public sealed record TokenPosition(int Line, int Column);
 
-public record WithPosition
+public abstract record WithPosition
 {
     public TokenPosition Start = new(0, 0);
     public TokenPosition End = new(0, 0);
@@ -60,8 +60,8 @@ public static class ParserExtensions
 
     public static Parser<(TParsedType Value, TokenPosition Start, TokenPosition End)> WithPosition<TParsedType>(
         this Parser<TParsedType> parser)
-    => parser
-        .WithStartPosition()
-        .WithEndPosition()
-        .Select(obj => (obj.Value.Value, obj.Value.Position, obj.Position));
+        => parser
+            .WithStartPosition()
+            .WithEndPosition()
+            .Select(obj => (obj.Value.Value, obj.Value.Position, obj.Position));
 }
