@@ -45,13 +45,13 @@ public sealed record KarelFromBody(string Program) : KarelBody, IKarelParser<Kar
            select new KarelFromBody(prog.Value) { Start = prog.Start, End = prog.End };
 }
 
-public sealed record KarelRoutineBody(List<KarelDeclaration> Locals, List<KarelInstruction> Body)
+public sealed record KarelRoutineBody(List<KarelDeclaration> Locals, List<KarelStatement> Body)
     : KarelBody, IKarelParser<KarelBody>
 {
     public new static Parser<KarelBody> GetParser()
         => from decls in KarelDeclaration.GetParser().Many()
            from begin in KarelCommon.Keyword("BEGIN")
-           from instructions in KarelInstruction.GetParser().Many()
+           from instructions in KarelStatement.GetParser().Many()
            from end in KarelCommon.Keyword("END").Then(_ => KarelCommon.Identifier)
            select new KarelRoutineBody(decls.ToList(), instructions.ToList());
 }

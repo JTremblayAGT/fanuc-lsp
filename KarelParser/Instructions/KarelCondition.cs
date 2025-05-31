@@ -4,9 +4,9 @@ using Sprache;
 namespace KarelParser.Instructions;
 
 public sealed record KarelCondition(KarelExpression HandlerNumber, KarelWith? With, List<KarelWhen> When)
-    : KarelInstruction, IKarelParser<KarelInstruction>
+    : KarelStatement, IKarelParser<KarelStatement>
 {
-    public new static Parser<KarelInstruction> GetParser()
+    public new static Parser<KarelStatement> GetParser()
         => from kw in KarelCommon.Keyword("CONDITION")
            from handler in KarelExpression.GetParser().BetweenBrackets()
            from sep in KarelCommon.Keyword(":")

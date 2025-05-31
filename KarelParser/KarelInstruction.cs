@@ -3,9 +3,9 @@ using Sprache;
 
 namespace KarelParser;
 
-public record KarelInstruction() : WithPosition, IKarelParser<KarelInstruction>
+public record KarelStatement() : WithPosition, IKarelParser<KarelStatement>
 {
-    public static Parser<KarelInstruction> GetParser()
+    public static Parser<KarelStatement> GetParser()
         => throw new NotImplementedException();
 }
 

@@ -4,7 +4,7 @@ using Sprache;
 namespace KarelParser.Instructions;
 
 public sealed record KarelCall(string Identifier, List<KarelExpression> Args)
-    : KarelInstruction, IKarelParser<KarelInstruction>
+    : KarelStatement, IKarelParser<KarelStatement>
 {
     public new static Parser<KarelCall> GetParser()
         => from kw in KarelCommon.Keyword("CALL")

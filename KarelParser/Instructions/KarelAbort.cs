@@ -3,9 +3,9 @@ using Sprache;
 
 namespace KarelParser.Instructions;
 
-public sealed record KarelAbort(KarelAbortTask? Task) : KarelInstruction, IKarelParser<KarelInstruction>
+public sealed record KarelAbort(KarelAbortTask? Task) : KarelStatement, IKarelParser<KarelStatement>
 {
-    public new static Parser<KarelInstruction> GetParser()
+    public new static Parser<KarelStatement> GetParser()
         => from kw in KarelCommon.Keyword("ABORT")
            from task in KarelAbortTask.GetParser().WithPos().Optional()
            select new KarelAbort(task.GetOrElse(null));

@@ -45,9 +45,9 @@ public class KarelCommon
 
 }
 
-public record KarelLabel(string Name) : KarelInstruction, IKarelParser<KarelInstruction>
+public record KarelLabel(string Name) : KarelStatement, IKarelParser<KarelStatement>
 {
-    public new static Parser<KarelInstruction> GetParser()
+    public new static Parser<KarelStatement> GetParser()
         => from ident in KarelCommon.Identifier
            from kw in KarelCommon.Keyword("::")
            select new KarelLabel(ident);

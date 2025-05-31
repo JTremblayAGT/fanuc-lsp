@@ -2,8 +2,8 @@ using Sprache;
 
 namespace KarelParser.Instructions;
 
-public sealed record KarelAttach : KarelInstruction, IKarelParser<KarelInstruction>
+public sealed record KarelAttach : KarelStatement, IKarelParser<KarelStatement>
 {
-    public new static Parser<KarelInstruction> GetParser()
+    public new static Parser<KarelStatement> GetParser()
         => KarelCommon.Keyword("ATTACH").Return(new KarelAttach());
 }
