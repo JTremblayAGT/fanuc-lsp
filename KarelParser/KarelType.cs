@@ -15,13 +15,7 @@ public sealed record KarelType(string Identifier, KarelUserType Type, string Fro
            select new KarelType(ident, userType, program.GetOrElse(string.Empty));
 
     public static Parser<KarelType> GetParser()
-        => InternalParser()
-            .WithPosition()
-            .Select(result => result.Value with
-            {
-                Start = result.Start,
-                End = result.End
-            });
+        => InternalParser().WithPos();
 }
 
 public record KarelUserType : WithPosition, IKarelParser<KarelUserType>
@@ -31,13 +25,7 @@ public record KarelUserType : WithPosition, IKarelParser<KarelUserType>
             .Or(KarelStructure.GetParser());
 
     public static Parser<KarelUserType> GetParser()
-        => InternalParser()
-            .WithPosition()
-            .Select(result => result.Value with
-            {
-                Start = result.Start,
-                End = result.End
-            });
+        => InternalParser().WithPos();
 }
 
 public record KarelDataType
@@ -51,13 +39,7 @@ public record KarelDataType
             /*.Or(KarelTypePath.GetParser())*/;
 
     public new static Parser<KarelDataType> GetParser()
-        => InternalParser()
-            .WithPosition()
-            .Select(result => result.Value with
-            {
-                Start = result.Start,
-                End = result.End
-            });
+        => InternalParser().WithPos();
 }
 
 public sealed record KarelTypeName(string Identifier)
@@ -114,18 +96,13 @@ public sealed record KarelStructure(string Identifier, List<KarelField> Fields)
         => from ident in KarelCommon.Identifier
            from sep in KarelCommon.Keyword("=")
            from structOpen in KarelCommon.Keyword("STRUCTURE")
-           from fields in KarelField.GetParser().AtLeastOnce()
+           from fields in KarelField.GetParser().DelimitedBy(KarelCommon.LineBreak, 1, null)
+           from brk in KarelCommon.LineBreak
            from structClose in KarelCommon.Keyword("ENDSTRUCTURE")
            select new KarelStructure(ident, fields.ToList());
 
     public new static Parser<KarelUserType> GetParser()
-        => InternalParser()
-            .WithPosition()
-            .Select(result => result.Value with
-            {
-                Start = result.Start,
-                End = result.End
-            });
+        => InternalParser().WithPos();
 }
 
 public record KarelField(string Identifier, KarelDataType Type)
@@ -138,11 +115,5 @@ public record KarelField(string Identifier, KarelDataType Type)
            select new KarelField(ident, (KarelDataType)type);
 
     public static Parser<KarelField> GetParser()
-        => InternalParser()
-            .WithPosition()
-            .Select(result => result.Value with
-            {
-                Start = result.Start,
-                End = result.End
-            });
+        => InternalParser().WithPos();
 }

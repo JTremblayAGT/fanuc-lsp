@@ -4,11 +4,26 @@ using Sprache;
 
 namespace KarelParser;
 
-internal interface IKarelParser<out TParsedType>
+internal interface IKarelParser<TParsedType>
 {
     public static abstract Parser<TParsedType> GetParser();
 }
 
+internal static class KarelParserExtensions
+{
+    public static Parser<TParsedType> WithPos<TParsedType>(this Parser<TParsedType> parser)
+        where TParsedType : WithPosition
+        => parser
+            .WithPosition()
+            .Select(result => result.Value with
+            {
+                Start = result.Start,
+                End = result.End
+            });
+}
+
+// TODO: Comments need to be removed from buffer before parsing.
+// The Doc Comment at the beginning must be parsed before that.
 public class KarelCommon
 {
     public static Parser<string> Identifier
@@ -22,9 +37,20 @@ public class KarelCommon
                     [])
             });
 
+    public static Parser<string> LineBreak
+        => Parse.LineEnd.Token();
+
     public static Parser<string> Keyword(string kw)
         => ParserUtils.ParserExtensions.Keyword(kw);
 
+}
+
+public record KarelLabel(string Name) : KarelInstruction, IKarelParser<KarelInstruction>
+{
+    public new static Parser<KarelInstruction> GetParser()
+        => from ident in KarelCommon.Identifier
+           from kw in KarelCommon.Keyword("::")
+           select new KarelLabel(ident);
 }
 
 public record KarelValue : WithPosition, IKarelParser<KarelValue>
@@ -55,4 +81,33 @@ public sealed record KarelInteger(int Value) : KarelValue, IKarelParser<KarelVal
                { IsDefined: true } => -num,
                _ => num
            });
+}
+
+public sealed record KarelSystemIndentifier : KarelValue, IKarelParser<KarelValue>
+{
+    public new static Parser<KarelValue> GetParser()
+        => throw new NotImplementedException();
+}
+
+// TODO: maybe a value?
+public record KarelVariableAcess() : WithPosition, IKarelParser<KarelVariableAcess>
+{
+    public static Parser<KarelVariableAcess> GetParser()
+        => throw new NotImplementedException();
+}
+
+public sealed record KarelGlobalCondition : WithPosition, IKarelParser<KarelGlobalCondition>
+{
+    public static Parser<KarelGlobalCondition> GetParser()
+    {
+        throw new NotImplementedException();
+    }
+}
+
+public sealed record KarelAction : WithPosition, IKarelParser<KarelAction>
+{
+    public static Parser<KarelAction> GetParser()
+    {
+        throw new NotImplementedException();
+    }
 }

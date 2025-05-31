@@ -11,21 +11,15 @@ public record KarelDeclaration : WithPosition, IKarelParser<KarelDeclaration>
             .Or(KarelConstantDeclaration.GetParser());
 
     public static Parser<KarelDeclaration> GetParser()
-        => InternalParser()
-            .WithPosition()
-            .Select(result => result.Value with
-            {
-                Start = result.Start,
-                End = result.End
-            });
+        => InternalParser().WithPos();
 }
 
-public sealed record KarelTypeDeclaration(List<KarelType> Types)
+public sealed record KarelTypeDeclaration(List<KarelType> Type)
     : KarelDeclaration, IKarelParser<KarelDeclaration>
 {
     public new static Parser<KarelDeclaration> GetParser()
         => from kw in ParserUtils.ParserExtensions.Keyword("TYPE")
-           from types in KarelType.GetParser().AtLeastOnce()
+           from types in KarelType.GetParser().DelimitedBy(KarelCommon.LineBreak, 1, null)
            select new KarelTypeDeclaration(types.ToList());
 }
 
@@ -34,7 +28,7 @@ public sealed record KarelVariableDeclaration(List<KarelVariable> Variable)
 {
     public new static Parser<KarelDeclaration> GetParser()
         => from kw in ParserUtils.ParserExtensions.Keyword("VAR")
-           from variables in KarelVariable.GetParser().AtLeastOnce()
+           from variables in KarelVariable.GetParser().DelimitedBy(KarelCommon.LineBreak, 1, null)
            select new KarelVariableDeclaration(variables.SelectMany(var => var).ToList());
 }
 
@@ -43,6 +37,6 @@ public sealed record KarelConstantDeclaration(List<KarelConstant> Constants)
 {
     public new static Parser<KarelDeclaration> GetParser()
         => from kw in ParserUtils.ParserExtensions.Keyword("CONST")
-           from constants in KarelConstant.GetParser().AtLeastOnce()
+           from constants in KarelConstant.GetParser().DelimitedBy(KarelCommon.LineBreak, 1, null)
            select new KarelConstantDeclaration(constants.ToList());
 }

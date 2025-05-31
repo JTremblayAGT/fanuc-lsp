@@ -12,11 +12,5 @@ public sealed record KarelConstant(string Identifier, KarelValue Value) : WithPo
            select new KarelConstant(ident, val);
 
     public static Parser<KarelConstant> GetParser()
-        => InternalParser()
-            .WithPosition()
-            .Select(result => result.Value with
-            {
-                Start = result.Start,
-                End = result.End
-            });
+        => InternalParser().WithPos();
 }

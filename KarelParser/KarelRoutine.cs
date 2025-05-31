@@ -7,30 +7,53 @@ public sealed record KarelRoutine(
     string Identifier,
     List<KarelArg> Args,
     KarelDataType? ReturnType,
-    List<KarelInstruction> Instructions)
+    KarelBody Body)
     : WithPosition, IKarelParser<KarelRoutine>
 {
     private static Parser<KarelRoutine> InternalParser()
         => from kw in KarelCommon.Keyword("ROUTINE")
            from ident in KarelCommon.Identifier
            from args in KarelArg.GetParser()
-               .Many()
+               .DelimitedBy(KarelCommon.LineBreak)
                .Select(args => args.SelectMany(lst => lst))
-               .BetweenParen()
+               .BetweenParen().Optional()
            from ret in KarelCommon.Keyword(":").Then(_ => KarelDataType.GetParser()).Optional()
+           from body in KarelBody.GetParser().WithPos()
+           select new KarelRoutine(
+               ident,
+               args.GetOrElse([]).ToList(),
+               ret.GetOrElse(null),
+               body
+           );
+
+    public static Parser<KarelRoutine> GetParser()
+        => InternalParser().WithPos();
+}
+
+public record KarelBody : WithPosition, IKarelParser<KarelBody>
+{
+    public static Parser<KarelBody> GetParser()
+        => KarelFromBody.GetParser()
+            .Or(KarelRoutineBody.GetParser());
+}
+
+public sealed record KarelFromBody(string Program) : KarelBody, IKarelParser<KarelBody>
+{
+    public new static Parser<KarelBody> GetParser()
+        => from kw in KarelCommon.Keyword("FROM")
+           from prog in KarelCommon.Identifier.WithPosition()
+           select new KarelFromBody(prog.Value) { Start = prog.Start, End = prog.End };
+}
+
+public sealed record KarelRoutineBody(List<KarelDeclaration> Locals, List<KarelInstruction> Body)
+    : KarelBody, IKarelParser<KarelBody>
+{
+    public new static Parser<KarelBody> GetParser()
+        => from decls in KarelDeclaration.GetParser().Many()
            from begin in KarelCommon.Keyword("BEGIN")
            from instructions in KarelInstruction.GetParser().Many()
            from end in KarelCommon.Keyword("END").Then(_ => KarelCommon.Identifier)
-           select new KarelRoutine(ident, args.ToList(), ret.GetOrElse(null), instructions.ToList());
-
-    public static Parser<KarelRoutine> GetParser()
-        => InternalParser()
-            .WithPosition()
-            .Select(result => result.Value with
-            {
-                Start = result.Start,
-                End = result.End
-            });
+           select new KarelRoutineBody(decls.ToList(), instructions.ToList());
 }
 
 public sealed record KarelArg(string Identifier, KarelDataType Type)
