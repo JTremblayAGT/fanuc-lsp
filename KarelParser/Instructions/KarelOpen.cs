@@ -25,3 +25,11 @@ public sealed record KarelOpenHand(KarelExpression Hand) : KarelStatement, IKare
            select new KarelOpenHand(hand);
 }
 
+public sealed record KarelRelaxHand(KarelExpression Hand) : KarelStatement, IKarelParser<KarelStatement>
+{
+    public new static Parser<KarelStatement> GetParser()
+        => from kw in KarelCommon.Keyword("RELAX")
+           from kww in KarelCommon.Keyword("HAND")
+           from hand in KarelExpression.GetParser().WithPos()
+           select new KarelRelaxHand(hand);
+}

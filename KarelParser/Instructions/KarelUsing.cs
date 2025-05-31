@@ -1,0 +1,16 @@
+using Sprache;
+
+namespace KarelParser.Instructions;
+
+public sealed record KarelUsing(List<KarelVariableAcess> Variables, List<KarelStatement> Body)
+    : KarelStatement, IKarelParser<KarelStatement>
+{
+    public new static Parser<KarelStatement> GetParser()
+        => from kw in KarelCommon.Keyword("USING")
+           from vars in KarelVariableAcess.GetParser().DelimitedBy(KarelCommon.Keyword(","), 1, null)
+           from kww in KarelCommon.Keyword("DO")
+           from body in Parse.Ref(() => KarelStatement.GetParser()).Many()
+           from brk in KarelCommon.LineBreak
+           from kwww in KarelCommon.Keyword("ENDUSING")
+           select new KarelUsing(vars.ToList(), body.ToList());
+}
