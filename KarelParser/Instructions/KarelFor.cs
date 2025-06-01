@@ -23,7 +23,7 @@ public sealed record KarelFor(
         List<KarelStatement> Body)
     : KarelStatement, IKarelParser<KarelStatement>
 {
-    public new Parser<KarelStatement> GetParser()
+    public new static Parser<KarelStatement> GetParser()
         => from kw in KarelCommon.Keyword("FOR")
            from ident in KarelCommon.Identifier
            from sep in KarelCommon.Keyword("=")
@@ -40,7 +40,7 @@ public sealed record KarelFor(
 public sealed record KarelRepeat(List<KarelStatement> Body, KarelExpression Expr)
     : KarelStatement, IKarelParser<KarelStatement>
 {
-    public new Parser<KarelStatement> GetParser()
+    public new static Parser<KarelStatement> GetParser()
         => from kw in KarelCommon.Keyword("REPEAT")
            from body in Parse.Ref(() => KarelStatement.GetParser()).Many()
            from brk in KarelCommon.LineBreak

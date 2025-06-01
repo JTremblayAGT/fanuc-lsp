@@ -42,6 +42,27 @@ public class KarelCommon
 
     public static Parser<string> Keyword(string kw)
         => ParserUtils.ParserExtensions.Keyword(kw);
+}
+
+public enum KarelComparisonOperator
+{
+    Equal,    // =
+    NotEqual, // <>
+    Lesser,   // <
+    LesserEq, // <=
+    Greater,  // >
+    GreaterEq // >=
+}
+
+public struct KarelComparisonOperatorParser
+{
+    public static Parser<KarelComparisonOperator> Parser()
+        => KarelCommon.Keyword("=").Return(KarelComparisonOperator.Equal)
+            .Or(KarelCommon.Keyword("<>").Return(KarelComparisonOperator.NotEqual))
+            .Or(KarelCommon.Keyword("<=").Return(KarelComparisonOperator.LesserEq))
+            .Or(KarelCommon.Keyword(">=").Return(KarelComparisonOperator.GreaterEq))
+            .Or(KarelCommon.Keyword("<").Return(KarelComparisonOperator.Lesser))
+            .Or(KarelCommon.Keyword(">").Return(KarelComparisonOperator.Greater));
 
 }
 
@@ -96,18 +117,3 @@ public record KarelVariableAcess() : WithPosition, IKarelParser<KarelVariableAce
         => throw new NotImplementedException();
 }
 
-public sealed record KarelGlobalCondition : WithPosition, IKarelParser<KarelGlobalCondition>
-{
-    public static Parser<KarelGlobalCondition> GetParser()
-    {
-        throw new NotImplementedException();
-    }
-}
-
-public sealed record KarelAction : WithPosition, IKarelParser<KarelAction>
-{
-    public static Parser<KarelAction> GetParser()
-    {
-        throw new NotImplementedException();
-    }
-}
