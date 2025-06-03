@@ -51,7 +51,8 @@ public enum KarelComparisonOperator
     Lesser,   // <
     LesserEq, // <=
     Greater,  // >
-    GreaterEq // >=
+    GreaterEq, // >=
+    PosApprox // >=< ???
 }
 
 public struct KarelComparisonOperatorParser
@@ -63,7 +64,28 @@ public struct KarelComparisonOperatorParser
             .Or(KarelCommon.Keyword(">=").Return(KarelComparisonOperator.GreaterEq))
             .Or(KarelCommon.Keyword("<").Return(KarelComparisonOperator.Lesser))
             .Or(KarelCommon.Keyword(">").Return(KarelComparisonOperator.Greater));
+}
 
+public struct KarelSumOperatorParser
+{
+    public static Parser<KarelComparisonOperator> Parser()
+        => KarelCommon.Keyword(">=<").Return(KarelComparisonOperator.PosApprox)
+            .Or(KarelComparisonOperatorParser.Parser());
+}
+
+public enum KarelPositionOperator
+{
+    Relative, // :
+    DotProd, // @
+    CrossProd, // #
+}
+
+public struct KarelPositionOperatorParser
+{
+    public static Parser<KarelPositionOperator> Parser()
+        => KarelCommon.Keyword(":").Return(KarelPositionOperator.Relative)
+        .Or(KarelCommon.Keyword("@").Return(KarelPositionOperator.DotProd))
+        .Or(KarelCommon.Keyword("#").Return(KarelPositionOperator.CrossProd));
 }
 
 public record KarelLabel(string Name) : KarelStatement, IKarelParser<KarelStatement>
@@ -74,46 +96,4 @@ public record KarelLabel(string Name) : KarelStatement, IKarelParser<KarelStatem
            select new KarelLabel(ident);
 }
 
-public record KarelValue : WithPosition, IKarelParser<KarelValue>
-{
-    public static Parser<KarelValue> GetParser()
-        => KarelString.GetParser()
-            .Or(KarelInteger.GetParser());
-}
-
-public sealed record KarelString(string Value) : KarelValue, IKarelParser<KarelValue>
-{
-    public new static Parser<KarelValue> GetParser()
-        => Parse.AnyChar.Many()
-            .Contained(Parse.Char('\''), Parse.Char('\''))
-            .Text()
-            .Token()
-            .WithPosition()
-            .Select(res => new KarelString(res.Value) { Start = res.Start, End = res.End });
-}
-
-public sealed record KarelInteger(int Value) : KarelValue, IKarelParser<KarelValue>
-{
-    public new static Parser<KarelValue> GetParser()
-        => from negated in ParserUtils.ParserExtensions.Keyword("-").Optional()
-           from num in Parse.Number.Select(int.Parse)
-           select new KarelInteger(negated switch
-           {
-               { IsDefined: true } => -num,
-               _ => num
-           });
-}
-
-public sealed record KarelSystemIndentifier : KarelValue, IKarelParser<KarelValue>
-{
-    public new static Parser<KarelValue> GetParser()
-        => throw new NotImplementedException();
-}
-
-// TODO: maybe a value?
-public record KarelVariableAcess() : WithPosition, IKarelParser<KarelVariableAcess>
-{
-    public static Parser<KarelVariableAcess> GetParser()
-        => throw new NotImplementedException();
-}
 

@@ -51,8 +51,8 @@ internal sealed class TpLabelDefinitionProvider : IDefinitionProvider
         }
 
         var target = program.Main.Instructions
-            .Where(instr => instr is TpLabelDefinitionInstruction)
-            .Select(instr => (instr as TpLabelDefinitionInstruction)!.Label)
+            .OfType<TpLabelDefinitionInstruction>()
+            .Select(instr => instr.Label)
             .FirstOrDefault(lb => lb.LabelNumber is TpAccessDirect direct
                     && direct.Number == lblNum.Number);
 

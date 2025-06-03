@@ -53,3 +53,87 @@ public abstract record KarelExpression() : WithPosition, IKarelParser<KarelExpre
         => throw new NotImplementedException();
 }
 
+public record KarelSumExpression(
+        KarelExpression Lhs,
+        KarelComparisonOperator Op,
+        KarelExpression Rhs)
+    : KarelExpression, IKarelParser<KarelExpression>
+{
+    public new static Parser<KarelExpression> GetParser()
+        => throw new NotImplementedException();
+}
+
+public abstract record KarelFactorExpression : KarelExpression, IKarelParser<KarelExpression>
+{
+    public new static Parser<KarelExpression> GetParser()
+        => KarelNotExpression.GetParser();
+}
+
+public sealed record KarelNotExpression(KarelPrimaryExpression Expr)
+    : KarelFactorExpression, IKarelParser<KarelFactorExpression>
+{
+    public new static Parser<KarelFactorExpression> GetParser()
+        => from kw in KarelCommon.Keyword("NOT")
+           from expr in KarelPrimaryExpression.GetParser()
+           select new KarelNotExpression((KarelPrimaryExpression)expr);
+}
+
+public abstract record KarelPrimaryExpression : KarelExpression, IKarelParser<KarelExpression>
+{
+    public new static Parser<KarelExpression> GetParser()
+        => KarelFunctionCall.GetParser()
+            .Or(KarelValue.GetParser())
+            .Or(Parse.Ref(() => KarelExpression.GetParser())
+                    .BetweenParen()).WithPos();
+}
+
+public sealed record KarelFunctionCall(string Identifier, List<KarelExpression> Args)
+    : KarelPrimaryExpression, IKarelParser<KarelPrimaryExpression>
+{
+    public new static Parser<KarelPrimaryExpression> GetParser()
+        => from ident in KarelCommon.Identifier.WithPosition()
+           from args in Parse.Ref(() => KarelExpression.GetParser())
+                        .DelimitedBy(KarelCommon.Keyword(","), 1, null)
+           select new KarelFunctionCall(ident.Value, args.ToList())
+           {
+               Start = ident.Start,
+               End = ident.End
+           };
+}
+
+public abstract record KarelValue : KarelPrimaryExpression, IKarelParser<KarelPrimaryExpression>
+{
+    public new static Parser<KarelPrimaryExpression> GetParser()
+        => KarelString.GetParser()
+            .Or(KarelInteger.GetParser())
+            .Or(KarelVariableAcess.GetParser());
+}
+
+public sealed record KarelString(string Value) : KarelValue, IKarelParser<KarelValue>
+{
+    public new static Parser<KarelValue> GetParser()
+        => Parse.AnyChar.Many()
+            .Contained(Parse.Char('\''), Parse.Char('\''))
+            .Text()
+            .Token()
+            .WithPosition()
+            .Select(res => new KarelString(res.Value) { Start = res.Start, End = res.End });
+}
+
+public sealed record KarelInteger(int Value) : KarelValue, IKarelParser<KarelValue>
+{
+    public new static Parser<KarelValue> GetParser()
+        => from negated in ParserUtils.ParserExtensions.Keyword("-").Optional()
+           from num in Parse.Number.Select(int.Parse)
+           select new KarelInteger(negated switch
+           {
+               { IsDefined: true } => -num,
+               _ => num
+           });
+}
+
+public sealed record KarelSystemIndentifier : KarelValue, IKarelParser<KarelValue>
+{
+    public new static Parser<KarelValue> GetParser()
+        => throw new NotImplementedException();
+}
