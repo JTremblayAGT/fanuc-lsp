@@ -84,8 +84,8 @@ public struct KarelPositionOperatorParser
 {
     public static Parser<KarelPositionOperator> Parser()
         => KarelCommon.Keyword(":").Return(KarelPositionOperator.Relative)
-        .Or(KarelCommon.Keyword("@").Return(KarelPositionOperator.DotProd))
-        .Or(KarelCommon.Keyword("#").Return(KarelPositionOperator.CrossProd));
+            .Or(KarelCommon.Keyword("@").Return(KarelPositionOperator.DotProd))
+            .Or(KarelCommon.Keyword("#").Return(KarelPositionOperator.CrossProd));
 }
 
 public record KarelLabel(string Name) : KarelStatement, IKarelParser<KarelStatement>
