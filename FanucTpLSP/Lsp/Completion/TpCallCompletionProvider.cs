@@ -6,7 +6,6 @@ namespace FanucTpLsp.Lsp.Completion;
 
 internal sealed class TpCallCompletionProvider : ICompletionProvider
 {
-    private const string HeaderCommentDelimiter = "********************************";
 
     public CompletionItem[] GetCompletions(TpProgram program, string lineText, int column, LspServerState serverState)
         => CompletionProviderUtils.TokenizeInput(lineText[..column]) switch
@@ -22,34 +21,15 @@ internal sealed class TpCallCompletionProvider : ICompletionProvider
             Detail = $"Type:  {kvp.Value.Type}\n"
                    + $"Usage: {Path.GetFileNameWithoutExtension(kvp.Value.TextDocument.Uri).ToUpper()}{ExtractArgs(kvp.Value.Program, MakeArgsDetail)}\n"
                    + $"Uri:   {kvp.Value.TextDocument.Uri}",
-            Documentation = ExtractDocComment(kvp.Value.Program),
+            Documentation = LspUtils.ExtractDocComment(kvp.Value.Program),
             InsertText = $"{Path.GetFileNameWithoutExtension(kvp.Value.TextDocument.Uri).ToUpper()}{ExtractArgs(kvp.Value.Program, MakeArgsSnippet)}",
             InsertTextFormat = InsertTextFormat.Snippet,
             Kind = CompletionItemKind.Function
         }).ToArray();
 
-    // This is actually already pretty good at extracting arguments
-    private static string ExtractDocComment(TpProgram? program)
-        => program switch
-        {
-            not null => program.Main.Instructions
-                 .TakeWhile(instr => instr is TpInstructionComment)
-                 .Select(instr => (instr as TpInstructionComment)!.Comment)
-                 .ToList() switch
-            {
-                { Count: > 4 } headerComment =>
-                    headerComment.RemoveAll(cmt => cmt.StartsWith(HeaderCommentDelimiter)) switch
-                    {
-                        4 => headerComment.Aggregate((acc, cmt) => acc + "\n" + cmt).Replace("[", "\\[").Replace("]", "\\]"),
-                        _ => string.Empty
-                    },
-                _ => string.Empty
-            },
-            _ => string.Empty
-        };
 
     private string ExtractArgs(TpProgram? program, Func<int, string> fn)
-        => ExtractDocComment(program) switch
+        => LspUtils.ExtractDocComment(program) switch
         {
             { } comment when !string.IsNullOrWhiteSpace(comment) =>
                 comment.Split('\n').Where(cmt => cmt.TrimStart().StartsWith("AR\\[")).ToList() switch

@@ -45,7 +45,8 @@ public sealed class LspServerState(string logFilePath)
 
     private static readonly List<IHoverProvider> HoverProviders =
     [
-        new TpLabelHoverProvider()
+        new TpLabelHoverProvider(),
+        new CallHoverProvider(),
     ];
 
     public bool Initialize()
@@ -181,16 +182,12 @@ public sealed class LspServerState(string logFilePath)
         if (OpenedTextDocuments.TryGetValue(uri, out var documentState))
         {
             return HoverProviders
-                .Select(provider => provider.GetHoverResult(documentState.Program!, position))
+                .Select(provider => provider.GetHoverResult(documentState.Program!, position, this))
                 .FirstOrDefault(res => res is not null);
         }
 
         LogMessage($"[TextDocumentDidHover]: Document not opened: {uri}");
         return null;
-
-        // TODO: Hovering a program name will pull the comment at the beginning of the /MN section
-        // TODO: (Much later) Gets the value stored in the register through SNPX
-
     }
 
     public IResult<TpProgram> UpdateParsedProgram(string uri)

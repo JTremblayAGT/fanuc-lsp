@@ -174,9 +174,9 @@ public sealed record KarelFunctionCall(string Identifier, List<KarelExpression> 
            };
 }
 
-public abstract record KarelValue : KarelPrimaryExpression, IKarelParser<KarelPrimaryExpression>
+public abstract record KarelValue : KarelPrimaryExpression, IKarelParser<KarelValue>
 {
-    public new static Parser<KarelPrimaryExpression> GetParser()
+    public new static Parser<KarelValue> GetParser()
         => KarelString.GetParser()
             .Or(KarelInteger.GetParser())
             .Or(KarelVariableAcess.GetParser());

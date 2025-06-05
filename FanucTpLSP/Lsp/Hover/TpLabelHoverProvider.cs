@@ -1,3 +1,4 @@
+using FanucTpLsp.Lsp.State;
 using TPLangParser.TPLang;
 using TPLangParser.TPLang.Instructions;
 
@@ -5,7 +6,7 @@ namespace FanucTpLsp.Lsp.Hover;
 
 internal sealed class TpLabelHoverProvider : IHoverProvider
 {
-    public HoverResult? GetHoverResult(TpProgram program, ContentPosition position)
+    public HoverResult? GetHoverResult(TpProgram program, ContentPosition position, LspServerState lspServerState)
     {
         var instruction = program.Main.Instructions.Find(instr => instr.LineNumber - 1 == position.Line);
         if (instruction == null)
