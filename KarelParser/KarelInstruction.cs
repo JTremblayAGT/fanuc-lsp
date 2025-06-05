@@ -204,9 +204,3 @@ public sealed record KarelInteger(int Value) : KarelValue, IKarelParser<KarelVal
                _ => num
            });
 }
-
-public sealed record KarelSystemIndentifier : KarelValue, IKarelParser<KarelValue>
-{
-    public new static Parser<KarelValue> GetParser()
-        => throw new NotImplementedException();
-}

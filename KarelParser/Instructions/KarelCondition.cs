@@ -27,14 +27,18 @@ public sealed record KarelWith(List<KarelWithAssignment> Assignments) : WithPosi
            select new KarelWith(assignments.ToList());
 }
 
-public sealed record KarelWithAssignment(KarelSystemIndentifier Indentifier, KarelExpression Expr)
+public sealed record KarelWithAssignment(string Indentifier, KarelExpression Expr)
     : WithPosition, IKarelParser<KarelWithAssignment>
 {
     public static Parser<KarelWithAssignment> GetParser()
-        => from sysIdent in KarelSystemIndentifier.GetParser().WithPos()
+        => from sysIdent in KarelCommon.Identifier.WithPosition()
            from sep in KarelCommon.Keyword("=")
            from expr in KarelExpression.GetParser()
-           select new KarelWithAssignment((KarelSystemIndentifier)sysIdent, expr);
+           select new KarelWithAssignment(sysIdent.Value, expr)
+           {
+               Start = sysIdent.Start,
+               End = sysIdent.End
+           };
 }
 
 public record KarelWhen(KarelWhenCondition Condition, List<KarelAction> Actions) : WithPosition, IKarelParser<KarelWhen>
