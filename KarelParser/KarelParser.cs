@@ -66,7 +66,7 @@ public struct KarelComparisonOperatorParser
             .Or(KarelCommon.Keyword(">").Return(KarelComparisonOperator.Greater));
 }
 
-public struct KarelSumOperatorParser
+public struct KarelExprOperatorParser
 {
     public static Parser<KarelComparisonOperator> Parser()
         => KarelCommon.Keyword(">=<").Return(KarelComparisonOperator.PosApprox)
@@ -75,8 +75,8 @@ public struct KarelSumOperatorParser
 
 public enum KarelPositionOperator
 {
-    Relative, // :
-    DotProd, // @
+    Relative,  // :
+    DotProd,   // @
     CrossProd, // #
 }
 
@@ -86,6 +86,40 @@ public struct KarelPositionOperatorParser
         => KarelCommon.Keyword(":").Return(KarelPositionOperator.Relative)
             .Or(KarelCommon.Keyword("@").Return(KarelPositionOperator.DotProd))
             .Or(KarelCommon.Keyword("#").Return(KarelPositionOperator.CrossProd));
+}
+
+public enum KarelProductOperator
+{
+    Times, // *
+    Slash, // /
+    And,   // AND
+    Div,   // DIV
+    Mod    // MOD
+}
+
+public struct KarelProductOperatorParser
+{
+    public static Parser<KarelProductOperator> Parser()
+        => KarelCommon.Keyword("*").Return(KarelProductOperator.Times)
+            .Or(KarelCommon.Keyword("/").Return(KarelProductOperator.Slash))
+            .Or(KarelCommon.Keyword("AND").Return(KarelProductOperator.And))
+            .Or(KarelCommon.Keyword("DIV").Return(KarelProductOperator.Div))
+            .Or(KarelCommon.Keyword("MOD").Return(KarelProductOperator.Mod));
+}
+
+public enum KarelSumOperator
+{
+    Plus,   // +
+    Minus,  // -
+    Or      // OR
+}
+
+public struct KarelSumOperatorParser
+{
+    public static Parser<KarelSumOperator> Parser()
+        => KarelCommon.Keyword("+").Return(KarelSumOperator.Plus)
+            .Or(KarelCommon.Keyword("-").Return(KarelSumOperator.Minus))
+            .Or(KarelCommon.Keyword("OR").Return(KarelSumOperator.Or));
 }
 
 public record KarelLabel(string Name) : KarelStatement, IKarelParser<KarelStatement>

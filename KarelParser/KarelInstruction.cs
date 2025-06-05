@@ -46,27 +46,84 @@ public abstract record KarelStatement() : WithPosition, IKarelParser<KarelStatem
             .Or(KarelWrite.GetParser());
 }
 
+/*
+ * Expression
+ */
 public abstract record KarelExpression() : WithPosition, IKarelParser<KarelExpression>
 {
     public static Parser<KarelExpression> GetParser()
-        // TODO:
-        => throw new NotImplementedException();
+        => KarelComparisonExpression.GetParser()
+            .Or(KarelSumExpression.GetParser());
 }
 
-public record KarelSumExpression(
-        KarelExpression Lhs,
+public sealed record KarelComparisonExpression(
+        KarelSumExpression Lhs,
         KarelComparisonOperator Op,
-        KarelExpression Rhs)
+        KarelSumExpression Rhs)
     : KarelExpression, IKarelParser<KarelExpression>
 {
     public new static Parser<KarelExpression> GetParser()
-        => throw new NotImplementedException();
+        => from lhs in KarelSumExpression.GetParser()
+           from op in KarelComparisonOperatorParser.Parser()
+           from rhs in KarelSumExpression.GetParser()
+           select new KarelComparisonExpression((KarelSumExpression)lhs, op, (KarelSumExpression)rhs);
 }
 
+/*
+ * Sum
+ */
+public abstract record KarelSumExpression : KarelExpression, IKarelParser<KarelExpression>
+{
+    public new static Parser<KarelExpression> GetParser()
+        => KarelSumBinary.GetParser()
+            .Or(KarelProductExpression.GetParser());
+}
+
+public sealed record KarelSumBinary(
+        KarelSumExpression Lhs,
+        KarelSumOperator Op,
+        KarelProductExpression Rhs)
+    : KarelSumExpression, IKarelParser<KarelSumExpression>
+{
+    public new static Parser<KarelSumExpression> GetParser()
+        => from lhs in Parse.Ref(() => KarelSumExpression.GetParser())
+           from op in KarelSumOperatorParser.Parser()
+           from rhs in KarelProductExpression.GetParser()
+           select new KarelSumBinary((KarelSumExpression)lhs, op, (KarelProductExpression)rhs);
+}
+
+/*
+ * Product
+ */
+public abstract record KarelProductExpression : KarelExpression, IKarelParser<KarelExpression>
+{
+    public new static Parser<KarelExpression> GetParser()
+        => KarelProductBinary.GetParser()
+            .Or(KarelFactorExpression.GetParser());
+}
+
+public sealed record KarelProductBinary(
+        KarelProductExpression Lhs,
+        KarelProductOperator Op,
+        KarelFactorExpression Rhs)
+    : KarelProductExpression, IKarelParser<KarelProductExpression>
+{
+    public new static Parser<KarelProductExpression> GetParser()
+        => from lhs in Parse.Ref(() => KarelProductExpression.GetParser())
+           from op in KarelProductOperatorParser.Parser()
+           from rhs in KarelFactorExpression.GetParser()
+           select new KarelProductBinary((KarelProductExpression)lhs, op, (KarelFactorExpression)rhs);
+}
+
+/*
+ * Factor
+ */
 public abstract record KarelFactorExpression : KarelExpression, IKarelParser<KarelExpression>
 {
     public new static Parser<KarelExpression> GetParser()
-        => KarelNotExpression.GetParser();
+        => KarelNotExpression.GetParser()
+            .Or(KarelPositionBinary.GetParser())
+            .Or(KarelPrimaryExpression.GetParser());
 }
 
 public sealed record KarelNotExpression(KarelPrimaryExpression Expr)
@@ -78,6 +135,22 @@ public sealed record KarelNotExpression(KarelPrimaryExpression Expr)
            select new KarelNotExpression((KarelPrimaryExpression)expr);
 }
 
+public sealed record KarelPositionBinary(
+        KarelFactorExpression Lhs,
+        KarelPositionOperator Operator,
+        KarelPrimaryExpression Rhs)
+    : KarelFactorExpression, IKarelParser<KarelFactorExpression>
+{
+    public new static Parser<KarelFactorExpression> GetParser()
+        => from lhs in Parse.Ref(() => KarelFactorExpression.GetParser())
+           from op in KarelPositionOperatorParser.Parser()
+           from rhs in KarelPrimaryExpression.GetParser()
+           select new KarelPositionBinary((KarelFactorExpression)lhs, op, (KarelPrimaryExpression)rhs);
+}
+
+/*
+ * Primary
+ */
 public abstract record KarelPrimaryExpression : KarelExpression, IKarelParser<KarelExpression>
 {
     public new static Parser<KarelExpression> GetParser()
