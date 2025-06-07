@@ -11,16 +11,29 @@ internal sealed class CallHoverProvider : IHoverProvider
         {
             TpCallInstruction callInstruction => callInstruction.CallMethod switch
             {
-                TpCallByName byName => position.Character switch
+                TpCallByName byName => GetHoverFromCall(byName, position, serverState),
+                _ => null
+            },
+            TpIfInstruction ifInstr => ifInstr.Action switch
+            {
+                TpCallInstruction callInstruction => callInstruction.CallMethod switch
                 {
-                    { } ch when ch >= byName.Start.Column && ch <= byName.End.Column
-                        => MakeHoverResult(byName.ProgramName, byName.Start, byName.End, serverState),
+                    TpCallByName byName => GetHoverFromCall(byName, position, serverState),
                     _ => null
-                }, // TODO:
+                },
                 _ => null
             },
             _ => null,
         };
+
+    private HoverResult? GetHoverFromCall(TpCallByName byName, ContentPosition position, LspServerState serverState)
+        => position.Character switch
+        {
+            { } ch when ch >= byName.Start.Column && ch <= byName.End.Column
+                => MakeHoverResult(byName.ProgramName, byName.Start, byName.End, serverState),
+            _ => null
+        };
+
 
     private HoverResult? MakeHoverResult(
             string programName,

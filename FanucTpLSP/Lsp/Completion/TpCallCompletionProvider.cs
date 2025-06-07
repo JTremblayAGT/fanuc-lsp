@@ -51,7 +51,6 @@ internal sealed class TpCallCompletionProvider : ICompletionProvider
         for (var ctr = 1; ctr < count; ++ctr)
         {
             ret += $"arg{ctr},";
-
         }
         ret += $"arg{count})";
         return ret;
@@ -68,7 +67,6 @@ internal sealed class TpCallCompletionProvider : ICompletionProvider
         for (var ctr = 1; ctr < count; ++ctr)
         {
             ret += $"${{{ctr}:arg{ctr}}},";
-
         }
         ret += $"${{{count}:arg{count}}})";
         return ret;
