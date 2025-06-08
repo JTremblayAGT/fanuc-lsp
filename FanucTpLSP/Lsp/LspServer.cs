@@ -288,8 +288,6 @@ public class LspServer(string logFilePath)
             { WasSuccessful: true } => null,
         };
 
-
-
     private void LogMessage(string message)
     {
         try

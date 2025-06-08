@@ -1,4 +1,5 @@
 using TPLangParser.TPLang;
+using KarelParser;
 using FanucTpLsp.Lsp.Completion;
 using FanucTpLsp.Lsp.Definition;
 using FanucTpLsp.Lsp.Hover;
@@ -13,12 +14,17 @@ public enum DocumentType
     Karel
 }
 
+public abstract record Program;
+
+public sealed record TppProgram(TpProgram Program) : Program;
+public sealed record KlProgram(KarelProgram Program) : Program;
+
 public sealed record TextDocumentState
 (
     TextDocumentItem TextDocument,
     ContentPosition LastEditPosition,
     DocumentType Type,
-    TpProgram? Program
+    Program? Program
 );
 
 public sealed class LspServerState(string logFilePath)
@@ -64,7 +70,7 @@ public sealed class LspServerState(string logFilePath)
     public IResult<TpProgram> OnTpDocumentOpen(TextDocumentItem document)
     {
         OpenedTextDocuments.Add(document.Uri,
-            new(document, new(), DocumentType.Tp, default(TpProgram)));
+            new(document, new(), DocumentType.Tp, default(Program)));
 
         return UpdateParsedProgram(document.Uri);
     }
@@ -72,7 +78,7 @@ public sealed class LspServerState(string logFilePath)
     public Diagnostic[] OnKarelDocumentOpen(TextDocumentItem document)
     {
         OpenedTextDocuments.Add(document.Uri,
-            new(document, new(), DocumentType.Karel, default(TpProgram)));
+            new(document, new(), DocumentType.Karel, default(Program)));
 
         return [];
     }
@@ -133,6 +139,12 @@ public sealed class LspServerState(string logFilePath)
             return [];
         }
 
+        if (documentState.Program is not TppProgram prog)
+        {
+            // TODO: support Karel
+            return [];
+        }
+
         // Get the document content
         var document = documentState.TextDocument;
         var lastEdit = documentState.LastEditPosition;
@@ -157,7 +169,7 @@ public sealed class LspServerState(string logFilePath)
 
         return CompletionProviders.Aggregate(
             new CompletionItem[] { }, (accumulator, completionProvider)
-                => accumulator.Concat(completionProvider.GetCompletions(documentState.Program!, currentLine, character, this))
+                => accumulator.Concat(completionProvider.GetCompletions(prog.Program!, currentLine, character, this))
                     .ToArray()
         );
     }
@@ -166,9 +178,14 @@ public sealed class LspServerState(string logFilePath)
     {
         if (OpenedTextDocuments.TryGetValue(uri, out var documentState))
         {
+            if (documentState.Program is not TppProgram prog)
+            {
+                // TODO: support Karel
+                return null;
+            }
             return DefinitionProviders
                 .Select(provider
-                    => provider.GetDefinitionLocation(documentState.Program!, position, documentState.TextDocument, this))
+                    => provider.GetDefinitionLocation(prog.Program!, position, documentState.TextDocument, this))
                 .FirstOrDefault(res => res is not null);
         }
 
@@ -181,8 +198,14 @@ public sealed class LspServerState(string logFilePath)
     {
         if (OpenedTextDocuments.TryGetValue(uri, out var documentState))
         {
+            if (documentState.Program is not TppProgram prog)
+            {
+                // TODO: support Karel
+                return null;
+            }
+
             return HoverProviders
-                .Select(provider => provider.GetHoverResult(documentState.Program!, position, this))
+                .Select(provider => provider.GetHoverResult(prog.Program!, position, this))
                 .FirstOrDefault(res => res is not null);
         }
 
@@ -190,6 +213,7 @@ public sealed class LspServerState(string logFilePath)
         return null;
     }
 
+    // TODO: need to refactor this to handle both program types
     public IResult<TpProgram> UpdateParsedProgram(string uri)
         => UpdateParsedProgram(OpenedTextDocuments[uri]);
 
@@ -205,7 +229,7 @@ public sealed class LspServerState(string logFilePath)
         var result = TpProgram.GetParser().TryParse(document.Text);
         OpenedTextDocuments[document.Uri] = documentState with
         {
-            Program = result.WasSuccessful ? result.Value : documentState.Program
+            Program = result.WasSuccessful ? new TppProgram(result.Value) : documentState.Program
         };
         return result;
     }
@@ -262,8 +286,11 @@ public sealed class LspServerState(string logFilePath)
         };
     }
 
-    private T? ValueOr<T>(IResult<T> result, T? or)
-        => result.WasSuccessful ? result.Value : or;
+    private TppProgram? TppValueOr(IResult<TpProgram> result)
+        => result.WasSuccessful ? new TppProgram(result.Value) : null;
+
+    private KlProgram? KarelValueOr(IResult<KarelProgram> result)
+        => result.WasSuccessful ? new KlProgram(result.Value) : null;
 
     private Dictionary<string, TextDocumentState> FindLsAndKlFiles()
     {
@@ -288,7 +315,7 @@ public sealed class LspServerState(string logFilePath)
                     LanguageId = "tp",
                     Version = 0,
                     Text = text
-                }, new(), DocumentType.Tp, ValueOr(TpProgram.GetParser().TryParse(text), null)));
+                }, new(), DocumentType.Tp, TppValueOr(TpProgram.GetParser().TryParse(text))));
             }
             foreach (var path in klFiles)
             {
@@ -299,7 +326,7 @@ public sealed class LspServerState(string logFilePath)
                     LanguageId = "karel",
                     Version = 0,
                     Text = text
-                }, new(), DocumentType.Karel, null));
+                }, new(), DocumentType.Karel, KarelValueOr(KarelProgram.GetParser().TryParse(text))));
             }
 
             return dict;

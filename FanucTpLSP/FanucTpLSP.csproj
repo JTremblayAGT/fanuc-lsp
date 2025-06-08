@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\KarelParser\KarelParser.csproj" />
     <ProjectReference Include="..\TPLangParser\TPLangParser.csproj" />
   </ItemGroup>
 
