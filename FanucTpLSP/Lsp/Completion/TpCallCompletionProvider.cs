@@ -28,7 +28,7 @@ internal sealed class TpCallCompletionProvider : ICompletionProvider
         }).ToArray();
 
 
-    private string ExtractArgs(TpProgram? program, Func<int, string> fn)
+    private string ExtractArgs(RobotProgram? program, Func<int, string> fn)
         => LspUtils.ExtractDocComment(program) switch
         {
             { } comment when !string.IsNullOrWhiteSpace(comment) =>

@@ -14,17 +14,17 @@ public enum DocumentType
     Karel
 }
 
-public abstract record Program;
+public abstract record RobotProgram;
 
-public sealed record TppProgram(TpProgram Program) : Program;
-public sealed record KlProgram(KarelProgram Program) : Program;
+public sealed record TppProgram(TpProgram Program) : RobotProgram;
+public sealed record KlProgram(KarelProgram Program) : RobotProgram;
 
 public sealed record TextDocumentState
 (
     TextDocumentItem TextDocument,
     ContentPosition LastEditPosition,
     DocumentType Type,
-    Program? Program
+    RobotProgram? Program
 );
 
 public sealed class LspServerState(string logFilePath)
@@ -70,7 +70,7 @@ public sealed class LspServerState(string logFilePath)
     public IResult<TpProgram> OnTpDocumentOpen(TextDocumentItem document)
     {
         OpenedTextDocuments.Add(document.Uri,
-            new(document, new(), DocumentType.Tp, default(Program)));
+            new(document, new(), DocumentType.Tp, default(RobotProgram)));
 
         return UpdateParsedProgram(document.Uri);
     }
@@ -78,7 +78,7 @@ public sealed class LspServerState(string logFilePath)
     public Diagnostic[] OnKarelDocumentOpen(TextDocumentItem document)
     {
         OpenedTextDocuments.Add(document.Uri,
-            new(document, new(), DocumentType.Karel, default(Program)));
+            new(document, new(), DocumentType.Karel, default(RobotProgram)));
 
         return [];
     }

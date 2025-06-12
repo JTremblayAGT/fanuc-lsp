@@ -72,4 +72,3 @@ public sealed record KarelWhenAnd(List<KarelGlobalCondition> Conditions) : Karel
            select new KarelWhenAnd(conds.ToList());
 }
 
-
