@@ -262,14 +262,14 @@ public class LspServer(string logFilePath)
     }
 
     private static PublishDiagnosticsNotification? ParseResultToDiagnostics(IResult<TpProgram> result, string uri)
-        => result switch
+        => new()
         {
-            { WasSuccessful: false } => new()
+            Params = new()
             {
-                Params = new()
+                Uri = uri,
+                Diagnostics = result switch
                 {
-                    Uri = uri,
-                    Diagnostics =
+                    { WasSuccessful: false } =>
                     [
                         new()
                         {
@@ -282,10 +282,10 @@ public class LspServer(string logFilePath)
                                 End = new(){ Line = result.Remainder.Line - 1, Character = result.Remainder.Column - 1 },
                             }
                         }
-                    ]
+                    ],
+                    _ => []
                 }
-            },
-            { WasSuccessful: true } => null,
+            }
         };
 
     private void LogMessage(string message)

@@ -200,7 +200,7 @@ public sealed class LspServerState(string logFilePath)
         {
             if (documentState.Program is not TppProgram prog)
             {
-                // TODO: support Karel
+                // TODO: Support Karel hovering one day
                 return null;
             }
 
