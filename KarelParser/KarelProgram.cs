@@ -22,16 +22,24 @@ public sealed record KarelProgram(string Name,
 
     public static KarelProgram? ProcessAndParse(string input)
     {
-        // TODO: extract header comment at the beginning of the declarations section right after the translator directives
-        // TODO: remove ALL comments from input before parsing
+        var lines = input.Split(['\n', '\r']);
 
-        // TODO: split the input into lines
-        // TODO: find first line that isn't a translator directive or blank
-        // TODO: take lines until blank or not comment -> header comment
-        // TODO: filter out all comment lines
-        // TODO: remove trailing comments from all other lines
-        // TODO: reassemble input and parse
+        var headerCommentLines = lines
+            .Select(line => line.Trim())
+            .Where(line => !line.StartsWith("%"))
+            .TakeWhile(line => line.StartsWith("--"));
 
-        return KarelProgram.GetParser().TryParse(input).Value;
+        var filteredLines = lines.Select(line => line.Trim())
+            .Where(line => !line.StartsWith("--"))
+            .Select(line => line.Split("--").First());
+
+        return KarelProgram.GetParser().TryParse(filteredLines.Aggregate((acc, line) => acc + "\r\n" + line)) switch
+        {
+            { WasSuccessful: true } result => result.Value with
+            {
+                HeaderComment = headerCommentLines.Aggregate((acc, line) => acc + "\r\n" + line)
+            },
+            { WasSuccessful: false } => null // TODO: Perhaps throw an exception?
+        };
     }
 }
