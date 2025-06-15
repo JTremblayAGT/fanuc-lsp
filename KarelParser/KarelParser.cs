@@ -4,7 +4,7 @@ using Sprache;
 
 namespace KarelParser;
 
-internal interface IKarelParser<TParsedType>
+internal interface IKarelParser<out TParsedType>
 {
     public static abstract Parser<TParsedType> GetParser();
 }
@@ -22,20 +22,18 @@ internal static class KarelParserExtensions
             });
 }
 
-// TODO: Comments need to be removed from buffer before parsing.
-// The Doc Comment at the beginning must be parsed before that.
 public class KarelCommon
 {
     public static Parser<string> Identifier
         => Parse.Identifier(Parse.Letter, Parse.LetterOrDigit.Or(Parse.Char('_')))
             .Token()
-            .Then(ident => ident switch
+            /*.Then(ident => ident switch
             {
                 { Length: <= 12 } => Parse.Return(ident),
                 _ => input => Result.Failure<string>(input,
                     $"Identifier '{ident}' has more than 12 characters.",
                     [])
-            });
+            })*/;
 
     public static Parser<string> LineBreak
         => Parse.LineEnd.Token();
@@ -129,5 +127,4 @@ public record KarelLabel(string Name) : KarelStatement, IKarelParser<KarelStatem
            from kw in KarelCommon.Keyword("::")
            select new KarelLabel(ident);
 }
-
 

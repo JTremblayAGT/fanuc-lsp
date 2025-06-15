@@ -28,7 +28,7 @@ public sealed record KarelVariableDeclaration(List<KarelVariable> Variable)
 {
     public new static Parser<KarelDeclaration> GetParser()
         => from kw in ParserUtils.ParserExtensions.Keyword("VAR")
-           from variables in KarelVariable.GetParser().DelimitedBy(KarelCommon.LineBreak, 1, null)
+           from variables in KarelVariable.GetParser().AtLeastOnce()
            select new KarelVariableDeclaration(variables.SelectMany(var => var).ToList());
 }
 

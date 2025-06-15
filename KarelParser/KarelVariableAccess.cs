@@ -1,54 +1,55 @@
-using ParserUtils;
-
 using Sprache;
 
 namespace KarelParser;
 
-public abstract record KarelVariableAcess : KarelValue, IKarelParser<KarelVariableAcess>
+public abstract record KarelVariableAccess : KarelValue, IKarelParser<KarelVariableAccess>
 {
-    public new static Parser<KarelVariableAcess> GetParser()
-        => KarelFieldAccess.GetParser()
-            .Or(KarelIdentifier.GetParser())
-            .WithPos();
+    public new static Parser<KarelVariableAccess> GetParser()
+        => KarelIdentifier.GetParser()
+            .Then(baseVar =>
+                Parse.Ref(() => FieldSuffix.Or(ArraySuffix).Or(PathSuffix))
+                .Many()
+                .Select(suffixes =>
+                    suffixes.Aggregate(baseVar, (acc, suffix) => suffix(acc))
+                )
+            ) ;
+
+    private static readonly Parser<Func<KarelVariableAccess, KarelVariableAccess>> FieldSuffix =
+        from dot in Parse.Char('.')
+        from field in KarelCommon.Identifier
+        select new Func<KarelVariableAccess, KarelVariableAccess>(
+            baseVar => new KarelFieldAccess(baseVar, field));
+
+    private static readonly Parser<Func<KarelVariableAccess, KarelVariableAccess>> ArraySuffix =
+        from indices in ExprRef
+            .DelimitedBy(KarelCommon.Keyword(","), 1, null)
+            .Contained(Parse.Char('['), Parse.Char(']'))
+        select new Func<KarelVariableAccess, KarelVariableAccess>(
+            baseVar => new KarelArrayAccess(baseVar, indices.ToList()));
+
+    private static readonly Parser<Func<KarelVariableAccess, KarelVariableAccess>> PathSuffix =
+        from lbracket in Parse.Char('[')
+        from startNode in ExprRef
+        from range in Parse.String("..")
+        from endNode in ExprRef
+        from rbracket in Parse.Char(']')
+        select new Func<KarelVariableAccess, KarelVariableAccess>(
+            baseVar => new KarelPathAccess(baseVar, startNode, endNode));
 }
 
-public sealed record KarelIdentifier(string Identifier) : KarelVariableAcess, IKarelParser<KarelVariableAcess>
+public sealed record KarelIdentifier(string Identifier) : KarelVariableAccess
 {
-    public new static Parser<KarelVariableAcess> GetParser()
-        => KarelCommon.Identifier.Select(ident => new KarelIdentifier(ident));
+    public new static Parser<KarelVariableAccess> GetParser()
+        => KarelCommon.Identifier.Select(ident =>
+            new KarelIdentifier(ident));
 }
 
-public sealed record KarelFieldAccess(KarelVariableAcess Variable, string Field)
-    : KarelVariableAcess, IKarelParser<KarelVariableAcess>
-{
-    public new static Parser<KarelVariableAcess> GetParser()
-        => from variable in Parse.Ref(() => KarelVariableAcess.GetParser())
-           from sep in Parse.Char('.')
-           from field in KarelCommon.Identifier
-           select new KarelFieldAccess(variable, field);
-}
+public sealed record KarelFieldAccess(KarelVariableAccess Variable, string Field)
+    : KarelVariableAccess;
 
-public sealed record KarelArrayAccess(KarelVariableAcess Variable, List<KarelExpression> Indices)
-    : KarelVariableAcess, IKarelParser<KarelVariableAcess>
-{
-    public new static Parser<KarelVariableAcess> GetParser()
-        => from variable in Parse.Ref(() => KarelVariableAcess.GetParser())
-           from indices in KarelExpression.GetParser()
-           .DelimitedBy(KarelCommon.Keyword(","), 1, null)
-           .BetweenBrackets()
-           select new KarelArrayAccess(variable, indices.ToList());
-}
+public sealed record KarelArrayAccess(KarelVariableAccess Variable, List<KarelExpression> Indices)
+    : KarelVariableAccess;
 
-public sealed record KarelPathAccess(KarelVariableAcess Variable, KarelExpression StartNode, KarelExpression EndNode)
-    : KarelVariableAcess, IKarelParser<KarelVariableAcess>
-{
-    public new static Parser<KarelVariableAcess> GetParser()
-        => from variable in Parse.Ref(() => KarelVariableAcess.GetParser())
-           from lbracket in KarelCommon.Keyword("[")
-           from startnode in KarelExpression.GetParser()
-           from sep in KarelCommon.Keyword("..")
-           from endnode in KarelExpression.GetParser()
-           from rbracket in KarelCommon.Keyword("[")
-           select new KarelPathAccess(variable, startnode, endnode);
-}
+public sealed record KarelPathAccess(KarelVariableAccess Variable, KarelExpression StartNode, KarelExpression EndNode)
+    : KarelVariableAccess;
 

@@ -2,12 +2,12 @@ using Sprache;
 
 namespace KarelParser.Instructions;
 
-public sealed record KarelCloseFile(KarelVariableAcess File) : KarelStatement, IKarelParser<KarelStatement>
+public sealed record KarelCloseFile(KarelVariableAccess File) : KarelStatement, IKarelParser<KarelStatement>
 {
     public new static Parser<KarelStatement> GetParser()
         => from kw in KarelCommon.Keyword("CLOSE")
            from kww in KarelCommon.Keyword("FILE")
-           from file in KarelVariableAcess.GetParser().WithPos()
+           from file in KarelVariableAccess.GetParser().WithPos()
            select new KarelCloseFile(file);
 }
 

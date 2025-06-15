@@ -168,11 +168,11 @@ public sealed record KarelPortAssignmentAction(string Identifier, KarelExpressio
            select new KarelPortAssignmentAction(ident, index, expr);
 }
 
-public sealed record KarelVarAssignmentAction(KarelVariableAcess Variable, KarelExpression Expr)
+public sealed record KarelVarAssignmentAction(KarelVariableAccess Variable, KarelExpression Expr)
     : KarelAssignmentAction, IKarelParser<KarelAssignmentAction>
 {
     static Parser<KarelAssignmentAction> IKarelParser<KarelAssignmentAction>.GetParser()
-        => from ident in KarelVariableAcess.GetParser()
+        => from ident in KarelVariableAccess.GetParser()
            from sep in KarelCommon.Keyword("=")
            from expr in KarelExpression.GetParser()
            select new KarelVarAssignmentAction(ident, expr);

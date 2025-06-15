@@ -20,7 +20,7 @@ internal struct KarelVarStorageParser
 
 public sealed record KarelVariable(
     string Identifier,
-    string Type,
+    KarelDataType Type,
     KarelVarStorage Storage,
     string ProgramName
 )
@@ -34,7 +34,7 @@ public sealed record KarelVariable(
             from program in ParserUtils.ParserExtensions.Keyword("FROM")
                 .Then(_ => KarelCommon.Identifier).Optional()
             from sep in ParserUtils.ParserExtensions.Keyword(":")
-            from type in KarelCommon.Identifier
+            from type in KarelDataType.GetParser()
             select idents.Select(ident => new KarelVariable(ident.Value,
                 type,
                 storage.GetOrElse(KarelVarStorage.Dram),

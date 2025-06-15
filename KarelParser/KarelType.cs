@@ -29,7 +29,7 @@ public record KarelUserType : WithPosition, IKarelParser<KarelUserType>
 }
 
 public record KarelDataType
-    : KarelUserType, IKarelParser<KarelUserType>
+    : KarelUserType, IKarelParser<KarelDataType>
 {
     private static Parser<KarelDataType> InternalParser()
         => KarelTypeString.GetParser()

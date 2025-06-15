@@ -3,20 +3,20 @@ using Sprache;
 
 namespace KarelParser.Instructions;
 
-public sealed record KarelRead(KarelVariableAcess? Variable, List<KarelItem> Items)
+public sealed record KarelRead(KarelVariableAccess? Variable, List<KarelItem> Items)
     : KarelStatement, IKarelParser<KarelStatement>
 {
     public new static Parser<KarelStatement> GetParser()
-        => from variable in KarelVariableAcess.GetParser().WithPos().Optional()
+        => from variable in KarelVariableAccess.GetParser().WithPos().Optional()
            from items in KarelItem.GetParser().AtLeastOnce().BetweenParen()
            select new KarelRead(variable.GetOrElse(null), items.ToList());
 }
 
-public sealed record KarelWrite(KarelVariableAcess? Variable, List<KarelItem> Items)
+public sealed record KarelWrite(KarelVariableAccess? Variable, List<KarelItem> Items)
     : KarelStatement, IKarelParser<KarelStatement>
 {
     public new static Parser<KarelStatement> GetParser()
-        => from variable in KarelVariableAcess.GetParser().WithPos().Optional()
+        => from variable in KarelVariableAccess.GetParser().WithPos().Optional()
            from items in KarelItem.GetParser().AtLeastOnce().BetweenParen()
            select new KarelWrite(variable.GetOrElse(null), items.ToList());
 }
@@ -43,11 +43,11 @@ public record KarelReadItemCR(List<KarelExpression> FormatSpecs)
            select new KarelReadItemCR(items);
 }
 
-public record KarelReadItemVariable(KarelVariableAcess Variable, List<KarelExpression> FormatSpecs)
+public record KarelReadItemVariable(KarelVariableAccess Variable, List<KarelExpression> FormatSpecs)
     : KarelItem, IKarelParser<KarelItem>
 {
     public new static Parser<KarelItem> GetParser()
-        => from variable in KarelVariableAcess.GetParser().WithPos()
+        => from variable in KarelVariableAccess.GetParser().WithPos()
            from items in Items()
            select new KarelReadItemVariable(variable, items);
 }

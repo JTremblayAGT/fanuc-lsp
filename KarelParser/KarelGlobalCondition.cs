@@ -88,13 +88,13 @@ public sealed record KarelPowerUpCondition
 }
 
 public record KarelComparisonCondition(
-        KarelVariableAcess Variable,
+        KarelVariableAccess Variable,
         KarelComparisonOperator Operator,
         KarelExpression Expr) // TODO: make sure this is correct
     : KarelGlobalCondition, IKarelParser<KarelGlobalCondition>
 {
     public new static Parser<KarelGlobalCondition> GetParser()
-        => from variable in KarelVariableAcess.GetParser()
+        => from variable in KarelVariableAccess.GetParser()
            from op in KarelComparisonOperatorParser.Parser()
            from expr in KarelExpression.GetParser()
            select new KarelComparisonCondition(variable, op, expr);

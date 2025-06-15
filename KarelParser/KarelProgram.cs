@@ -20,26 +20,26 @@ public sealed record KarelProgram(string Name,
            from endName in KarelCommon.Keyword("END").Then(_ => KarelCommon.Identifier)
            select new KarelProgram(name, translatorDirectives.ToList(), declarations.ToList(), routines.ToList(), statements.ToList());
 
-    public static KarelProgram? ProcessAndParse(string input)
+    public static IResult<KarelProgram> ProcessAndParse(string input)
     {
         var lines = input.Split(['\n', '\r']);
 
         var headerCommentLines = lines
             .Select(line => line.Trim())
-            .Where(line => !line.StartsWith("%"))
+            .Where(line => !line.StartsWith("%") || !line.StartsWith("PROGRAM"))
             .TakeWhile(line => line.StartsWith("--"));
 
         var filteredLines = lines.Select(line => line.Trim())
             .Where(line => !line.StartsWith("--"))
             .Select(line => line.Split("--").First());
 
-        return KarelProgram.GetParser().TryParse(filteredLines.Aggregate((acc, line) => acc + "\r\n" + line)) switch
+        return GetParser().TryParse(filteredLines.Aggregate((acc, line) => acc + "\r\n" + line)) switch
         {
-            { WasSuccessful: true } result => result.Value with
+            { WasSuccessful: true } result => Result.Success<KarelProgram>(result.Value with
             {
                 HeaderComment = headerCommentLines.Aggregate((acc, line) => acc + "\r\n" + line)
-            },
-            { WasSuccessful: false } => null // TODO: Perhaps throw an exception?
+            }, result.Remainder),
+            { WasSuccessful: false } result => result
         };
     }
 }
