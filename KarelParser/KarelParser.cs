@@ -24,16 +24,50 @@ internal static class KarelParserExtensions
 
 public class KarelCommon
 {
+    // Complete list of Fanuc Karel programming language keywords
+    private static readonly HashSet<string> Keywords = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "ABORT", "ABOUT", "ABS", "AFTER", "ALONG", "ALSO", "AND", "ARRAY", "ARRAY_LEN", "AT", "ATTACH", "AWAY", "AXIS",
+        "BEFORE", "BEGIN", "BOOLEAN", "BY", "BYNAME", "BYTE",
+        "CAM_SETUP", "CANCEL", "CASE", "CLOSE", "CMOS", "COMMAND", "COMMON_ASSOC", "CONDITION", "CONFIG", "CONNECT", "CONST", "CONTINUE", "COORDINATED", "CR",
+        "DELAY", "DISABLE", "DISCONNECT", "DIV", "DO", "DOWNTO", "DRAM",
+        "ELSE", "ENABLE", "END", "ENDCONDITION", "ENDFOR", "ENDIF", "ENDMOVE", "ENDSELECT", "ENDSTRUCTURE", "ENDUSING", "ENDWHILE", "ERROR", "EVAL", "EVENT", "END",
+        "FALSE", "FILE", "FOR", "FROM",
+        "GET_VAR", "GO", "GOTO", "GROUP", "GROUP_ASSOC",
+        "HAND", "HOLD",
+        "IF", "IN", "INDEPENDENT", "INTEGER",
+        "JOINTPOS", "JOINTPOS1", "JOINTPOS2", "JOINTPOS3", "JOINTPOS4", "JOINTPOS5", "JOINTPOS6", "JOINTPOS7", "JOINTPOS8", "JOINTPOS9",
+        "MOD", "MODEL", "MOVE",
+        "NEAR", "NOABORT", "NODE", "NODEDATA", "NOMESSAGE", "NOPAUSE", "NOT", "NOWAIT",
+        "OF", "OPEN", "OR",
+        "PATH", "PATHHEADER", "PAUSE", "POSITION", "POWERUP", "PROGRAM", "PULSE", "PURGE",
+        "READ", "REAL", "RELATIVE", "RELEASE", "RELAX", "REPEAT", "RESTORE", "RESUME", "RETURN", "ROUTINE",
+        "SELECT", "SEMAPHORE", "SET_VAR", "SHORT", "SIGNAL", "STOP", "STRING", "STRUCTURE",
+        "THEN", "TIME", "TIMER", "TO", "TPENABLE", "TRUE", "TYPE",
+        "UNHOLD", "UNINIT", "UNPAUSE", "UNTIL", "USING",
+        "VAR", "VECTOR", "VIA", "VIS_PROCESS",
+        "WAIT", "WHEN", "WHILE", "WITH", "WRITE",
+        "XYZWPR", "XYZWPREXT"
+    };
+
     public static Parser<string> Identifier
         => Parse.Identifier(Parse.Letter, Parse.LetterOrDigit.Or(Parse.Char('_')))
             .Token()
-            /*.Then(ident => ident switch
-            {
-                { Length: <= 12 } => Parse.Return(ident),
-                _ => input => Result.Failure<string>(input,
-                    $"Identifier '{ident}' has more than 12 characters.",
-                    [])
-            })*/;
+            .Then(ident => Keywords.Contains(ident.ToUpperInvariant())
+                ? input => Result.Failure<string>(input,
+                    $"'{ident}' is a reserved keyword and cannot be used as an identifier.",
+                    ["identifier"])
+                : Parse.Return(ident));
+
+    public static Parser<string> Reserved
+        => Parse.Identifier(Parse.Letter, Parse.LetterOrDigit.Or(Parse.Char('_')))
+            .Token()
+            .Then(ident => Keywords.Contains(ident.ToUpperInvariant())
+                ? Parse.Return(ident)
+                : input => Result.Failure<string>(input,
+                    $"'{ident}' is not a reserved keyword",
+                    ["keyword"])
+                    );
 
     public static Parser<string> LineBreak
         => Parse.LineEnd.Token();

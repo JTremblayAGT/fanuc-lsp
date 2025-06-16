@@ -28,12 +28,12 @@ public sealed record KarelVariable(
 {
     // multiple variables can be declared at once
     public static Parser<List<KarelVariable>> GetParser()
-        => from idents in KarelCommon.Identifier.WithPosition().DelimitedBy(Parse.Char(','), 1, int.MaxValue)
-            from storage in ParserUtils.ParserExtensions.Keyword("IN")
+        => from idents in KarelCommon.Identifier.WithPosition().DelimitedBy(KarelCommon.Keyword(","), 1, int.MaxValue)
+            from storage in KarelCommon.Keyword("IN")
                 .Then(_ => KarelVarStorageParser.GetParser()).Optional()
-            from program in ParserUtils.ParserExtensions.Keyword("FROM")
+            from program in KarelCommon.Keyword("FROM")
                 .Then(_ => KarelCommon.Identifier).Optional()
-            from sep in ParserUtils.ParserExtensions.Keyword(":")
+            from sep in KarelCommon.Keyword(":")
             from type in KarelDataType.GetParser()
             select idents.Select(ident => new KarelVariable(ident.Value,
                 type,

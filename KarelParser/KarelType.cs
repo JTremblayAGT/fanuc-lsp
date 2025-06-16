@@ -46,7 +46,7 @@ public sealed record KarelTypeName(string Identifier)
     : KarelDataType, IKarelParser<KarelDataType>
 {
     public new static Parser<KarelDataType> GetParser()
-        => KarelCommon.Identifier.Select(ident => new KarelTypeName(ident));
+        => KarelCommon.Identifier.Or(KarelCommon.Reserved).Select(ident => new KarelTypeName(ident));
 }
 
 public sealed record KarelTypeString(int Size)

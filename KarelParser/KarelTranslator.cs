@@ -133,7 +133,7 @@ public sealed record KarelNoAbortDirective(List<string> Options)
     public new static Parser<KarelTranslatorDirective> GetParser()
         => from kw in Keyword("NOABORT")
            from sep in KarelCommon.Keyword("=")
-           from options in KarelCommon.Identifier.DelimitedBy(KarelCommon.Keyword("+"))
+           from options in KarelCommon.Reserved.DelimitedBy(KarelCommon.Keyword("+"))
            select new KarelNoAbortDirective(options.ToList());
 }
 
@@ -157,7 +157,7 @@ public sealed record KarelNoPauseDirective(List<string> Options)
     public new static Parser<KarelTranslatorDirective> GetParser()
         => from kw in Keyword("NOPAUSE")
            from sep in KarelCommon.Keyword("=")
-           from options in KarelCommon.Identifier.DelimitedBy(KarelCommon.Keyword("+"))
+           from options in KarelCommon.Reserved.DelimitedBy(KarelCommon.Keyword("+"))
            select new KarelNoPauseDirective(options.ToList());
 }
 
