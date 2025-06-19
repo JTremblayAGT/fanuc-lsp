@@ -1,6 +1,8 @@
 ﻿using TPLangParser.TPLang.Instructions;
 using Sprache;
 
+using ParserUtils;
+
 namespace TPLangParser.TPLang;
 
 public enum TpUnit
@@ -33,55 +35,6 @@ public struct TpCommon
 
     public static Parser<TParsed> Fail<TParsed>(string message)
         => input => Result.Failure<TParsed>(input, message, []);
-}
-
-public sealed record TpTokenPosition(int Line, int Column);
-public record TpWithPosition(TpTokenPosition Start, TpTokenPosition End);
-
-public static class TpParserExtensions
-{
-    public static Parser<TParsedType> BetweenParen<TParsedType>(this Parser<TParsedType> parser)
-        => parser.Contained(TpCommon.Keyword("("), TpCommon.Keyword(")"));
-
-    public static Parser<TParsedType> BetweenBrackets<TParsedType>(this Parser<TParsedType> parser)
-        => parser.Contained(TpCommon.Keyword("["), TpCommon.Keyword("]"));
-
-    public static Parser<TParsedType> BetweenBraces<TParsedType>(this Parser<TParsedType> parser)
-        => parser.Contained(TpCommon.Keyword("{"), TpCommon.Keyword("}"));
-
-    public static Parser<(TParsedType Value, TpTokenPosition Position)> WithStartPosition<TParsedType>(this Parser<TParsedType> parser)
-        => input =>
-        {
-            var result = parser(input);
-            if (result.WasSuccessful)
-            {
-                return Result.Success<(TParsedType Value, TpTokenPosition Position)>
-                (
-                    (result.Value, new(input.Line, input.Column)),
-                    result.Remainder
-                );
-            }
-
-            return Result.Failure<(TParsedType Value, TpTokenPosition Position)>
-                (input, $"Unexpected character '{result.Remainder.Current}'", []);
-        };
-
-    public static Parser<(TParsedType Value, TpTokenPosition Position)> WithEndPosition<TParsedType>(this Parser<TParsedType> parser)
-        => input =>
-        {
-            var result = parser(input);
-            if (result.WasSuccessful)
-            {
-                return Result.Success<(TParsedType Value, TpTokenPosition Position)>
-                (
-                    (result.Value, new(result.Remainder.Line, result.Remainder.Column)),
-                    result.Remainder
-                );
-            }
-
-            return Result.Failure<(TParsedType Value, TpTokenPosition Position)>
-                (input, $"Unexpected character '{result.Remainder.Current}'", []);
-        };
 }
 
 public enum TpArcWeldingOptionType
@@ -189,9 +142,9 @@ public sealed record TpAccessMultiple(TpValue Number, TpValue Item, string? Comm
             ).BetweenBrackets();
 }
 
-public abstract record TpGenericRegister(TpAccess Access) : TpWithPosition(new(0, 0), new(0, 0)), ITpParser<TpGenericRegister>
+public abstract record TpGenericRegister(TpAccess Access) : WithPosition, ITpParser<TpGenericRegister>
 {
-    protected static Parser<T> GetParserFor<T>(string keyword, Func<TpAccess, TpTokenPosition, TpTokenPosition, T> builderFunc)
+    protected static Parser<T> GetParserFor<T>(string keyword, Func<TpAccess, TokenPosition, TokenPosition, T> builderFunc)
         => from kwPos in TpCommon.Keyword(keyword).WithStartPosition()
            from access in TpAccess.GetParser().WithEndPosition()
            select builderFunc(access.Value, kwPos.Position, access.Position);
@@ -259,7 +212,7 @@ public sealed record TpStringRegister(TpAccess Access)
         => GetParserFor(Keyword, (access, start, end) => new TpStringRegister(access) with { Start = start, End = end });
 }
 
-public sealed record TpFlag(TpAccess Access) : TpWithPosition(new(0, 0), new(0, 0)), ITpParser<TpFlag>
+public sealed record TpFlag(TpAccess Access) : WithPosition, ITpParser<TpFlag>
 {
     public const string Keyword = "F";
 
@@ -296,15 +249,15 @@ public interface IIOPort
 }
 
 public abstract record TpIOPort(TpIOType Type, TpAccess PortNumber)
-    : TpWithPosition(new(0, 0), new(0, 0)), ITpParser<TpIOPort>, IIOPort
+    : WithPosition, ITpParser<TpIOPort>, IIOPort
 {
-    protected static Parser<TpIOPort> MakeParser(char symbol, Func<TpIOType, TpAccess, TpTokenPosition, TpTokenPosition, TpIOPort> builder)
+    protected static Parser<TpIOPort> MakeParser(char symbol, Func<TpIOType, TpAccess, TokenPosition, TokenPosition, TpIOPort> builder)
         => from keyword in Parse.Char(symbol).WithStartPosition()
            from ioType in TpIOTypeParser.Parser
            from portNum in TpAccess.GetParser().WithEndPosition()
            select builder(ioType, portNum.Value, keyword.Position, portNum.Position);
 
-    public static Parser<TpIOPort> MakeParser(char symbol, TpIOType type, Func<TpAccess, TpTokenPosition, TpTokenPosition, TpIOPort> builder)
+    public static Parser<TpIOPort> MakeParser(char symbol, TpIOType type, Func<TpAccess, TokenPosition, TokenPosition, TpIOPort> builder)
         => from keyword in Parse.Char(symbol).WithStartPosition()
            from ioType in TpIOTypeParser.GetParserFor(type)
            from portNum in TpAccess.GetParser().WithEndPosition()
@@ -398,7 +351,7 @@ public sealed record TpWeldingIOPort(TpIOType Type, TpAccess PortNumber) : TpNum
     public new static char Prefix() => 'W';
 }
 
-public sealed record TpLabel(TpAccess LabelNumber) : TpWithPosition(new(0, 0), new(0, 0)), ITpParser<TpLabel>
+public sealed record TpLabel(TpAccess LabelNumber) : WithPosition, ITpParser<TpLabel>
 {
     public const string Keyword = "LBL";
 

@@ -1,4 +1,5 @@
 using FanucTpLsp.Lsp.State;
+using ParserUtils;
 using TPLangParser.TPLang;
 using TPLangParser.TPLang.Instructions;
 
@@ -38,8 +39,8 @@ internal sealed class CallHoverProvider : IHoverProvider
 
     private HoverResult? MakeHoverResult(
             string programName,
-            TpTokenPosition start,
-            TpTokenPosition end,
+            TokenPosition start,
+            TokenPosition end,
             LspServerState serverState)
     {
         if (serverState.AllTextDocuments.FirstOrDefault(

@@ -1,5 +1,6 @@
 ﻿using Sprache;
 //using TPLangParser.TPLang;
+using ParserUtils;
 
 namespace TPLangParser.TPLang.Instructions;
 
@@ -51,7 +52,7 @@ public sealed record TpJumpLabelInstruction(TpLabel Label)
            select new TpJumpLabelInstruction(label);
 }
 
-public abstract record TpCallMethod() : TpWithPosition(new(0, 0), new(0, 0)), ITpParser<TpCallMethod>
+public abstract record TpCallMethod() : WithPosition, ITpParser<TpCallMethod>
 {
     public static Parser<TpCallMethod> GetParser()
         => TpCallByStringRegister.GetParser()
