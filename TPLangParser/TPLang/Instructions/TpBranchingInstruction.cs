@@ -1,5 +1,4 @@
 ﻿using Sprache;
-//using TPLangParser.TPLang;
 using ParserUtils;
 
 namespace TPLangParser.TPLang.Instructions;

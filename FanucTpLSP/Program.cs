@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using FanucTpLsp.JsonRPC;
@@ -13,7 +14,7 @@ var logFilePath = Path.Combine(logDirectory, $"server_log_{DateTime.Now:yyyyMMdd
 var stdin = Console.OpenStandardInput();
 var stdout = Console.OpenStandardOutput();
 var reader = new StreamReader(stdin, Encoding.UTF8);
-var writer = new StreamWriter(stdout, Encoding.UTF8);
+var writer = new StreamWriter(stdout, new UTF8Encoding(false));
 
 // Log server start
 LogMessage(logFilePath, $"Server started at {DateTime.Now}");
@@ -63,7 +64,7 @@ while (true)
         var read = 0;
         while (read < contentLength)
         {
-            int n = reader.Read(buffer, read, contentLength - read);
+            var n = reader.Read(buffer, read, contentLength - read);
             if (n == 0)
             {
                 break;
