@@ -28,6 +28,7 @@ internal class TpProgramDefinitionProvider : IDefinitionProvider
                 TpCallByName => callInstr,
                 _ => null
             },
+            TpRunInstruction runInstr => new TpCallInstruction(runInstr.ProgramName, []), // cheeky hack LOLE
             TpIfInstruction branch => branch.Action switch
             {
                 TpCallInstruction callAction => callAction,
