@@ -14,6 +14,7 @@ internal sealed class CallHoverProvider : IHoverProvider
                 TpCallByName byName => GetHoverFromCall(byName, position, serverState),
                 _ => null
             },
+            TpRunInstruction runInstruction => GetHoverFromCall(runInstruction.ProgramName, position, serverState),
             TpIfInstruction ifInstr => ifInstr.Action switch
             {
                 TpCallInstruction callInstruction => callInstruction.CallMethod switch

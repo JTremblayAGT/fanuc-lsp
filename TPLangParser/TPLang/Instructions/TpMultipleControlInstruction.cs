@@ -4,15 +4,15 @@ namespace TPLangParser.TPLang.Instructions;
 
 public abstract record TpMultipleControlInstruction() : TpInstruction(0), ITpParser<TpMultipleControlInstruction>
 {
-    public new static Parser<TpMultipleControlInstruction> GetParser() 
+    public new static Parser<TpMultipleControlInstruction> GetParser()
         => TpRunInstruction.GetParser();
 }
 
-public sealed record TpRunInstruction(string ProgramName)
+public sealed record TpRunInstruction(TpCallByName ProgramName)
     : TpMultipleControlInstruction, ITpParser<TpMultipleControlInstruction>
 {
-    public new static Parser<TpMultipleControlInstruction> GetParser() 
+    public new static Parser<TpMultipleControlInstruction> GetParser()
         => from keyword in TpCommon.Keyword("RUN")
-            from programName in TpCommon.ProgramName
-            select new TpRunInstruction(programName);
+           from programName in TpCallByName.GetParser()
+           select new TpRunInstruction((TpCallByName)programName);
 }

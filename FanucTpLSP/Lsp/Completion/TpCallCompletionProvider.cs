@@ -11,6 +11,7 @@ internal sealed class TpCallCompletionProvider : ICompletionProvider
         => CompletionProviderUtils.TokenizeInput(lineText[..column]) switch
         {
             [.., "CALL"] => GetAllProgramNames(serverState),
+            [.., "RUN"] => GetAllProgramNames(serverState),
             _ => []
         };
 
