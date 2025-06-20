@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/KarelParser.Tests/KarelParser.Tests.csproj" />
+    <Project Path="Tests/TPLangParser.Tests/TPLangParser.Tests.csproj" />
+  </Folder>
+  <Project Path="FanucTpLSP/FanucTpLSP.csproj" />
+  <Project Path="KarelParser/KarelParser.csproj" />
+  <Project Path="ParserUtils/ParserUtils.csproj" />
+  <Project Path="TPLangParser/TPLangParser.csproj" />
+</Solution>
