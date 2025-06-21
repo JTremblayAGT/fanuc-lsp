@@ -45,21 +45,6 @@ public class RequestMessage : Message
 }
 
 /// <summary>
-/// Error response object
-/// </summary>
-public class ResponseError
-{
-    [JsonPropertyName("code")]
-    public int Code { get; set; }
-
-    [JsonPropertyName("message")]
-    public string Message { get; set; } = string.Empty;
-
-    [JsonPropertyName("data")]
-    public object? Data { get; set; }
-}
-
-/// <summary>
 /// Response message sent from server to client
 /// </summary>
 [JsonDerivedType(typeof(InitializeResponse))]
@@ -68,10 +53,26 @@ public class ResponseError
 [JsonDerivedType(typeof(TextDocumentCodeActionResponse))]
 [JsonDerivedType(typeof(TextDocumentCompletionResponse))]
 [JsonDerivedType(typeof(PublishDiagnosticsNotification))]
+[JsonDerivedType(typeof(ResponseError))]
 public class ResponseMessage : Message
 {
     [JsonPropertyName("id")]
     public int? Id { get; set; }
+}
+
+/// <summary>
+/// Error response object
+/// </summary>
+public class ResponseError : ResponseMessage
+{
+    [JsonPropertyName("code")]
+    public ErrorCodes Code { get; set; }
+
+    [JsonPropertyName("message")]
+    public string Message { get; set; } = string.Empty;
+
+    [JsonPropertyName("data")]
+    public object? Data { get; set; }
 }
 
 public class JsonRpcEncoder

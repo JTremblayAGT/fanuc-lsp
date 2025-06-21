@@ -1,5 +1,6 @@
 using FanucTpLsp.JsonRPC;
 using FanucTpLsp.Lsp.State;
+using KarelParser;
 using Sprache;
 using TPLangParser.TPLang;
 
@@ -23,6 +24,8 @@ public class LspServer(string logFilePath)
             LspMethods.TextDocumentDefinition => HandleTextDocumentDefinition(json),
             LspMethods.TextDocumentCodeAction => HandleTextDocumentCodeAction(json),
             LspMethods.TextDocumentCompletion => HandleTextDocumentCompletion(json),
+            LspMethods.TextDocumentFormatting => HandleTextDocumentFormatting(json),
+            LspMethods.TextDocumentRangeFormatting => HandleTextDocumentRangeFormatting(json),
 
             LspMethods.Shutdown => HandleShutdownRequest(),
             _ => null
@@ -35,7 +38,7 @@ public class LspServer(string logFilePath)
         var request = JsonRpcDecoder.Decode<InitializeRequest>(json);
         if (request == null)
         {
-            throw new JsonRpcException(ErrorCodes.ParseError, "Failed to decode InitializeRequest");
+            throw new JsonRpcException(ErrorCodes.InvalidRequest, "Failed to decode InitializeRequest");
         }
 
         var initialized = Initialize();
@@ -54,7 +57,7 @@ public class LspServer(string logFilePath)
                         OpenClose = true,
                         Save = true,
                     },
-                    HoverProvider = true,      // TODO: look into this
+                    HoverProvider = true,
                     DefinitionProvider = true, // TODO: look into this
                     CodeActionProvider = false, // TODO: look into this
                     CompletionProvider = new()
@@ -69,6 +72,8 @@ public class LspServer(string logFilePath)
                             "[", "]"  // Also adding bracket characters for position/register triggers
                         ]
                     },
+                    FormattingProvider = true,
+                    RangeFormattingProvider = true,
                 },
                 ServerInfo = new()
                 {
@@ -93,11 +98,10 @@ public class LspServer(string logFilePath)
 
     private ResponseMessage? HandleTextDocumentDidOpen(string json)
     {
-        // Handle the text document did open notification
-        var notification = JsonRpcDecoder.Decode<TextDocumentDidOpenNotification>(json);
-        if (notification == null)
+        if (JsonRpcDecoder.Decode<TextDocumentDidOpenNotification>(json)
+                is not TextDocumentDidOpenNotification notification)
         {
-            throw new JsonRpcException(ErrorCodes.ParseError, "Failed to decode TextDocumentDidOpenNotification");
+            throw new JsonRpcException(ErrorCodes.InvalidRequest, "Failed to decode TextDocumentDidOpenNotification");
         }
         LogMessage($"[TextDocumentDidOpen]: {notification.Params.TextDocument.Uri}");
 
@@ -121,11 +125,10 @@ public class LspServer(string logFilePath)
 
     private ResponseMessage? HandleTextDocumentDidClose(string json)
     {
-        // Handle the text document did close notification
-        var notification = JsonRpcDecoder.Decode<TextDocumentDidCloseNotification>(json);
-        if (notification == null)
+        if (JsonRpcDecoder.Decode<TextDocumentDidCloseNotification>(json)
+                is not TextDocumentDidCloseNotification notification)
         {
-            throw new JsonRpcException(ErrorCodes.ParseError, "Failed to decode TextDocumentDidCloseNotification");
+            throw new JsonRpcException(ErrorCodes.InvalidRequest, "Failed to decode TextDocumentDidCloseNotification");
         }
         LogMessage($"[TextDocumentDidClose]: {notification.Params.TextDocument.Uri}");
 
@@ -141,11 +144,10 @@ public class LspServer(string logFilePath)
 
     private ResponseMessage? HandleTextDocumentDidChange(string json)
     {
-        var notification = JsonRpcDecoder.Decode<TextDocumentDidChangeNotification>(json);
-        // Handle the text document did change notification
-        if (notification == null)
+        if (JsonRpcDecoder.Decode<TextDocumentDidChangeNotification>(json)
+                is not TextDocumentDidChangeNotification notification)
         {
-            throw new JsonRpcException(ErrorCodes.ParseError, "Failed to decode TextDocumentDidChangeParams");
+            throw new JsonRpcException(ErrorCodes.InvalidRequest, "Failed to decode TextDocumentDidChangeParams");
         }
 
         var changedDocumentUri = notification.Params.TextDocument.Uri;
@@ -158,10 +160,10 @@ public class LspServer(string logFilePath)
 
     private PublishDiagnosticsNotification? HandleTextDocumentDidSave(string json)
     {
-        var request = JsonRpcDecoder.Decode<TextDocumentDidSaveNotification>(json);
-        if (request == null)
+        if (JsonRpcDecoder.Decode<TextDocumentDidSaveNotification>(json)
+                is not TextDocumentDidSaveNotification request)
         {
-            throw new JsonRpcException(ErrorCodes.ParseError, "Failed to decode TextDocumentDidSaveNotification");
+            throw new JsonRpcException(ErrorCodes.InvalidParams, "Failed to decode TextDocumentDidSaveNotification");
         }
         LogMessage($"[TextDocumentDidSave]: {request.Params.TextDocument.Uri}");
         if (!_state.OpenedTextDocuments.TryGetValue(request.Params.TextDocument.Uri, out var documentState))
@@ -178,11 +180,10 @@ public class LspServer(string logFilePath)
 
     private TextDocumentHoverResponse? HandleTextDocumentDidHover(string json)
     {
-        var request = JsonRpcDecoder.Decode<TextDocumentDidHoverRequest>(json);
-        // Handle the text document did hover notification
-        if (request == null)
+        if (JsonRpcDecoder.Decode<TextDocumentDidHoverRequest>(json)
+                is not TextDocumentDidHoverRequest request)
         {
-            throw new JsonRpcException(ErrorCodes.ParseError, "Failed to decode TextDocumentDidHoverNotification");
+            throw new JsonRpcException(ErrorCodes.InvalidRequest, "Failed to decode TextDocumentDidHoverNotification");
         }
         LogMessage($"[TextDocumentDidHover]: {request.Params.TextDocument.Uri}");
 
@@ -195,11 +196,10 @@ public class LspServer(string logFilePath)
 
     private TextDocumentDefinitionResponse? HandleTextDocumentDefinition(string json)
     {
-        var request = JsonRpcDecoder.Decode<TextDocumentDefinitionRequest>(json);
-        // Handle the text document definition request
-        if (request == null)
+        if (JsonRpcDecoder.Decode<TextDocumentDefinitionRequest>(json)
+                is not TextDocumentDefinitionRequest request)
         {
-            throw new JsonRpcException(ErrorCodes.ParseError, "Failed to decode TextDocumentDefinitionRequest");
+            throw new JsonRpcException(ErrorCodes.InvalidRequest, "Failed to decode TextDocumentDefinitionRequest");
         }
         LogMessage($"[TextDocumentDefinition]: {request.Params.TextDocument.Uri}");
 
@@ -212,11 +212,10 @@ public class LspServer(string logFilePath)
 
     private TextDocumentCodeActionResponse? HandleTextDocumentCodeAction(string json)
     {
-        var request = JsonRpcDecoder.Decode<TextDocumentCodeActionRequest>(json);
-        // Handle the text document code action request
-        if (request == null)
+        if (JsonRpcDecoder.Decode<TextDocumentCodeActionRequest>(json)
+                is not TextDocumentCodeActionRequest request)
         {
-            throw new JsonRpcException(ErrorCodes.ParseError, "Failed to decode TextDocumentCodeActionRequest");
+            throw new JsonRpcException(ErrorCodes.InvalidRequest, "Failed to decode TextDocumentCodeActionRequest");
         }
         LogMessage($"[TextDocumentCodeAction]: {request.Params.TextDocument.Uri}");
 
@@ -237,11 +236,10 @@ public class LspServer(string logFilePath)
 
     private TextDocumentCompletionResponse? HandleTextDocumentCompletion(string json)
     {
-        var request = JsonRpcDecoder.Decode<TextDocumentCompletionRequest>(json);
-        // Handle the text document completion request
-        if (request == null)
+        if (JsonRpcDecoder.Decode<TextDocumentCompletionRequest>(json)
+                is not TextDocumentCompletionRequest request)
         {
-            throw new JsonRpcException(ErrorCodes.ParseError, "Failed to decode TextDocumentCompletionRequest");
+            throw new JsonRpcException(ErrorCodes.InvalidRequest, "Failed to decode TextDocumentCompletionRequest");
         }
 
         return new()
@@ -249,6 +247,26 @@ public class LspServer(string logFilePath)
             Id = request.Id,
             Result = _state.GetCompletionItems()
         };
+    }
+
+    private TextDocumentFormattingResponse? HandleTextDocumentFormatting(string json)
+    {
+        if (JsonRpcDecoder.Decode<TextDocumentFormattingRequest>(json)
+                is not TextDocumentFormattingRequest request)
+        {
+            throw new JsonRpcException(ErrorCodes.InvalidRequest, "Failed to decode TextDocumentFormattingResponse");
+        }
+        return null;
+    }
+
+    private TextDocumentFormattingResponse? HandleTextDocumentRangeFormatting(string json)
+    {
+        if (JsonRpcDecoder.Decode<TextDocumentRangeFormattingRequest>(json)
+                is not TextDocumentRangeFormattingRequest request)
+        {
+            throw new JsonRpcException(ErrorCodes.InvalidRequest, "Failed to decode TextDocumentRangeFormattingResponse");
+        }
+        return null;
     }
 
     private ResponseMessage? HandleShutdownRequest()
@@ -261,7 +279,9 @@ public class LspServer(string logFilePath)
         return null;
     }
 
-    private static PublishDiagnosticsNotification? ParseResultToDiagnostics(IResult<TpProgram> result, string uri)
+    private static PublishDiagnosticsNotification? ParseResultToDiagnostics(
+            IResult<TpProgram> result,
+            string uri)
         => new()
         {
             Params = new()
@@ -275,6 +295,35 @@ public class LspServer(string logFilePath)
                         {
                             Message = result.Message,
                             Source = "CheckTp",
+                            Severity = DiagnosticSeverity.Error,
+                            Range = new()
+                            {
+                                Start = new(){ Line = result.Remainder.Line - 1, Character = result.Remainder.Column - 1 },
+                                End = new(){ Line = result.Remainder.Line - 1, Character = result.Remainder.Column - 1 },
+                            }
+                        }
+                    ],
+                    _ => []
+                }
+            }
+        };
+
+    private static PublishDiagnosticsNotification? ParseKarelResultToDiagnostics(
+            IResult<KarelProgram> result,
+            string uri)
+        => new()
+        {
+            Params = new()
+            {
+                Uri = uri,
+                Diagnostics = result switch
+                {
+                    { WasSuccessful: false } =>
+                    [
+                        new()
+                        {
+                            Message = result.Message,
+                            Source = "KarelParse",
                             Severity = DiagnosticSeverity.Error,
                             Range = new()
                             {

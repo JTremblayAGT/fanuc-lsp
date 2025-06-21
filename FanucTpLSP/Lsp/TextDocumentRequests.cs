@@ -13,6 +13,15 @@ public class TextDocumentPositionParams
     public ContentPosition Position { get; set; } = new();
 }
 
+public class TextEdit
+{
+    [JsonPropertyName("range")]
+    public ContentRange Range { get; set; } = new();
+
+    [JsonPropertyName("newText")]
+    public string NewText { get; set; } = string.Empty;
+}
+
 #region Hover
 
 public class TextDocumentDidHoverRequest : RequestMessage
@@ -220,6 +229,66 @@ public class TextDocumentCompletionResponse : ResponseMessage
 {
     [JsonPropertyName("result")]
     public CompletionItem[] Result { get; set; } = [];
+}
+
+#endregion
+
+#region Formatting
+
+public class TextDocumentFormattingRequest : RequestMessage
+{
+    [JsonPropertyName("params")]
+    public TextDocumentFormattingParams Params { get; set; } = new();
+}
+
+public class TextDocumentRangeFormattingRequest : RequestMessage
+{
+
+}
+
+public class TextDocumentFormattingParams
+{
+    [JsonPropertyName("textDocument")]
+    public TextDocumentIdentifier TextDocument { get; set; } = new();
+
+    [JsonPropertyName("options")]
+    public FormattingOptions Options { get; set; } = new();
+}
+
+public class TextDocumentRangeFormattingParams
+{
+    [JsonPropertyName("textDocument")]
+    public TextDocumentIdentifier TextDocument { get; set; } = new();
+
+    [JsonPropertyName("range")]
+    public ContentRange Range { get; set; } = new();
+
+    [JsonPropertyName("options")]
+    public FormattingOptions Options { get; set; } = new();
+}
+
+public class FormattingOptions
+{
+    [JsonPropertyName("tabSize")]
+    public uint TabSize { get; set; } = 4;
+
+    [JsonPropertyName("insertSpaces")]
+    public bool InsertSpaces { get; set; } = true;
+
+    [JsonPropertyName("trimTrailingWhitespace")]
+    public bool TrimTrailingSpaces { get; set; } = true;
+
+    [JsonPropertyName("insertFinalNewline")]
+    public bool InsertFinalNewline { get; set; } = false;
+
+    [JsonPropertyName("trimFinalNewline")]
+    public bool TrimFinalNewline { get; set; } = true;
+}
+
+public class TextDocumentFormattingResponse : ResponseMessage
+{
+    [JsonPropertyName("result")]
+    public TextEdit[]? Result { get; set; } = null;
 }
 
 #endregion

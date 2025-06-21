@@ -88,15 +88,17 @@ static async Task HandleRequest(LspServer server, string json, StreamWriter writ
     var doc = JsonDocument.Parse(json);
     if (!doc.RootElement.TryGetProperty("method", out var method))
     {
-        // TODO: some error handling
-        await WriteResponse(writer, new ResponseMessage(), logFilePath);
+        await WriteResponse(writer, new ResponseError
+        {
+            Code = ErrorCodes.MethodNotFound,
+            Message = "Failed to get request method"
+        }, logFilePath);
     }
 
     LogMessage(logFilePath, $"RECEIVED: [{method}]");
     try
     {
-        var response = server.HandleRequest(method.GetString()!, json);
-        if (response == null)
+        if (server.HandleRequest(method.GetString()!, json) is not ResponseMessage response)
         {
             return;
         }
@@ -105,17 +107,11 @@ static async Task HandleRequest(LspServer server, string json, StreamWriter writ
     catch (JsonRpcException ex)
     {
         LogMessage(logFilePath, $"An error occured while handling the request: {ex.Message}");
-        // TODO: implement error handling
-        var errorResponse = new ResponseMessage
+        var errorResponse = new ResponseError
         {
-            /*
-            Error = new ResponseError
-            {
-                Code = ex.Code,
-                Message = ex.Message,
-                Data = ex.Data
-            }
-            */
+            Code = ex.Code,
+            Message = ex.Message,
+            Data = ex.Data
         };
         await WriteResponse(writer, errorResponse, logFilePath);
     }

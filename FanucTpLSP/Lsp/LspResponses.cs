@@ -60,6 +60,12 @@ public class ServerCapabilities
 
     [JsonPropertyName("completionProvider")]
     public CompletionOptions CompletionProvider { get; set; } = new();
+
+    [JsonPropertyName("documentFormattingProvider")]
+    public bool FormattingProvider { get; set; } = true;
+
+    [JsonPropertyName("documentRangeFormattingProvider")]
+    public bool RangeFormattingProvider { get; set; } = true;
 }
 
 public class InitializeResult
