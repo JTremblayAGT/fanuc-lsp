@@ -14,6 +14,6 @@ internal class DirectoryDataAttribute(string directory) : DataAttribute
         }
 
         var files = Directory.GetFiles(directory, "*.kl", SearchOption.AllDirectories);
-        return files.Select(fileStr => new object[]{fileStr});
+        return files.Select(fileStr => new object[] { fileStr });
     }
 }

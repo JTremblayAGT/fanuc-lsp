@@ -243,7 +243,8 @@ public class TextDocumentFormattingRequest : RequestMessage
 
 public class TextDocumentRangeFormattingRequest : RequestMessage
 {
-
+    [JsonPropertyName("params")]
+    public TextDocumentRangeFormattingParams Params { get; set; } = new();
 }
 
 public class TextDocumentFormattingParams
@@ -270,7 +271,7 @@ public class TextDocumentRangeFormattingParams
 public class FormattingOptions
 {
     [JsonPropertyName("tabSize")]
-    public uint TabSize { get; set; } = 4;
+    public int TabSize { get; set; } = 4;
 
     [JsonPropertyName("insertSpaces")]
     public bool InsertSpaces { get; set; } = true;
