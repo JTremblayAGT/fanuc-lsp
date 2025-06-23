@@ -20,10 +20,53 @@ internal static class KarelParserExtensions
                 Start = result.Start,
                 End = result.End
             });
+
+    public static Parser<T> WithErrorContext<T>(this Parser<T> parser, string contextName)
+        => input =>
+        {
+            var result = parser(input);
+            if (!result.WasSuccessful)
+            {
+                // Create a more descriptive error message that includes context
+                return Result.Failure<T>(
+                    result.Remainder,
+                    $"Error in {contextName} (l:{input.Line} c:{input.Column}): {result.Message}",
+                    result.Expectations);
+            }
+            return result;
+        };
 }
 
 public class KarelCommon
 {
+    public static Parser<IEnumerable<KarelStatement>> ParseStatements(string[] endToken)
+        => input =>
+        {
+            var statements = new List<KarelStatement>();
+            var remainder = input;
+
+            while (true)
+            {
+                if (endToken.Any(tok => Keyword(tok).Preview()(remainder).Value.IsDefined)
+                    && !Parse.Ref(KarelStatement.GetParser).Preview()(remainder).Value.IsDefined)
+                {
+                    break;
+                }
+
+                var result = Parse.Ref(KarelStatement.GetParser)(remainder);
+                if (!result.WasSuccessful)
+                {
+                    return Result.Failure<IEnumerable<KarelStatement>>(remainder, result.Message, result.Expectations);
+                }
+
+                statements.Add(result.Value);
+                var sep = LineBreak.AtLeastOnce()(result.Remainder);
+                remainder = sep.Remainder;
+            }
+
+            return Result.Success<IEnumerable<KarelStatement>>(statements, remainder);
+        };
+
     // Complete list of Fanuc Karel programming language keywords
     private static readonly HashSet<string> Keywords = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -50,14 +93,28 @@ public class KarelCommon
         "XYZWPR", "XYZWPREXT"
     };
 
+    private static readonly HashSet<string> Intrinsics = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "GET_VAR", "SET_VAR", "UNINIT", "ARRAY_LEN", "EVAL"
+    };
+
     public static Parser<string> Identifier
-        => Parse.Identifier(Parse.Letter, Parse.LetterOrDigit.Or(Parse.Char('_')))
+        => Parse.Identifier(Parse.Letter.Or(Parse.Char('$')), Parse.LetterOrDigit.Or(Parse.Char('_')))
             .Token()
             .Then(ident => Keywords.Contains(ident.ToUpperInvariant())
                 ? input => Result.Failure<string>(input,
                     $"'{ident}' is a reserved keyword and cannot be used as an identifier.",
                     ["identifier"])
                 : Parse.Return(ident));
+    public static Parser<string> Intrinsic
+        => Parse.Identifier(Parse.Letter, Parse.LetterOrDigit.Or(Parse.Char('_')))
+            .Token()
+            .Then(ident => Intrinsics.Contains(ident.ToUpperInvariant())
+                ? Parse.Return(ident)
+                : input => Result.Failure<string>(input,
+                    $"'{ident}' is not an intrinsic function",
+                    ["keyword"])
+                    );
 
     public static Parser<string> Reserved
         => Parse.Identifier(Parse.Letter, Parse.LetterOrDigit.Or(Parse.Char('_')))
@@ -70,7 +127,7 @@ public class KarelCommon
                     );
 
     public static Parser<string> LineBreak
-        => Parse.LineEnd.Token();
+        => Parse.LineEnd.Or(Keyword(";"));
 
     public static Parser<string> Keyword(string kw)
         => ParserUtils.ParserExtensions.Keyword(kw);

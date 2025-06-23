@@ -9,8 +9,8 @@ public sealed record KarelWhile(KarelExpression Expr, List<KarelStatement> Body)
         => from kw in KarelCommon.Keyword("WHILE")
            from expr in KarelExpression.GetParser()
            from kww in KarelCommon.Keyword("DO")
-           from body in Parse.Ref(() => KarelStatement.GetParser()).AtLeastOnce()
-           from brk in KarelCommon.LineBreak
+           from body in KarelCommon.ParseStatements(["ENDWHILE"])
+           //from brk in KarelCommon.LineBreak
            from kwww in KarelCommon.Keyword("ENDWHILE")
            select new KarelWhile(expr, body.ToList());
 }

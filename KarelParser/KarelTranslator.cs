@@ -32,7 +32,8 @@ public record KarelTranslatorDirective
             .Or(KarelStackSizeDirective.GetParser())
             .Or(KarelTimeSliceDirective.GetParser())
             .Or(KarelTpMotionDirective.GetParser())
-            .Or(KarelUninitVarsDirective.GetParser());
+            .Or(KarelUninitVarsDirective.GetParser())
+            .Or(KarelSystemDirective.GetParser());
 
     public static Parser<KarelTranslatorDirective> GetParser()
         => InternalParser()
@@ -217,4 +218,10 @@ public sealed record KarelUninitVarsDirective
 {
     public new static Parser<KarelTranslatorDirective> GetParser()
         => Keyword("UNINITVARS").Return(new KarelUninitVarsDirective());
+}
+public sealed record KarelSystemDirective
+    : KarelTranslatorDirective, IKarelParser<KarelTranslatorDirective>
+{
+    public new static Parser<KarelTranslatorDirective> GetParser()
+        => Keyword("SYSTEM").Return(new KarelSystemDirective());
 }

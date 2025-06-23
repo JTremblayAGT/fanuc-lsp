@@ -14,11 +14,11 @@ public sealed record KarelRoutine(
         => from kw in KarelCommon.Keyword("ROUTINE")
            from ident in KarelCommon.Identifier
            from args in KarelArg.GetParser()
-               .DelimitedBy(KarelCommon.LineBreak)
+               .DelimitedBy(KarelCommon.LineBreak.Or(KarelCommon.Keyword(";")))
                .Select(args => args.SelectMany(lst => lst))
                .BetweenParen().Optional()
            from ret in KarelCommon.Keyword(":").Then(_ => KarelDataType.GetParser()).Optional()
-           from body in KarelBody.GetParser().WithPos()
+           from body in KarelBody.GetParser()
            select new KarelRoutine(
                ident,
                args.GetOrElse([]).ToList(),
@@ -27,7 +27,8 @@ public sealed record KarelRoutine(
            );
 
     public static Parser<KarelRoutine> GetParser()
-        => InternalParser().WithPos();
+        => InternalParser().WithPos().WithErrorContext("ROUTINE");
+
 }
 
 public record KarelBody : WithPosition, IKarelParser<KarelBody>
@@ -51,7 +52,7 @@ public sealed record KarelRoutineBody(List<KarelDeclaration> Locals, List<KarelS
     public new static Parser<KarelBody> GetParser()
         => from decls in KarelDeclaration.GetParser().Many()
            from begin in KarelCommon.Keyword("BEGIN")
-           from instructions in KarelStatement.GetParser().Many()
+           from instructions in KarelCommon.ParseStatements(["END"])
            from end in KarelCommon.Keyword("END").Then(_ => KarelCommon.Identifier)
            select new KarelRoutineBody(decls.ToList(), instructions.ToList());
 }

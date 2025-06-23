@@ -37,8 +37,12 @@ public static class ParserExtensions
                 );
             }
 
+            var message = result.Remainder.AtEnd
+                ? "Unexpected end of input"
+                : $"Unexpected character '{result.Remainder.Current}'";
+
             return Result.Failure<(TParsedType Value, TokenPosition Position)>
-                (input, $"Unexpected character '{result.Remainder.Current}'", []);
+                (input, message, result.Expectations);
         };
 
     public static Parser<(TParsedType Value, TokenPosition Position)> WithEndPosition<TParsedType>(this Parser<TParsedType> parser)
@@ -54,8 +58,12 @@ public static class ParserExtensions
                 );
             }
 
+            var message = result.Remainder.AtEnd
+                ? "Unexpected end of input"
+                : $"Unexpected character '{result.Remainder.Current}'";
+
             return Result.Failure<(TParsedType Value, TokenPosition Position)>
-                (input, $"Unexpected character '{result.Remainder.Current}'", []);
+                (input, message, result.Expectations);
         };
 
     public static Parser<(TParsedType Value, TokenPosition Start, TokenPosition End)> WithPosition<TParsedType>(

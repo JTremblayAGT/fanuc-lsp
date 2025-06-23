@@ -46,6 +46,7 @@ public abstract record KarelStatement : WithPosition, IKarelParser<KarelStatemen
             .Or(KarelWhile.GetParser())
             .Or(KarelWrite.GetParser())
             .WithPos();
+
 }
 
 public abstract record KarelExpression : WithPosition, IKarelParser<KarelExpression>
@@ -59,34 +60,34 @@ public abstract record KarelExpression : WithPosition, IKarelParser<KarelExpress
 
     private static readonly Parser<KarelFactorExpression> Not
         = from kw in KarelCommon.Keyword("NOT")
-            from expr in Primary
-            select new KarelNotExpression((KarelPrimaryExpression)expr);
+          from expr in Primary
+          select new KarelNotExpression(expr);
 
     private static readonly Parser<KarelExpression> FactorExpr =
-        Parse.ChainOperator(KarelPositionOperatorParser.Parser().Token().Once(),
+        Parse.ChainOperator(KarelPositionOperatorParser.Parser(),
             Not.Or(Primary),
             (op, left, right) => new KarelPositionBinary(
-                (KarelFactorExpression)left, op.First(), (KarelPrimaryExpression)right));
+                left, op, right));
 
     private static readonly Parser<KarelExpression> ProductExpr =
-        Parse.ChainOperator(KarelProductOperatorParser.Parser().Token().Once(),
+        Parse.ChainOperator(KarelProductOperatorParser.Parser(),
             FactorExpr,
             (op, left, right) => new KarelProductBinary(
-                (KarelProductExpression)left, op.First(), (KarelFactorExpression)right));
+                left, op, right));
 
     private static readonly Parser<KarelExpression> SumExpr =
-        Parse.ChainOperator(KarelSumOperatorParser.Parser().Token().Once(),
+        Parse.ChainOperator(KarelSumOperatorParser.Parser(),
             ProductExpr,
             (op, left, right) => new KarelSumBinary(
-                (KarelSumExpression)left, op.First(), (KarelProductExpression)right));
+                left, op, right));
 
     private static readonly Parser<KarelExpression> ComparisonExpr =
-        Parse.ChainOperator(KarelComparisonOperatorParser.Parser().Token().Once(),
+        Parse.ChainOperator(KarelComparisonOperatorParser.Parser(),
             SumExpr,
             (op, left, right) => new KarelComparisonExpression(
-                (KarelSumExpression)left, op.First(), (KarelSumExpression)right));
+                left, op, right));
 
-    private static readonly Parser<KarelExpression> Expression 
+    private static readonly Parser<KarelExpression> Expression
         = ComparisonExpr
             .Or(SumExpr)
             .Or(ProductExpr)
@@ -97,36 +98,34 @@ public abstract record KarelExpression : WithPosition, IKarelParser<KarelExpress
 }
 
 public sealed record KarelComparisonExpression(
-    KarelSumExpression Lhs,
+    KarelExpression Lhs,
     KarelComparisonOperator Op,
-    KarelSumExpression Rhs)
+    KarelExpression Rhs)
     : KarelExpression;
 
-public abstract record KarelSumExpression : KarelExpression;
-
 public sealed record KarelSumBinary(
-    KarelSumExpression Lhs,
+    KarelExpression Lhs,
     KarelSumOperator Op,
-    KarelProductExpression Rhs)
-    : KarelSumExpression;
+    KarelExpression Rhs)
+    : KarelExpression;
 
 public abstract record KarelProductExpression : KarelExpression;
 
 public sealed record KarelProductBinary(
-    KarelProductExpression Lhs,
+    KarelExpression Lhs,
     KarelProductOperator Op,
-    KarelFactorExpression Rhs)
+    KarelExpression Rhs)
     : KarelProductExpression;
 
 public abstract record KarelFactorExpression : KarelExpression;
 
-public sealed record KarelNotExpression(KarelPrimaryExpression Expr)
+public sealed record KarelNotExpression(KarelExpression Expr)
     : KarelFactorExpression;
 
 public sealed record KarelPositionBinary(
-    KarelFactorExpression Lhs,
+    KarelExpression Lhs,
     KarelPositionOperator Operator,
-    KarelPrimaryExpression Rhs)
+    KarelExpression Rhs)
     : KarelFactorExpression;
 
 public abstract record KarelPrimaryExpression : KarelExpression;
@@ -135,7 +134,7 @@ public sealed record KarelFunctionCall(string Identifier, List<KarelExpression> 
     : KarelPrimaryExpression, IKarelParser<KarelPrimaryExpression>
 {
     public new static Parser<KarelPrimaryExpression> GetParser()
-        => from ident in KarelCommon.Identifier.WithPosition()
+        => from ident in KarelCommon.Identifier.Or(KarelCommon.Intrinsic).WithPosition()
            from args in ExprRef
                         .DelimitedBy(KarelCommon.Keyword(","), 1, null)
                         .BetweenParen()
@@ -150,6 +149,7 @@ public abstract record KarelValue : KarelPrimaryExpression, IKarelParser<KarelVa
 {
     public new static Parser<KarelValue> GetParser()
         => KarelString.GetParser()
+            .Or(KarelReal.GetParser())
             .Or(KarelInteger.GetParser())
             .Or(KarelBool.GetParser())
             .Or(KarelVariableAccess.GetParser());
@@ -158,7 +158,7 @@ public abstract record KarelValue : KarelPrimaryExpression, IKarelParser<KarelVa
 public sealed record KarelString(string Value) : KarelValue, IKarelParser<KarelValue>
 {
     public new static Parser<KarelValue> GetParser()
-        => Parse.Char('\'').Then(_ => 
+        => Parse.Char('\'').Then(_ =>
             Parse.AnyChar.Until(Parse.Char('\''))
             .Text()
             .Token()
@@ -173,6 +173,18 @@ public sealed record KarelInteger(int Value) : KarelValue, IKarelParser<KarelVal
         => from negated in KarelCommon.Keyword("-").Optional()
            from num in Parse.Number.Select(int.Parse)
            select new KarelInteger(negated switch
+           {
+               { IsDefined: true } => -num,
+               _ => num
+           });
+}
+
+public sealed record KarelReal(float Value) : KarelValue, IKarelParser<KarelValue>
+{
+    public new static Parser<KarelValue> GetParser()
+        => from negated in KarelCommon.Keyword("-").Optional()
+           from num in Parse.Decimal.Select(float.Parse)
+           select new KarelReal(negated switch
            {
                { IsDefined: true } => -num,
                _ => num

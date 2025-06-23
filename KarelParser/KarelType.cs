@@ -21,8 +21,8 @@ public sealed record KarelType(string Identifier, KarelUserType Type, string Fro
 public record KarelUserType : WithPosition, IKarelParser<KarelUserType>
 {
     private static Parser<KarelUserType> InternalParser()
-        => KarelDataType.GetParser()
-            .Or(KarelStructure.GetParser());
+        => KarelStructure.GetParser()
+            .Or(KarelDataType.GetParser());
 
     public static Parser<KarelUserType> GetParser()
         => InternalParser().WithPos();
@@ -35,8 +35,8 @@ public record KarelDataType
         => KarelTypeString.GetParser()
             .Or(KarelTypeArray.GetParser())
             .Or(KarelTypePosition.GetParser())
-            .Or(KarelTypeName.GetParser())
-            /*.Or(KarelTypePath.GetParser())*/;
+            .Or(KarelTypePath.GetParser())
+            .Or(KarelTypeName.GetParser()) ;
 
     public new static Parser<KarelDataType> GetParser()
         => InternalParser().WithPos();
@@ -46,7 +46,8 @@ public sealed record KarelTypeName(string Identifier)
     : KarelDataType, IKarelParser<KarelDataType>
 {
     public new static Parser<KarelDataType> GetParser()
-        => KarelCommon.Identifier.Or(KarelCommon.Reserved).Select(ident => new KarelTypeName(ident));
+        => KarelCommon.Identifier.Or(KarelCommon.Reserved).Select(ident =>
+            new KarelTypeName(ident));
 }
 
 public sealed record KarelTypeString(int Size)
@@ -65,10 +66,10 @@ public sealed record KarelTypeArray(List<int> Size, KarelDataType Type)
         => from kw in KarelCommon.Keyword("ARRAY")
            from size in Parse.Number.Select(int.Parse)
             .DelimitedBy(Parse.Char(','), 1, int.MaxValue)
-            .BetweenBrackets()
+            .BetweenBrackets().Optional()
            from sep in KarelCommon.Keyword("OF")
            from type in Parse.Ref(() => KarelDataType.GetParser())
-           select new KarelTypeArray(size.ToList(), (KarelDataType)type);
+           select new KarelTypeArray(size.GetOrElse([]).ToList(), (KarelDataType)type);
 }
 
 public sealed record KarelTypePosition(string PosType, int Group)
@@ -82,24 +83,33 @@ public sealed record KarelTypePosition(string PosType, int Group)
            select new KarelTypePosition(posType, num);
 }
 
-public sealed record KarelTypePath
+public sealed record KarelTypePath(string Header, string nodeData)
     : KarelDataType, IKarelParser<KarelDataType>
 {
     public new static Parser<KarelDataType> GetParser()
-        => input => Result.Failure<KarelDataType>(input, "Karel path not implemented", []);
+        => from kw in KarelCommon.Keyword("PATH")
+           from header in (
+                   from kww in KarelCommon.Keyword("PATHHEADER")
+                   from sep in KarelCommon.Keyword("=")
+                   from ident in KarelCommon.Identifier
+                   from sep2 in KarelCommon.Keyword(",")
+                   select ident
+                   ).Optional()
+           from kwww in KarelCommon.Keyword("NODEDATA")
+           from sep in KarelCommon.Keyword("=")
+           from node in KarelCommon.Identifier
+           select new KarelTypePath(header.GetOrDefault(), node);
+
 }
 
-public sealed record KarelStructure(string Identifier, List<KarelField> Fields)
+public sealed record KarelStructure(List<KarelField> Fields)
     : KarelUserType, IKarelParser<KarelUserType>
 {
     private static Parser<KarelStructure> InternalParser()
-        => from ident in KarelCommon.Identifier
-           from sep in KarelCommon.Keyword("=")
-           from structOpen in KarelCommon.Keyword("STRUCTURE")
-           from fields in KarelField.GetParser().DelimitedBy(KarelCommon.LineBreak, 1, null)
-           from brk in KarelCommon.LineBreak
+        => from structOpen in KarelCommon.Keyword("STRUCTURE")
+           from fields in KarelField.GetParser().AtLeastOnce()
            from structClose in KarelCommon.Keyword("ENDSTRUCTURE")
-           select new KarelStructure(ident, fields.ToList());
+           select new KarelStructure(fields.ToList());
 
     public new static Parser<KarelUserType> GetParser()
         => InternalParser().WithPos();

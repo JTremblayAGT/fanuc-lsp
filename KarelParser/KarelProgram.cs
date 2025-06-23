@@ -16,7 +16,7 @@ public sealed record KarelProgram(string Name,
            from declarations in KarelDeclaration.GetParser().Many()
            from routines in KarelRoutine.GetParser().Many()
            from begin in KarelCommon.Keyword("BEGIN")
-           from statements in KarelStatement.GetParser().Many()
+           from statements in KarelCommon.ParseStatements(["END"])
            from endName in KarelCommon.Keyword("END").Then(_ => KarelCommon.Identifier)
            select new KarelProgram(name,
                translatorDirectives.ToList(),
@@ -35,10 +35,13 @@ public sealed record KarelProgram(string Name,
             .ToList();
 
         var filteredLines = lines
-            .Select(line => line.StartsWith("--") ? "\n" : line)
-            .Select(line => line.Split("--").First());
+            .Select(line => line.StartsWith("--") ? string.Empty : line)
+            .Select(line => line.Replace("\t", "    "))
+            .Select(line => line.Split(" --").First());
 
-        return GetParser().TryParse(filteredLines.Aggregate((acc, line) => acc + "\r\n" + line)) switch
+        var processedInput = filteredLines.Aggregate((acc, line) => acc + "\r\n" + line);
+
+        return GetParser().TryParse(processedInput) switch
         {
             { WasSuccessful: true } result => Result.Success(result.Value with
             {

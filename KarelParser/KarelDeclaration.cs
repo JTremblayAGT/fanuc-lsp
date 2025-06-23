@@ -19,7 +19,7 @@ public sealed record KarelTypeDeclaration(List<KarelType> Type)
 {
     public new static Parser<KarelDeclaration> GetParser()
         => from kw in KarelCommon.Keyword("TYPE")
-           from types in KarelType.GetParser().DelimitedBy(KarelCommon.LineBreak, 1, null)
+           from types in KarelType.GetParser().AtLeastOnce()
            select new KarelTypeDeclaration(types.ToList());
 }
 
@@ -37,6 +37,6 @@ public sealed record KarelConstantDeclaration(List<KarelConstant> Constants)
 {
     public new static Parser<KarelDeclaration> GetParser()
         => from kw in KarelCommon.Keyword("CONST")
-           from constants in KarelConstant.GetParser().DelimitedBy(KarelCommon.LineBreak, 1, null)
+           from constants in KarelConstant.GetParser().AtLeastOnce()
            select new KarelConstantDeclaration(constants.ToList());
 }

@@ -1,15 +1,17 @@
 ﻿using System.Text;
+using KarelParser.Instructions;
+using Sprache;
 
 namespace KarelParser.Tests;
 
 public class KarelParserIntegrationTests
 {
     [Theory]
-    [DirectoryData(@"C:\Users\justin.tremblay\Projects\BLK-RBT-Fanuc\KAREL\KL")]
+    [DirectoryData(@"%UserProfile%\Projects\BLK-RBT-Fanuc\KAREL\KL")]
     public void Parse_AllValidPrograms_ShouldSucceed(string filePath)
     {
         var buffer = File.ReadAllText(filePath, Encoding.ASCII);
         var result = KarelProgram.ProcessAndParse(buffer);
-        Assert.True(result.WasSuccessful, $"Failed to parse valid program {Path.GetFileName(filePath)}: {result.Message}");
+        Assert.True(result.WasSuccessful, $"Failed to parse valid program {Path.GetFileName(filePath)}: {result.Message}, [{result.Remainder.Line}:{result.Remainder.Column}]");
     }
 }

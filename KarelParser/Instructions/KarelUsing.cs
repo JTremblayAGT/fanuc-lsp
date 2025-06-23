@@ -9,8 +9,7 @@ public sealed record KarelUsing(List<KarelVariableAccess> Variables, List<KarelS
         => from kw in KarelCommon.Keyword("USING")
            from vars in KarelVariableAccess.GetParser().DelimitedBy(KarelCommon.Keyword(","), 1, null)
            from kww in KarelCommon.Keyword("DO")
-           from body in Parse.Ref(() => KarelStatement.GetParser()).Many()
-           from brk in KarelCommon.LineBreak
+           from body in KarelCommon.ParseStatements(["ENDUSING"])
            from kwww in KarelCommon.Keyword("ENDUSING")
            select new KarelUsing(vars.ToList(), body.ToList());
 }

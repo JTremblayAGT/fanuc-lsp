@@ -7,8 +7,9 @@ public sealed record KarelRead(KarelVariableAccess? Variable, List<KarelItem> It
     : KarelStatement, IKarelParser<KarelStatement>
 {
     public new static Parser<KarelStatement> GetParser()
-        => from variable in KarelVariableAccess.GetParser().WithPos().Optional()
-           from items in KarelItem.GetParser().AtLeastOnce().BetweenParen()
+        => from kw in KarelCommon.Keyword("READ")
+           from variable in KarelVariableAccess.GetParser().WithPos().Optional()
+           from items in KarelItem.GetParser().DelimitedBy(KarelCommon.Keyword(",")).BetweenParen()
            select new KarelRead(variable.GetOrElse(null), items.ToList());
 }
 
@@ -16,8 +17,9 @@ public sealed record KarelWrite(KarelVariableAccess? Variable, List<KarelItem> I
     : KarelStatement, IKarelParser<KarelStatement>
 {
     public new static Parser<KarelStatement> GetParser()
-        => from variable in KarelVariableAccess.GetParser().WithPos().Optional()
-           from items in KarelItem.GetParser().AtLeastOnce().BetweenParen()
+        => from kw in KarelCommon.Keyword("WRITE")
+           from variable in KarelVariableAccess.GetParser().WithPos().Optional()
+           from items in KarelItem.GetParser().DelimitedBy(KarelCommon.Keyword(",")).BetweenParen()
            select new KarelWrite(variable.GetOrElse(null), items.ToList());
 }
 
@@ -26,10 +28,10 @@ public record KarelItem : IKarelParser<KarelItem>
     protected static Parser<List<KarelExpression>> Items()
         => (from kww in KarelCommon.Keyword("::")
             from expr in KarelExpression.GetParser()
-            select expr).Repeat(1, 2).Select(lst => lst.ToList());
+            select expr).Repeat(1, 2).Optional().Select(lst => lst.GetOrElse([]).ToList());
 
     public static Parser<KarelItem> GetParser()
-        => KarelReadItemVariable.GetParser()
+        => KarelReadItemExpr.GetParser()
             .Or(KarelReadItemCR.GetParser());
 
 }
@@ -43,13 +45,13 @@ public record KarelReadItemCR(List<KarelExpression> FormatSpecs)
            select new KarelReadItemCR(items);
 }
 
-public record KarelReadItemVariable(KarelVariableAccess Variable, List<KarelExpression> FormatSpecs)
+public record KarelReadItemExpr(KarelExpression Expression, List<KarelExpression> FormatSpecs)
     : KarelItem, IKarelParser<KarelItem>
 {
     public new static Parser<KarelItem> GetParser()
-        => from variable in KarelVariableAccess.GetParser().WithPos()
+        => from variable in KarelExpression.GetParser() 
            from items in Items()
-           select new KarelReadItemVariable(variable, items);
+           select new KarelReadItemExpr(variable, items);
 }
 
 
