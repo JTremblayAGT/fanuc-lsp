@@ -229,11 +229,11 @@ public class TpBranchingInstructionTests
         Assert.IsType<TpSelectCaseInstruction>(result);
 
         var caseInst = (TpSelectCaseInstruction)result;
-        Assert.NotNull(caseInst.SelectCase);
-        Assert.NotNull(caseInst.SelectCase.Value);
-        Assert.NotNull(caseInst.SelectCase.Action);
+        Assert.NotNull(caseInst.Case);
+        Assert.NotNull(caseInst.Case.Value);
+        Assert.NotNull(caseInst.Case.Action);
 
-        Assert.IsType<TpValueIntegerConstant>(caseInst.SelectCase.Value);
+        Assert.IsType<TpValueIntegerConstant>(caseInst.Case.Value);
     }
 
     [Theory]
@@ -247,10 +247,10 @@ public class TpBranchingInstructionTests
         Assert.IsType<TpSelectCaseInstruction>(result);
 
         var caseInst = (TpSelectCaseInstruction)result;
-        Assert.NotNull(caseInst.SelectCase);
-        Assert.NotNull(caseInst.SelectCase.Action);
+        Assert.NotNull(caseInst.Case);
+        Assert.NotNull(caseInst.Case.Action);
 
-        Assert.IsType<TpSelectElseCase>(caseInst.SelectCase);
+        Assert.IsType<TpSelectElseCase>(caseInst.Case);
     }
 
     [Theory]

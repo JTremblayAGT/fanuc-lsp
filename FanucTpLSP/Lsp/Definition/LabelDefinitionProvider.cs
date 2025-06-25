@@ -1,4 +1,5 @@
 using FanucTpLsp.Lsp.State;
+using FanucTpLSP.Lsp.Util;
 using TPLangParser.TPLang;
 using TPLangParser.TPLang.Instructions;
 
@@ -14,30 +15,7 @@ internal sealed class TpLabelDefinitionProvider : IDefinitionProvider
             return null;
         }
 
-        var lbl = instruction switch
-        {
-            TpJumpLabelInstruction jmpLbl => jmpLbl.Label,
-            TpMotionInstruction motion => motion.Options.Find(option => option is TpSkipOption or TpSkipJumpOption) switch
-            {
-                TpSkipOption skip => skip.Label,
-                TpSkipJumpOption skipJump => skipJump.Label,
-                _ => null
-            },
-            TpIfInstruction branch => branch.Action switch
-            {
-                TpJumpLabelInstruction jmpLbl => jmpLbl.Label,
-                _ => null,
-            },
-            TpWaitInstruction wait => wait switch
-            {
-                TpWaitCondition waitCond => waitCond.TimeoutLabel,
-                _ => null,
-            },
-            TpMixedLogicWaitInstruction wait => wait.TimeoutLabel,
-            _ => null
-        };
-
-        if (lbl is not { LabelNumber: TpAccessDirect lblNum })
+        if (TpLabelUtil.GetLabelFromInstruction(instruction) is not { LabelNumber: TpAccessDirect lblNum } lbl)
         {
             return null;
         }

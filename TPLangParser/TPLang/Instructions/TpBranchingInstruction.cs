@@ -164,7 +164,7 @@ public sealed record TpSelectElseCase(TpBranchingAction Action) : TpSelectCase(n
            from action in TpBranchingAction.GetParser()
            select new TpSelectElseCase(action);
 }
-public sealed record TpSelectCaseInstruction(TpSelectCase SelectCase)
+public sealed record TpSelectCaseInstruction(TpSelectCase Case)
     : TpBranchingInstruction, ITpParser<TpBranchingInstruction>
 {
     public new static Parser<TpBranchingInstruction> GetParser()

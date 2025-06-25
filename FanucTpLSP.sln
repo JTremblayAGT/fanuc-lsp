@@ -1,0 +1,58 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36212.18 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FanucTpLSP", "FanucTpLSP\FanucTpLSP.csproj", "{ECD46A79-67AC-A3FF-F351-4DFFA885420E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KarelParser", "KarelParser\KarelParser.csproj", "{9B96CB96-4B5D-4E85-D217-7E69D12E1544}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParserUtils", "ParserUtils\ParserUtils.csproj", "{90C0552E-E0B3-C9C2-A77B-FEE81BC720B7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TPLangParser", "TPLangParser\TPLangParser.csproj", "{E1DBF39F-1A83-BC68-2F0D-2D0EC14642C2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KarelParser.Tests", "Tests\KarelParser.Tests\KarelParser.Tests.csproj", "{F3A9317A-7924-ACE8-2DE6-DB3F9692A799}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TPLangParser.Tests", "Tests\TPLangParser.Tests\TPLangParser.Tests.csproj", "{3FE28D98-BB5B-8B11-A3FF-DFE2742F1C2B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{ECD46A79-67AC-A3FF-F351-4DFFA885420E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ECD46A79-67AC-A3FF-F351-4DFFA885420E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ECD46A79-67AC-A3FF-F351-4DFFA885420E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ECD46A79-67AC-A3FF-F351-4DFFA885420E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9B96CB96-4B5D-4E85-D217-7E69D12E1544}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B96CB96-4B5D-4E85-D217-7E69D12E1544}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B96CB96-4B5D-4E85-D217-7E69D12E1544}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B96CB96-4B5D-4E85-D217-7E69D12E1544}.Release|Any CPU.Build.0 = Release|Any CPU
+		{90C0552E-E0B3-C9C2-A77B-FEE81BC720B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90C0552E-E0B3-C9C2-A77B-FEE81BC720B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90C0552E-E0B3-C9C2-A77B-FEE81BC720B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90C0552E-E0B3-C9C2-A77B-FEE81BC720B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1DBF39F-1A83-BC68-2F0D-2D0EC14642C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1DBF39F-1A83-BC68-2F0D-2D0EC14642C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1DBF39F-1A83-BC68-2F0D-2D0EC14642C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1DBF39F-1A83-BC68-2F0D-2D0EC14642C2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3A9317A-7924-ACE8-2DE6-DB3F9692A799}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3A9317A-7924-ACE8-2DE6-DB3F9692A799}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3A9317A-7924-ACE8-2DE6-DB3F9692A799}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3A9317A-7924-ACE8-2DE6-DB3F9692A799}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3FE28D98-BB5B-8B11-A3FF-DFE2742F1C2B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3FE28D98-BB5B-8B11-A3FF-DFE2742F1C2B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3FE28D98-BB5B-8B11-A3FF-DFE2742F1C2B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3FE28D98-BB5B-8B11-A3FF-DFE2742F1C2B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F3A9317A-7924-ACE8-2DE6-DB3F9692A799} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{3FE28D98-BB5B-8B11-A3FF-DFE2742F1C2B} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+	EndGlobalSection
+EndGlobal
