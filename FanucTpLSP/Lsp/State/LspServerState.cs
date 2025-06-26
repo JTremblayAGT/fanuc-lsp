@@ -62,17 +62,17 @@ public sealed class LspServerState(string logFilePath)
         // TODO: need to make this a background task (probably with a directory watcher)
         // in order to let the server start faster (maybe later)
         // TODO: We'll also want to index references to stuff in a worker thread
-        AllTextDocuments = FindLsAndKlFiles();
+        Task.Run(() => AllTextDocuments = FindLsAndKlFiles());
 
         return IsInitialized;
     }
 
-    public IResult<TpProgram> OnTpDocumentOpen(TextDocumentItem document)
+    public async Task<IResult<TpProgram>> OnTpDocumentOpen(TextDocumentItem document)
     {
         OpenedTextDocuments.Add(document.Uri,
             new(document, new(), DocumentType.Tp, default(RobotProgram)));
 
-        return UpdateParsedProgram(document.Uri);
+        return await UpdateParsedProgram(document.Uri);
     }
 
     public Diagnostic[] OnKarelDocumentOpen(TextDocumentItem document)
@@ -214,10 +214,10 @@ public sealed class LspServerState(string logFilePath)
     }
 
     // TODO: need to refactor this to handle both program types
-    public IResult<TpProgram> UpdateParsedProgram(string uri)
-        => UpdateParsedProgram(OpenedTextDocuments[uri]);
+    public async Task<IResult<TpProgram>> UpdateParsedProgram(string uri)
+        => await UpdateParsedProgram(OpenedTextDocuments[uri]);
 
-    private IResult<TpProgram> UpdateParsedProgram(TextDocumentState documentState)
+    private async Task<IResult<TpProgram>> UpdateParsedProgram(TextDocumentState documentState)
     {
         var document = documentState.TextDocument;
 
@@ -226,7 +226,7 @@ public sealed class LspServerState(string logFilePath)
             throw new InvalidOperationException($"Karel programs aren't parsed");
         }
 
-        var result = TpProgram.GetParser().TryParse(document.Text);
+        var result = await Task.Run(() => TpProgram.GetParser().TryParse(document.Text));
         OpenedTextDocuments[document.Uri] = documentState with
         {
             Program = result.WasSuccessful ? new TppProgram(result.Value) : documentState.Program
@@ -286,10 +286,10 @@ public sealed class LspServerState(string logFilePath)
         };
     }
 
-    private TppProgram? TppValueOr(IResult<TpProgram> result)
+    private static TppProgram? TppValueOr(IResult<TpProgram> result)
         => result.WasSuccessful ? new TppProgram(result.Value) : null;
 
-    private KlProgram? KarelValueOr(IResult<KarelProgram> result)
+    private static KlProgram? KarelValueOr(IResult<KarelProgram> result)
         => result.WasSuccessful ? new KlProgram(result.Value) : null;
 
     private Dictionary<string, TextDocumentState> FindLsAndKlFiles()

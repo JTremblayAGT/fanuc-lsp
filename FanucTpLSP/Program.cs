@@ -98,11 +98,7 @@ static async Task HandleRequest(LspServer server, string json, StreamWriter writ
     LogMessage(logFilePath, $"RECEIVED: [{method}]");
     try
     {
-        if (server.HandleRequest(method.GetString()!, json) is not ResponseMessage response)
-        {
-            return;
-        }
-        await WriteResponse(writer, response, logFilePath);
+        await server.HandleRequest(method.GetString()!, json, GetCallback(writer, logFilePath)).ConfigureAwait(false);
     }
     catch (JsonRpcException ex)
     {
@@ -116,6 +112,9 @@ static async Task HandleRequest(LspServer server, string json, StreamWriter writ
         await WriteResponse(writer, errorResponse, logFilePath);
     }
 }
+
+static Func<ResponseMessage, Task> GetCallback(StreamWriter writer, string logFilePath)
+    => async response => await WriteResponse(writer, response, logFilePath);
 
 static async Task WriteResponse(StreamWriter writer, ResponseMessage response, string logFilePath)
 {

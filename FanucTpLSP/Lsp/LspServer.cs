@@ -10,30 +10,54 @@ public class LspServer(string logFilePath)
 {
     private readonly LspServerState _state = new(logFilePath);
 
-    public ResponseMessage? HandleRequest(string method, string json)
-        => method switch
+    public async Task HandleRequest(string method, string json, Func<ResponseMessage, Task> callback)
+    {
+        switch (method)
         {
-            LspMethods.Initialize => HandleInitializeRequest(json),
-            LspMethods.Initialized => HandleInitializedNotification(json),
-
-            LspMethods.TextDocumentDidOpen => HandleTextDocumentDidOpen(json),
-            LspMethods.TextDocumentDidClose => HandleTextDocumentDidClose(json),
-            LspMethods.TextDocumentDidChange => HandleTextDocumentDidChange(json),
-            LspMethods.TextDocumentDidSave => HandleTextDocumentDidSave(json),
-            LspMethods.TextDocumentDidHover => HandleTextDocumentDidHover(json),
-            LspMethods.TextDocumentDefinition => HandleTextDocumentDefinition(json),
-            LspMethods.TextDocumentCodeAction => HandleTextDocumentCodeAction(json),
-            LspMethods.TextDocumentCompletion => HandleTextDocumentCompletion(json),
-            LspMethods.TextDocumentFormatting => HandleTextDocumentFormatting(json),
-            LspMethods.TextDocumentRangeFormatting => HandleTextDocumentRangeFormatting(json),
-
-            LspMethods.Shutdown => HandleShutdownRequest(),
-            _ => null
-        };
+            case LspMethods.Initialize:
+                await HandleInitializeRequest(json, callback);
+                break;
+            case LspMethods.Initialized:
+                await HandleInitializedNotification(json, callback);
+                break;
+            case LspMethods.TextDocumentDidOpen:
+                await HandleTextDocumentDidOpen(json, callback);
+                break;
+            case LspMethods.TextDocumentDidClose:
+                await HandleTextDocumentDidClose(json, callback);
+                break;
+            case LspMethods.TextDocumentDidChange:
+                await HandleTextDocumentDidChange(json, callback);
+                break;
+            case LspMethods.TextDocumentDidSave:
+                await HandleTextDocumentDidSave(json, callback);
+                break;
+            case LspMethods.TextDocumentDidHover:
+                await HandleTextDocumentDidHover(json, callback);
+                break;
+            case LspMethods.TextDocumentDefinition:
+                await HandleTextDocumentDefinition(json, callback);
+                break;
+            case LspMethods.TextDocumentCompletion:
+                await HandleTextDocumentCompletion(json, callback);
+                break;
+            case LspMethods.TextDocumentCodeAction:
+            case LspMethods.TextDocumentFormatting:
+            case LspMethods.TextDocumentRangeFormatting:
+                break;
+            case LspMethods.Shutdown:
+                HandleShutdownRequest();
+                break;
+            default:
+                LogMessage($"Unsupported method {method}");
+                //await callback(new ResponseError { Code = ErrorCodes.MethodNotFound });
+                break;
+        }
+    }
 
     private bool Initialize() => _state.Initialize();
 
-    private InitializeResponse? HandleInitializeRequest(string json)
+    private async Task HandleInitializeRequest(string json, Func<ResponseMessage, Task> callback)
     {
         var request = JsonRpcDecoder.Decode<InitializeRequest>(json);
         if (request == null)
@@ -72,8 +96,8 @@ public class LspServer(string logFilePath)
                             "[", "]"  // Also adding bracket characters for position/register triggers
                         ]
                     },
-                    FormattingProvider = true,
-                    RangeFormattingProvider = true,
+                    FormattingProvider = false,
+                    RangeFormattingProvider = false,
                 },
                 ServerInfo = new()
                 {
@@ -83,23 +107,22 @@ public class LspServer(string logFilePath)
             }
         };
 
-        return initialized ? response : null;
+        await callback(response);
     }
 
-    private ResponseMessage? HandleInitializedNotification(string json)
+    private async Task HandleInitializedNotification(string json, Func<ResponseMessage, Task> callback)
     {
         var notification = JsonRpcDecoder.Decode<RequestMessage>(json);
         // Handle the initialized notification
         LogMessage($"NOTIFICATION: {notification?.Method}");
 
-        // TODO: figure out what to do for initialization
-        return null;
+        await Task.Run(() => { /* TODO: notification */ }).ConfigureAwait(false);
     }
 
-    private ResponseMessage? HandleTextDocumentDidOpen(string json)
+    private async Task HandleTextDocumentDidOpen(string json, Func<ResponseMessage, Task> callback)
     {
         if (JsonRpcDecoder.Decode<TextDocumentDidOpenNotification>(json)
-                is not TextDocumentDidOpenNotification notification)
+                is not { } notification)
         {
             throw new JsonRpcException(ErrorCodes.InvalidRequest, "Failed to decode TextDocumentDidOpenNotification");
         }
@@ -108,25 +131,24 @@ public class LspServer(string logFilePath)
         if (_state.OpenedTextDocuments.ContainsKey(notification.Params.TextDocument.Uri))
         {
             LogMessage($"[TextDocumentDidOpen]: Document already opened: {notification?.Params.TextDocument.Uri}");
-            return null;
+            return;
         }
 
-        if (notification.Params.TextDocument.Uri.EndsWith(".kl", StringComparison.OrdinalIgnoreCase))
-        {
-            var diagnostics = _state.OnKarelDocumentOpen(notification.Params.TextDocument);
-            // TODO: build results
-            return null;
-        }
+        //if (notification.Params.TextDocument.Uri.EndsWith(".kl", StringComparison.OrdinalIgnoreCase))
+        //{
+        //    var diagnostics = _state.OnKarelDocumentOpen(notification.Params.TextDocument);
+        //    return;
+        //}
 
-        var result = _state.OnTpDocumentOpen(notification.Params.TextDocument);
-
-        return ParseResultToDiagnostics(result, notification.Params.TextDocument.Uri);
+        await _state.OnTpDocumentOpen(notification.Params.TextDocument)
+            .ContinueWith(async result => ParseResultToDiagnostics(await result, notification.Params.TextDocument.Uri))
+            .ConfigureAwait(false);
     }
 
-    private ResponseMessage? HandleTextDocumentDidClose(string json)
+    private async Task HandleTextDocumentDidClose(string json, Func<ResponseMessage, Task> callback)
     {
         if (JsonRpcDecoder.Decode<TextDocumentDidCloseNotification>(json)
-                is not TextDocumentDidCloseNotification notification)
+                is not { } notification)
         {
             throw new JsonRpcException(ErrorCodes.InvalidRequest, "Failed to decode TextDocumentDidCloseNotification");
         }
@@ -135,17 +157,16 @@ public class LspServer(string logFilePath)
         if (!_state.OpenedTextDocuments.ContainsKey(notification.Params.TextDocument.Uri))
         {
             LogMessage($"[TextDocumentDidClose]: Document not opened: {notification?.Params.TextDocument.Uri}");
-            return null;
         }
 
-        _state.OpenedTextDocuments.Remove(notification.Params.TextDocument.Uri);
-        return null;
+        await Task.Run(() => _state.OpenedTextDocuments.Remove(notification.Params.TextDocument.Uri))
+            .ConfigureAwait(false);
     }
 
-    private ResponseMessage? HandleTextDocumentDidChange(string json)
+    private async Task HandleTextDocumentDidChange(string json, Func<ResponseMessage, Task> callback)
     {
         if (JsonRpcDecoder.Decode<TextDocumentDidChangeNotification>(json)
-                is not TextDocumentDidChangeNotification notification)
+                is not { } notification)
         {
             throw new JsonRpcException(ErrorCodes.InvalidRequest, "Failed to decode TextDocumentDidChangeParams");
         }
@@ -153,15 +174,14 @@ public class LspServer(string logFilePath)
         var changedDocumentUri = notification.Params.TextDocument.Uri;
         LogMessage($"[TextDocumentDidChange]: {changedDocumentUri}");
 
-        _state.UpdateDocumentText(changedDocumentUri, notification.Params.ContentChanges);
-
-        return null;
+        await Task.Run(() => _state.UpdateDocumentText(changedDocumentUri, notification.Params.ContentChanges))
+            .ConfigureAwait(false);
     }
 
-    private PublishDiagnosticsNotification? HandleTextDocumentDidSave(string json)
+    private async Task HandleTextDocumentDidSave(string json, Func<ResponseMessage, Task> callback)
     {
         if (JsonRpcDecoder.Decode<TextDocumentDidSaveNotification>(json)
-                is not TextDocumentDidSaveNotification request)
+                is not { } request)
         {
             throw new JsonRpcException(ErrorCodes.InvalidParams, "Failed to decode TextDocumentDidSaveNotification");
         }
@@ -169,105 +189,105 @@ public class LspServer(string logFilePath)
         if (!_state.OpenedTextDocuments.TryGetValue(request.Params.TextDocument.Uri, out var documentState))
         {
             LogMessage($"[TextDocumentDidChange]: Document not opened: {request.Params.TextDocument.Uri}");
-            return null;
+            return;
         }
 
         // Might not actually need to do anything
-        var result = _state.UpdateParsedProgram(request.Params.TextDocument.Uri);
-
-        return ParseResultToDiagnostics(result, request.Params.TextDocument.Uri);
+        await _state.UpdateParsedProgram(request.Params.TextDocument.Uri)
+            .ContinueWith(async result => ParseResultToDiagnostics(await result, request.Params.TextDocument.Uri))
+            .ConfigureAwait(false);
     }
 
-    private TextDocumentHoverResponse? HandleTextDocumentDidHover(string json)
+    private async Task HandleTextDocumentDidHover(string json, Func<ResponseMessage, Task> callback)
     {
         if (JsonRpcDecoder.Decode<TextDocumentDidHoverRequest>(json)
-                is not TextDocumentDidHoverRequest request)
+                is not { } request)
         {
             throw new JsonRpcException(ErrorCodes.InvalidRequest, "Failed to decode TextDocumentDidHoverNotification");
         }
         LogMessage($"[TextDocumentDidHover]: {request.Params.TextDocument.Uri}");
 
-        return new TextDocumentHoverResponse
+        await callback(new TextDocumentHoverResponse
         {
             Id = request.Id,
             Result = _state.GetHoverResult(request.Params.TextDocument.Uri, request.Params.Position),
-        };
+        });
     }
 
-    private TextDocumentDefinitionResponse? HandleTextDocumentDefinition(string json)
+    private async Task HandleTextDocumentDefinition(string json, Func<ResponseMessage, Task> callback)
     {
         if (JsonRpcDecoder.Decode<TextDocumentDefinitionRequest>(json)
-                is not TextDocumentDefinitionRequest request)
+                is not { } request)
         {
             throw new JsonRpcException(ErrorCodes.InvalidRequest, "Failed to decode TextDocumentDefinitionRequest");
         }
         LogMessage($"[TextDocumentDefinition]: {request.Params.TextDocument.Uri}");
 
-        return new()
+        await callback(new TextDocumentDefinitionResponse
         {
             Id = request.Id,
             Result = _state.GetLocation(request.Params.TextDocument.Uri, request.Params.Position),
-        };
+        });
     }
 
-    private TextDocumentCodeActionResponse? HandleTextDocumentCodeAction(string json)
-    {
-        if (JsonRpcDecoder.Decode<TextDocumentCodeActionRequest>(json)
-                is not TextDocumentCodeActionRequest request)
-        {
-            throw new JsonRpcException(ErrorCodes.InvalidRequest, "Failed to decode TextDocumentCodeActionRequest");
-        }
-        LogMessage($"[TextDocumentCodeAction]: {request.Params.TextDocument.Uri}");
+    //private TextDocumentCodeActionResponse? HandleTextDocumentCodeAction(string json, Func<ResponseMessage, Task> callback)
+    //{
+    //    if (JsonRpcDecoder.Decode<TextDocumentCodeActionRequest>(json)
+    //            is not { } request)
+    //    {
+    //        throw new JsonRpcException(ErrorCodes.InvalidRequest, "Failed to decode TextDocumentCodeActionRequest");
+    //    }
+    //    LogMessage($"[TextDocumentCodeAction]: {request.Params.TextDocument.Uri}");
 
-        if (!_state.OpenedTextDocuments.ContainsKey(request.Params.TextDocument.Uri))
-        {
-            LogMessage($"[TextDocumentCodeAction]: Document not opened: {request.Params.TextDocument.Uri}");
-            return null;
-        }
+    //    if (!_state.OpenedTextDocuments.ContainsKey(request.Params.TextDocument.Uri))
+    //    {
+    //        LogMessage($"[TextDocumentCodeAction]: Document not opened: {request.Params.TextDocument.Uri}");
+    //        return null;
+    //    }
 
-        // TODO: implement code actions (e.g. refactoring, line renumbering, syncing comments with robot, etc.)
+    //    // TODO: implement code actions (e.g. refactoring, line renumbering, syncing comments with robot, etc.)
 
-        return new()
-        {
-            Id = request.Id,
-            Result = []
-        };
-    }
+    //    return new()
+    //    {
+    //        Id = request.Id,
+    //        Result = []
+    //    };
+    //}
 
-    private TextDocumentCompletionResponse? HandleTextDocumentCompletion(string json)
+    private async Task HandleTextDocumentCompletion(string json, Func<ResponseMessage, Task> callback)
     {
         if (JsonRpcDecoder.Decode<TextDocumentCompletionRequest>(json)
-                is not TextDocumentCompletionRequest request)
+                is not { } request)
         {
             throw new JsonRpcException(ErrorCodes.InvalidRequest, "Failed to decode TextDocumentCompletionRequest");
         }
 
-        return new()
+        await callback(new TextDocumentCompletionResponse
         {
             Id = request.Id,
             Result = _state.GetCompletionItems()
-        };
+        });
     }
 
-    private TextDocumentFormattingResponse? HandleTextDocumentFormatting(string json)
-    {
-        if (JsonRpcDecoder.Decode<TextDocumentFormattingRequest>(json)
-                is not TextDocumentFormattingRequest request)
-        {
-            throw new JsonRpcException(ErrorCodes.InvalidRequest, "Failed to decode TextDocumentFormattingResponse");
-        }
-        return null;
-    }
+    //private TextDocumentFormattingResponse? HandleTextDocumentFormatting(string json, Func<ResponseMessage, Task> callback)
+    //{
+    //    if (JsonRpcDecoder.Decode<TextDocumentFormattingRequest>(json)
+    //            is not { } request)
+    //    {
+    //        throw new JsonRpcException(ErrorCodes.InvalidRequest, "Failed to decode TextDocumentFormattingResponse");
+    //    }
+    //    return null;
+    //}
 
-    private TextDocumentFormattingResponse? HandleTextDocumentRangeFormatting(string json)
-    {
-        if (JsonRpcDecoder.Decode<TextDocumentRangeFormattingRequest>(json)
-                is not TextDocumentRangeFormattingRequest request)
-        {
-            throw new JsonRpcException(ErrorCodes.InvalidRequest, "Failed to decode TextDocumentRangeFormattingResponse");
-        }
-        return null;
-    }
+    //private TextDocumentFormattingResponse? HandleTextDocumentRangeFormatting(string json, Func<ResponseMessage, Task> callback)
+    //{
+    //    if (JsonRpcDecoder.Decode<TextDocumentRangeFormattingRequest>(json)
+    //            is not { } request)
+    //    {
+    //        throw new JsonRpcException(ErrorCodes.InvalidRequest, "Failed to decode TextDocumentRangeFormattingResponse");
+    //    }
+    //    return null;
+    //}
 
     private ResponseMessage? HandleShutdownRequest()
     {
