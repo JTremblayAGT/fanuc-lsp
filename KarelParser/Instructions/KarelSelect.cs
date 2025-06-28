@@ -3,16 +3,21 @@ using Sprache;
 
 namespace KarelParser.Instructions;
 
-public sealed record KarelSelect(KarelExpression Expr, List<KarelCase> Cases)
+public sealed record KarelSelect(KarelExpression Expr, List<KarelCase> Cases, KarelCase? ElseCase)
     : KarelStatement, IKarelParser<KarelStatement>
 {
+    private static readonly Parser<KarelStatement> Internal =
+        from kw in KarelCommon.Keyword("SELECT")
+        from expr in KarelExpression.GetParser()
+        from kww in KarelCommon.Keyword("OF")
+        from cases in KarelValueCase.GetParser().WithErrorContext("CASE").XMany()
+        from elseCase in KarelElseCase.GetParser().WithErrorContext("ELSE CASE").Optional()
+        from kwww in KarelCommon.Keyword("ENDSELECT").IgnoreComments()
+        select new KarelSelect(expr, cases.ToList(), elseCase.GetOrElse(null));
+
+
     public new static Parser<KarelStatement> GetParser()
-        => from kw in KarelCommon.Keyword("SELECT")
-           from expr in KarelExpression.GetParser()
-           from kww in KarelCommon.Keyword("OF")
-           from cases in KarelCase.GetParser().Many()
-           from kwww in KarelCommon.Keyword("ENDSELECT")
-           select new KarelSelect(expr, cases.ToList());
+        => Internal.WithErrorContext("SELECT");
 }
 
 public record KarelCase : IKarelParser<KarelCase>

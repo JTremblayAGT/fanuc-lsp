@@ -11,14 +11,14 @@ public sealed record KarelRoutine(
     : WithPosition, IKarelParser<KarelRoutine>
 {
     private static Parser<KarelRoutine> InternalParser()
-        => from kw in KarelCommon.Keyword("ROUTINE")
-           from ident in KarelCommon.Identifier
-           from args in KarelArg.GetParser()
-               .DelimitedBy(KarelCommon.LineBreak.Or(KarelCommon.Keyword(";")))
+        => from kw in KarelCommon.Keyword("ROUTINE").IgnoreComments()
+           from ident in KarelCommon.Identifier.IgnoreComments()
+           from args in KarelArg.GetParser().IgnoreComments()
+               .XDelimitedBy(KarelCommon.LineBreak.Or(KarelCommon.Keyword(";")))
                .Select(args => args.SelectMany(lst => lst))
-               .BetweenParen().Optional()
-           from ret in KarelCommon.Keyword(":").Then(_ => KarelDataType.GetParser()).Optional()
-           from body in KarelBody.GetParser()
+               .BetweenParen().Optional().WithErrorContext("ROUTINE")
+           from ret in KarelCommon.Keyword(":").Then(_ => KarelDataType.GetParser()).IgnoreComments().Optional()
+           from body in KarelBody.GetParser().IgnoreComments().WithErrorContext($"ROUTINE({ident})")
            select new KarelRoutine(
                ident,
                args.GetOrElse([]).ToList(),
@@ -27,8 +27,8 @@ public sealed record KarelRoutine(
            );
 
     public static Parser<KarelRoutine> GetParser()
-        => InternalParser().WithPos().WithErrorContext("ROUTINE");
-
+        => InternalParser()
+            .WithPos();
 }
 
 public record KarelBody : WithPosition, IKarelParser<KarelBody>
@@ -50,10 +50,10 @@ public sealed record KarelRoutineBody(List<KarelDeclaration> Locals, List<KarelS
     : KarelBody, IKarelParser<KarelBody>
 {
     public new static Parser<KarelBody> GetParser()
-        => from decls in KarelDeclaration.GetParser().Many()
-           from begin in KarelCommon.Keyword("BEGIN")
+        => from decls in KarelDeclaration.GetParser().IgnoreComments().XMany()
+           from begin in KarelCommon.Keyword("BEGIN").IgnoreComments()
            from instructions in KarelCommon.ParseStatements(["END"])
-           from end in KarelCommon.Keyword("END").Then(_ => KarelCommon.Identifier)
+           from end in KarelCommon.Keyword("END").Then(_ => KarelCommon.Identifier).IgnoreComments()
            select new KarelRoutineBody(decls.ToList(), instructions.ToList());
 }
 

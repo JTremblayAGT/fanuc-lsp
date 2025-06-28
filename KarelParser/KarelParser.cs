@@ -1,4 +1,5 @@
-﻿using ParserUtils;
+﻿using System.Xml.XPath;
+using ParserUtils;
 
 using Sprache;
 
@@ -10,7 +11,21 @@ internal interface IKarelParser<out TParsedType>
 }
 
 internal static class KarelParserExtensions
-{
+{  
+     private static readonly Parser<string> SingleLineComment =
+            from start in KarelCommon.Keyword("--")
+            from comment in Parse.AnyChar.Until(Parse.LineEnd)
+            select start + new string(comment.ToArray());
+
+    private static readonly Parser<string> WhiteSpaceOrComments =
+        from trivia in Parse.WhiteSpace.Many().Text()
+            .Or(SingleLineComment)
+            .Many()
+        select trivia.Any() ? trivia.Aggregate((acc, str) => acc + str) : "" ;
+
+    public static Parser<T> IgnoreComments<T>(this Parser<T> parser)
+        => parser.Contained(WhiteSpaceOrComments, WhiteSpaceOrComments);
+
     public static Parser<TParsedType> WithPos<TParsedType>(this Parser<TParsedType> parser)
         where TParsedType : WithPosition
         => parser
@@ -30,7 +45,7 @@ internal static class KarelParserExtensions
                 // Create a more descriptive error message that includes context
                 return Result.Failure<T>(
                     result.Remainder,
-                    $"Error in {contextName} (l:{input.Line} c:{input.Column}): {result.Message}",
+                    $"Error in {contextName} (l:{input.Line} c:{input.Column}):\n{result.Message}",
                     result.Expectations);
             }
             return result;
@@ -47,7 +62,7 @@ public class KarelCommon
 
             while (true)
             {
-                if (endToken.Any(tok => Keyword(tok).Preview()(remainder).Value.IsDefined)
+                if (endToken.Any(tok => Keyword(tok).IgnoreComments().Preview()(remainder).Value.IsDefined)
                     && !Parse.Ref(KarelStatement.GetParser).Preview()(remainder).Value.IsDefined)
                 {
                     break;
@@ -56,7 +71,7 @@ public class KarelCommon
                 var result = Parse.Ref(KarelStatement.GetParser)(remainder);
                 if (!result.WasSuccessful)
                 {
-                    return Result.Failure<IEnumerable<KarelStatement>>(remainder, result.Message, result.Expectations);
+                    return Result.Failure<IEnumerable<KarelStatement>>(result.Remainder, result.Message, result.Expectations);
                 }
 
                 statements.Add(result.Value);

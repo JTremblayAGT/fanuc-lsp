@@ -13,7 +13,7 @@ public abstract record WithPosition
 public static class ParserExtensions
 {
     public static Parser<string> Keyword(string keyword)
-        => Parse.String(keyword).Text().Token();
+        => Parse.IgnoreCase(keyword).Text().Token();
 
     public static Parser<TParsedType> BetweenParen<TParsedType>(this Parser<TParsedType> parser)
         => parser.Contained(Keyword("("), Keyword(")"));
@@ -39,10 +39,10 @@ public static class ParserExtensions
 
             var message = result.Remainder.AtEnd
                 ? "Unexpected end of input"
-                : $"Unexpected character '{result.Remainder.Current}'";
+                : result.Message;
 
             return Result.Failure<(TParsedType Value, TokenPosition Position)>
-                (input, message, result.Expectations);
+                (result.Remainder, message, result.Expectations);
         };
 
     public static Parser<(TParsedType Value, TokenPosition Position)> WithEndPosition<TParsedType>(this Parser<TParsedType> parser)
@@ -60,10 +60,10 @@ public static class ParserExtensions
 
             var message = result.Remainder.AtEnd
                 ? "Unexpected end of input"
-                : $"Unexpected character '{result.Remainder.Current}'";
+                : result.Message;
 
             return Result.Failure<(TParsedType Value, TokenPosition Position)>
-                (input, message, result.Expectations);
+                (result.Remainder, message, result.Expectations);
         };
 
     public static Parser<(TParsedType Value, TokenPosition Start, TokenPosition End)> WithPosition<TParsedType>(

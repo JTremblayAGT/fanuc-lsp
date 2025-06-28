@@ -11,13 +11,13 @@ public sealed record KarelProgram(string Name,
     public string HeaderComment = string.Empty;
 
     public static Parser<KarelProgram> GetParser()
-        => from name in KarelCommon.Keyword("PROGRAM").Then(_ => KarelCommon.Identifier)
-           from translatorDirectives in KarelTranslatorDirective.GetParser().Many()
-           from declarations in KarelDeclaration.GetParser().Many()
-           from routines in KarelRoutine.GetParser().Many()
-           from begin in KarelCommon.Keyword("BEGIN")
-           from statements in KarelCommon.ParseStatements(["END"])
-           from endName in KarelCommon.Keyword("END").Then(_ => KarelCommon.Identifier)
+        => from name in KarelCommon.Keyword("PROGRAM").Then(_ => KarelCommon.Identifier).IgnoreComments()
+           from translatorDirectives in KarelTranslatorDirective.GetParser().IgnoreComments().XMany() // TODO: translator directives can actually be anywhere
+           from declarations in KarelDeclaration.GetParser().IgnoreComments().XMany()
+           from routines in KarelRoutine.GetParser().IgnoreComments().XMany()
+           from begin in KarelCommon.Keyword("BEGIN").IgnoreComments()
+           from statements in KarelCommon.ParseStatements(["END"]).WithErrorContext("BEGIN")
+           from endName in KarelCommon.Keyword("END").Then(_ => KarelCommon.Identifier).IgnoreComments()
            select new KarelProgram(name,
                translatorDirectives.ToList(),
                declarations.ToList(),
@@ -34,14 +34,14 @@ public sealed record KarelProgram(string Name,
             .Where(line => !string.IsNullOrWhiteSpace(line))
             .ToList();
 
-        var filteredLines = lines
-            .Select(line => line.StartsWith("--") ? string.Empty : line)
-            .Select(line => line.Replace("\t", "    "))
-            .Select(line => line.Split(" --").First());
+        //var filteredLines = lines
+        //    .Select(line => line.StartsWith("--") ? string.Empty : line)
+        //    .Select(line => line.Replace("\t", "    "))
+        //    .Select(line => line.Split("--").First());
 
-        var processedInput = filteredLines.Aggregate((acc, line) => acc + "\r\n" + line);
+        //var processedInput = lines.Aggregate((acc, line) => acc + "\r\n" + line);
 
-        return GetParser().TryParse(processedInput) switch
+        return GetParser().WithErrorContext("PROGRAM").TryParse(input) switch
         {
             { WasSuccessful: true } result => Result.Success(result.Value with
             {

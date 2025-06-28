@@ -36,18 +36,22 @@ public record KarelDataType
             .Or(KarelTypeArray.GetParser())
             .Or(KarelTypePosition.GetParser())
             .Or(KarelTypePath.GetParser())
-            .Or(KarelTypeName.GetParser()) ;
+            .Or(KarelTypeName.GetParser());
 
     public new static Parser<KarelDataType> GetParser()
         => InternalParser().WithPos();
 }
 
-public sealed record KarelTypeName(string Identifier)
+public sealed record KarelTypeName(string Identifier, int? Group)
     : KarelDataType, IKarelParser<KarelDataType>
 {
     public new static Parser<KarelDataType> GetParser()
-        => KarelCommon.Identifier.Or(KarelCommon.Reserved).Select(ident =>
-            new KarelTypeName(ident));
+        => from ident in KarelCommon.Identifier.Or(KarelCommon.Reserved)
+           from grp in (from kw in KarelCommon.Keyword("IN")
+                        from kww in KarelCommon.Keyword("GROUP")
+                        from grp in Parse.Number.BetweenBrackets().Select(int.Parse)
+                        select grp).Optional()
+           select new KarelTypeName(ident, grp.IsDefined ? grp.Get() : null);
 }
 
 public sealed record KarelTypeString(int Size)
@@ -59,12 +63,12 @@ public sealed record KarelTypeString(int Size)
            select new KarelTypeString(size);
 }
 
-public sealed record KarelTypeArray(List<int> Size, KarelDataType Type)
+public sealed record KarelTypeArray(List<KarelValue> Size, KarelDataType Type)
     : KarelDataType, IKarelParser<KarelDataType>
 {
     public new static Parser<KarelDataType> GetParser()
         => from kw in KarelCommon.Keyword("ARRAY")
-           from size in Parse.Number.Select(int.Parse)
+           from size in KarelInteger.GetParser().Or(KarelVariableAccess.GetParser())
             .DelimitedBy(Parse.Char(','), 1, int.MaxValue)
             .BetweenBrackets().Optional()
            from sep in KarelCommon.Keyword("OF")
@@ -107,7 +111,7 @@ public sealed record KarelStructure(List<KarelField> Fields)
 {
     private static Parser<KarelStructure> InternalParser()
         => from structOpen in KarelCommon.Keyword("STRUCTURE")
-           from fields in KarelField.GetParser().AtLeastOnce()
+           from fields in KarelField.GetParser().IgnoreComments().AtLeastOnce()
            from structClose in KarelCommon.Keyword("ENDSTRUCTURE")
            select new KarelStructure(fields.ToList());
 
@@ -121,8 +125,8 @@ public record KarelField(string Identifier, KarelDataType Type)
     private static Parser<KarelField> InternalParser()
         => from ident in KarelCommon.Identifier
            from sep in KarelCommon.Keyword(":")
-           from type in Parse.Ref(() => KarelDataType.GetParser())
-           select new KarelField(ident, (KarelDataType)type);
+           from type in Parse.Ref(KarelDataType.GetParser)
+           select new KarelField(ident, type);
 
     public static Parser<KarelField> GetParser()
         => InternalParser().WithPos();

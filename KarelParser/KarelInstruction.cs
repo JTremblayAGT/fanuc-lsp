@@ -25,6 +25,7 @@ public abstract record KarelStatement : WithPosition, IKarelParser<KarelStatemen
             .Or(KarelFor.GetParser())
             .Or(KarelGoto.GetParser())
             .Or(KarelHold.GetParser())
+            .Or(KarelIfThenElse.GetParser())
             .Or(KarelIfThen.GetParser())
             .Or(KarelOpenFile.GetParser())
             .Or(KarelOpenHand.GetParser())
@@ -45,6 +46,7 @@ public abstract record KarelStatement : WithPosition, IKarelParser<KarelStatemen
             .Or(KarelWait.GetParser())
             .Or(KarelWhile.GetParser())
             .Or(KarelWrite.GetParser())
+            .IgnoreComments()
             .WithPos();
 
 }
