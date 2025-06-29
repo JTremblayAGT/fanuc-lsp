@@ -61,6 +61,22 @@ public class ContentRange
 
     [JsonPropertyName("end")]
     public ContentPosition End { get; set; } = new();
+
+    // TODO: neovim does 0-based lines, need to make sure that VSC*de also does, or figure out how to adjust accordingly
+    public static ContentRange WholeFile(string content)
+        => new ContentRange
+        {
+            Start = new ContentPosition
+            {
+                Line = 0,
+                Character = 0
+            },
+            End = new ContentPosition
+            {
+                Line = content.Split("\n").Length - 1,
+                Character = (content.Split("\n").LastOrDefault()?.Length ?? 1) - 1
+            }
+        };
 }
 
 public class TextDocumentContentChangeEvent

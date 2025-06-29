@@ -75,12 +75,12 @@ public sealed class LspServerState(string logFilePath)
         return await UpdateParsedProgram(document.Uri);
     }
 
-    public Diagnostic[] OnKarelDocumentOpen(TextDocumentItem document)
+    public async Task<IResult<KarelProgram>> OnKarelDocumentOpen(TextDocumentItem document)
     {
         OpenedTextDocuments.Add(document.Uri,
             new(document, new(), DocumentType.Karel, default(RobotProgram)));
 
-        return [];
+        return await UpdateParsedKlProgram(document.Uri);
     }
 
     public void UpdateDocumentText(string uri, TextDocumentContentChangeEvent[] changes)
@@ -230,6 +230,26 @@ public sealed class LspServerState(string logFilePath)
         OpenedTextDocuments[document.Uri] = documentState with
         {
             Program = result.WasSuccessful ? new TppProgram(result.Value) : documentState.Program
+        };
+        return result;
+    }
+
+    public async Task<IResult<KarelProgram>> UpdateParsedKlProgram(string uri)
+        => await UpdateParsedKlProgram(OpenedTextDocuments[uri]);
+
+    private async Task<IResult<KarelProgram>> UpdateParsedKlProgram(TextDocumentState documentState)
+    {
+        var document = documentState.TextDocument;
+
+        if (documentState.Type == DocumentType.Karel)
+        {
+            throw new InvalidOperationException($"Karel programs aren't parsed");
+        }
+
+        var result = await Task.Run(() => KarelProgram.ProcessAndParse(document.Text));
+        OpenedTextDocuments[document.Uri] = documentState with
+        {
+            Program = result.WasSuccessful ? new KlProgram(result.Value) : documentState.Program
         };
         return result;
     }

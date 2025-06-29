@@ -1,4 +1,5 @@
 using FanucTpLsp.JsonRPC;
+using FanucTpLsp.Lsp.Format;
 using FanucTpLsp.Lsp.State;
 using KarelParser;
 using Sprache;
@@ -96,7 +97,7 @@ public class LspServer(string logFilePath)
                             "[", "]"  // Also adding bracket characters for position/register triggers
                         ]
                     },
-                    FormattingProvider = false,
+                    FormattingProvider = true,
                     RangeFormattingProvider = false,
                 },
                 ServerInfo = new()
@@ -134,11 +135,13 @@ public class LspServer(string logFilePath)
             return;
         }
 
-        //if (notification.Params.TextDocument.Uri.EndsWith(".kl", StringComparison.OrdinalIgnoreCase))
-        //{
-        //    var diagnostics = _state.OnKarelDocumentOpen(notification.Params.TextDocument);
-        //    return;
-        //}
+        if (notification.Params.TextDocument.Uri.EndsWith(".kl", StringComparison.OrdinalIgnoreCase))
+        {
+            await _state.OnKarelDocumentOpen(notification.Params.TextDocument)
+                .ContinueWith(async result => ParseKarelResultToDiagnostics(await result, notification.Params.TextDocument.Uri))
+                .ConfigureAwait(false);
+            return;
+        }
 
         await _state.OnTpDocumentOpen(notification.Params.TextDocument)
             .ContinueWith(async result => ParseResultToDiagnostics(await result, notification.Params.TextDocument.Uri))
@@ -159,7 +162,7 @@ public class LspServer(string logFilePath)
             LogMessage($"[TextDocumentDidClose]: Document not opened: {notification?.Params.TextDocument.Uri}");
         }
 
-        await Task.Run(() => _state.OpenedTextDocuments.Remove(notification.Params.TextDocument.Uri))
+        await Task.Run(() => _state.OpenedTextDocuments.Remove(notification!.Params.TextDocument.Uri))
             .ConfigureAwait(false);
     }
 
@@ -269,15 +272,38 @@ public class LspServer(string logFilePath)
         });
     }
 
-    //private TextDocumentFormattingResponse? HandleTextDocumentFormatting(string json, Func<ResponseMessage, Task> callback)
-    //{
-    //    if (JsonRpcDecoder.Decode<TextDocumentFormattingRequest>(json)
-    //            is not { } request)
-    //    {
-    //        throw new JsonRpcException(ErrorCodes.InvalidRequest, "Failed to decode TextDocumentFormattingResponse");
-    //    }
-    //    return null;
-    //}
+    private TextDocumentFormattingResponse? HandleTextDocumentFormatting(string json, Func<ResponseMessage, Task> callback)
+    {
+        if (JsonRpcDecoder.Decode<TextDocumentFormattingRequest>(json)
+                is not { } request)
+        {
+            throw new JsonRpcException(ErrorCodes.InvalidRequest, "Failed to decode TextDocumentFormattingResponse");
+        }
+
+        if (!_state.OpenedTextDocuments.TryGetValue(request.Params.TextDocument.Uri, out var documentState))
+        {
+            var errMsg = $"[TextDocumentDidChange]: Document not opened: {request.Params.TextDocument.Uri}";
+            LogMessage(errMsg);
+            throw new JsonRpcException(ErrorCodes.InvalidRequest, errMsg);
+        }
+
+        return new()
+        {
+            Id = request.Id,
+            Result = [
+                new TextEdit
+                {
+                    Range = ContentRange.WholeFile(documentState.TextDocument.Text),
+                    NewText = documentState.Type switch
+                    {
+                        DocumentType.Tp => (new TpFormatter()).Format(documentState.TextDocument.Text, request.Params.Options),
+                        DocumentType.Karel => documentState.TextDocument.Text, // TODO
+                        _ => throw new JsonRpcException(ErrorCodes.InvalidRequest, $"Unsupported file type: [{documentState.Type}]")
+                    }
+                }
+            ]
+        };
+    }
 
     //private TextDocumentFormattingResponse? HandleTextDocumentRangeFormatting(string json, Func<ResponseMessage, Task> callback)
     //{
