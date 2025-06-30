@@ -69,11 +69,11 @@ internal sealed partial class KlVariableCompletionProvider : ICompletionProvider
         {
             return [];
         }
-
+        var currLabel = labels[0].Remove(labels[0].IndexOf('['));
         if (prog.Declarations
                 .OfType<KarelVariableDeclaration>()
                 .SelectMany(decl => decl.Variable)
-                .FirstOrDefault(kvar => kvar.Identifier.Equals(labels[0].Remove(labels[0].IndexOf('[')), StringComparison.OrdinalIgnoreCase))
+                .FirstOrDefault(kvar => kvar.Identifier.Equals(currLabel, StringComparison.OrdinalIgnoreCase))
                 is not { } karelVar)
         {
             return [];
@@ -107,7 +107,8 @@ internal sealed partial class KlVariableCompletionProvider : ICompletionProvider
 
     private static CompletionItem[] TraverseIfStructure(string[] labels, KarelTypeName typeName, Dictionary<string, KarelStructure> structures)
     {
-        if (structures.TryGetValue(labels[0].Remove(labels[0].IndexOf('[')), out var structure))
+        var currLabel = labels[0].Remove(labels[0].IndexOf('['));
+        if (structures.TryGetValue(currLabel, out var structure))
         {
             return [];
         }
@@ -130,8 +131,9 @@ internal sealed partial class KlVariableCompletionProvider : ICompletionProvider
             }).ToArray();
         }
 
+        var currLabel = labels[0].Remove(labels[0].IndexOf('['));
         if (structure.Fields
-                .FirstOrDefault(field => field.Identifier.Equals(labels[0].Remove(labels[0].IndexOf('[')), StringComparison.OrdinalIgnoreCase))
+                .FirstOrDefault(field => field.Identifier.Equals(currLabel, StringComparison.OrdinalIgnoreCase))
                 is not KarelField field)
         {
             return [];
