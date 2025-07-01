@@ -42,8 +42,10 @@ public class LspServer(string logFilePath)
             case LspMethods.TextDocumentCompletion:
                 await HandleTextDocumentCompletion(json, callback);
                 break;
-            case LspMethods.TextDocumentCodeAction:
             case LspMethods.TextDocumentFormatting:
+                await HandleTextDocumentFormatting(json, callback);
+                break;
+            case LspMethods.TextDocumentCodeAction:
             case LspMethods.TextDocumentRangeFormatting:
                 break;
             case LspMethods.Shutdown:
@@ -97,7 +99,7 @@ public class LspServer(string logFilePath)
                             "[", "]", "."
                         ]
                     },
-                    FormattingProvider = false,
+                    FormattingProvider = true,
                     RangeFormattingProvider = false,
                 },
                 ServerInfo = new()
@@ -162,7 +164,7 @@ public class LspServer(string logFilePath)
             LogMessage($"[TextDocumentDidClose]: Document not opened: {notification?.Params.TextDocument.Uri}");
         }
 
-        await Task.Run(() => _state.OpenedTextDocuments.Remove(notification!.Params.TextDocument.Uri))
+        await Task.Run(() => _state.OpenedTextDocuments.Remove(notification!.Params.TextDocument.Uri, out var _))
             .ConfigureAwait(false);
     }
 
@@ -272,7 +274,7 @@ public class LspServer(string logFilePath)
         });
     }
 
-    private TextDocumentFormattingResponse? HandleTextDocumentFormatting(string json, Func<ResponseMessage, Task> callback)
+    private async Task HandleTextDocumentFormatting(string json, Func<ResponseMessage, Task> callback)
     {
         if (JsonRpcDecoder.Decode<TextDocumentFormattingRequest>(json)
                 is not { } request)
@@ -287,11 +289,11 @@ public class LspServer(string logFilePath)
             throw new JsonRpcException(ErrorCodes.InvalidRequest, errMsg);
         }
 
-        return new()
+        await callback(new TextDocumentFormattingResponse
         {
             Id = request.Id,
             Result = [
-                new TextEdit
+                new()
                 {
                     Range = ContentRange.WholeFile(documentState.TextDocument.Text),
                     NewText = documentState.Type switch
@@ -302,7 +304,7 @@ public class LspServer(string logFilePath)
                     }
                 }
             ]
-        };
+        });
     }
 
     //private TextDocumentFormattingResponse? HandleTextDocumentRangeFormatting(string json, Func<ResponseMessage, Task> callback)

@@ -5,6 +5,7 @@ using FanucTpLsp.Lsp.Definition;
 using FanucTpLsp.Lsp.Hover;
 
 using Sprache;
+using System.Collections.Concurrent;
 
 namespace FanucTpLsp.Lsp.State;
 
@@ -32,8 +33,8 @@ public sealed class LspServerState(string logFilePath)
     public bool IsInitialized { get; set; } = false;
     public bool IsShutdown { get; set; } = false;
     public string LastChangedDocumentUri { get; set; } = string.Empty;
-    public Dictionary<string, TextDocumentState> OpenedTextDocuments { get; set; } = new();
-    public Dictionary<string, TextDocumentState> AllTextDocuments { get; set; } = new();
+    public ConcurrentDictionary<string, TextDocumentState> OpenedTextDocuments { get; set; } = new();
+    public ConcurrentDictionary<string, TextDocumentState> AllTextDocuments { get; set; } = new();
 
     private static readonly List<ICompletionProvider> CompletionProviders =
     [
@@ -63,14 +64,14 @@ public sealed class LspServerState(string logFilePath)
         // TODO: need to make this a background task (probably with a directory watcher)
         // in order to let the server start faster (maybe later)
         // TODO: We'll also want to index references to stuff in a worker thread
-        Task.Run(() => AllTextDocuments = FindLsAndKlFiles());
+        Task.Run(() => FindLsAndKlFiles());
 
         return IsInitialized;
     }
 
     public async Task<IResult<TpProgram>> OnTpDocumentOpen(TextDocumentItem document)
     {
-        OpenedTextDocuments.Add(document.Uri,
+        OpenedTextDocuments.TryAdd(document.Uri,
             new(document, new(), DocumentType.Tp, default(RobotProgram)));
 
         return await UpdateParsedProgram(document.Uri);
@@ -78,7 +79,7 @@ public sealed class LspServerState(string logFilePath)
 
     public async Task<IResult<KarelProgram>> OnKarelDocumentOpen(TextDocumentItem document)
     {
-        OpenedTextDocuments.Add(document.Uri,
+        OpenedTextDocuments.TryAdd(document.Uri,
             new(document, new(), DocumentType.Karel, default(RobotProgram)));
 
         return await UpdateParsedKlProgram(document.Uri);
@@ -313,7 +314,7 @@ public sealed class LspServerState(string logFilePath)
     private static KlProgram? KarelValueOr(IResult<KarelProgram> result)
         => result.WasSuccessful ? new KlProgram(result.Value) : null;
 
-    private Dictionary<string, TextDocumentState> FindLsAndKlFiles()
+    private void FindLsAndKlFiles()
     {
         var currentDirectory = Directory.GetCurrentDirectory();
         LogMessage($"Searching directory for files: {currentDirectory}");
@@ -326,38 +327,33 @@ public sealed class LspServerState(string logFilePath)
             var klFiles = Directory.EnumerateFiles(Path.Combine(currentDirectory, "KAREL"), "*.kl", SearchOption.AllDirectories).ToList();
             LogMessage($"Found ${klFiles.Count} KL files.");
 
-            // TODO: Multithread this process, it is way too slow
-            Dictionary<string, TextDocumentState> dict = new();
-            foreach (var path in lsFiles)
+            Parallel.ForEach(lsFiles, path =>
             {
                 var text = File.ReadAllText(path);
-                dict.Add(path, new(new()
+                AllTextDocuments.TryAdd(path, new(new()
                 {
                     Uri = path,
                     LanguageId = "tp",
                     Version = 0,
                     Text = text
                 }, new(), DocumentType.Tp, TppValueOr(TpProgram.GetParser().TryParse(text))));
-            }
-            foreach (var path in klFiles)
+            });
+            Parallel.ForEach(klFiles, path =>
             {
                 var text = File.ReadAllText(path);
-                dict.Add(path, new(new()
+                AllTextDocuments.TryAdd(path, new(new()
                 {
                     Uri = path,
                     LanguageId = "karel",
                     Version = 0,
                     Text = text
                 }, new(), DocumentType.Karel, KarelValueOr(KarelProgram.GetParser().TryParse(text))));
-            }
-
-            return dict;
+            });
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error searching for files: {ex.Message}");
             LogMessage($"Error while searching:{ex.GetType()} {ex.Message}");
-            return [];
         }
     }
 

@@ -53,6 +53,7 @@ public class RequestMessage : Message
 [JsonDerivedType(typeof(TextDocumentCodeActionResponse))]
 [JsonDerivedType(typeof(TextDocumentCompletionResponse))]
 [JsonDerivedType(typeof(PublishDiagnosticsNotification))]
+[JsonDerivedType(typeof(TextDocumentFormattingResponse))]
 [JsonDerivedType(typeof(ResponseError))]
 public class ResponseMessage : Message
 {
