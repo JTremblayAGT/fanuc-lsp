@@ -18,22 +18,22 @@ internal sealed partial class KlVariableCompletionProvider : ICompletionProvider
     public CompletionItem[] GetCompletions(TpProgram program, string lineText, int column, LspServerState serverState)
         => CompletionProviderUtils.TokenizeInput(lineText[..column]) switch
         {
-            [.., string variable] when variable.StartsWith('$') => CompleteVariable(variable, serverState),
+            [.., { } variable] when variable.Contains('$') => CompleteVariable(variable, serverState),
             _ => []
         };
 
-    private CompletionItem[] CompleteVariable(string variable, LspServerState serverState)
+    private static CompletionItem[] CompleteVariable(string variable, LspServerState serverState)
         => variable switch
         {
-            string partialVar when Variable().IsMatch(partialVar) => GetVariableCompletions(partialVar, serverState),
-            string prog when ProgramName().IsMatch(prog) => CompletionProviderUtils.GetKarelProgramNames(serverState),
+            not null when Variable().IsMatch(variable) => GetVariableCompletions(variable, serverState),
+            not null when ProgramName().IsMatch(variable) => CompletionProviderUtils.GetKarelProgramNames(serverState),
             _ => []
         };
 
     private static CompletionItem[] GetVariableCompletions(string partialVar, LspServerState serverState)
     {
         var match = Variable().Match(partialVar);
-        var programName = match.Groups[0].Value;
+        var programName = match.Groups[1].Value;
 
         if (serverState.AllTextDocuments
                 .FirstOrDefault(kvp => Path.GetFileNameWithoutExtension(kvp.Key)
@@ -43,7 +43,7 @@ internal sealed partial class KlVariableCompletionProvider : ICompletionProvider
             return [];
         }
 
-        var labels = partialVar.Replace($"$[{programName.ToUpper()}]", string.Empty).Split('.');
+        var labels = partialVar[(partialVar.IndexOf('=') + 1)..].Replace($"$[{programName.ToUpper()}]", string.Empty).Split('.');
         // Add Base Vars
 
         return labels.Length switch
@@ -69,7 +69,11 @@ internal sealed partial class KlVariableCompletionProvider : ICompletionProvider
         {
             return [];
         }
-        var currLabel = labels[0].Remove(labels[0].IndexOf('['));
+        var currLabel = labels.First();
+        if (currLabel.Contains('['))
+        {
+            currLabel = currLabel.Remove(currLabel.IndexOf('['));
+        }
         if (prog.Declarations
                 .OfType<KarelVariableDeclaration>()
                 .SelectMany(decl => decl.Variable)
@@ -84,7 +88,7 @@ internal sealed partial class KlVariableCompletionProvider : ICompletionProvider
             .SelectMany(decl => decl.Type)
             .Where(typ =>
             {
-                if (typ.Type is not KarelUserType userType)
+                if (typ.Type is not { } userType)
                 {
                     return false;
                 }
@@ -93,7 +97,7 @@ internal sealed partial class KlVariableCompletionProvider : ICompletionProvider
             })
             .ToDictionary(typ => typ.Identifier, typ => (KarelStructure)((KarelUserType)typ.Type));
 
-        return karelVar.Type as KarelDataType switch
+        return karelVar.Type switch
         {
             KarelTypeName typeName => TraverseIfStructure(labels[1..], typeName, structures),
             KarelTypeArray arrayType => arrayType.Type switch
@@ -107,8 +111,12 @@ internal sealed partial class KlVariableCompletionProvider : ICompletionProvider
 
     private static CompletionItem[] TraverseIfStructure(string[] labels, KarelTypeName typeName, Dictionary<string, KarelStructure> structures)
     {
-        var currLabel = labels[0].Remove(labels[0].IndexOf('['));
-        if (structures.TryGetValue(currLabel, out var structure))
+        var currLabel = labels.First();
+        if (currLabel.Contains('['))
+        {
+            currLabel = currLabel.Remove(currLabel.IndexOf('['));
+        }
+        if (!structures.TryGetValue(typeName.Identifier, out var structure))
         {
             return [];
         }
@@ -131,15 +139,19 @@ internal sealed partial class KlVariableCompletionProvider : ICompletionProvider
             }).ToArray();
         }
 
-        var currLabel = labels[0].Remove(labels[0].IndexOf('['));
+        var currLabel = labels.First();
+        if (currLabel.Contains('['))
+        {
+            currLabel = currLabel.Remove(currLabel.IndexOf('['));
+        }
         if (structure.Fields
                 .FirstOrDefault(field => field.Identifier.Equals(currLabel, StringComparison.OrdinalIgnoreCase))
-                is not KarelField field)
+                is not { } field)
         {
             return [];
         }
 
-        return field.Type as KarelDataType switch
+        return field.Type switch
         {
             KarelTypeName typeName => TraverseIfStructure(labels[1..], typeName, structures),
             KarelTypeArray arrayType => arrayType.Type switch

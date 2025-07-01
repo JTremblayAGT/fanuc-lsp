@@ -3,6 +3,7 @@ using Sprache;
 
 namespace KarelParser;
 
+// TODO: pretty printing of types
 public sealed record KarelType(string Identifier, KarelUserType Type, string FromProgram)
     : WithPosition, IKarelParser<KarelType>
 {

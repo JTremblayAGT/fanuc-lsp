@@ -94,10 +94,10 @@ public class LspServer(string logFilePath)
                             "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
                             "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
                             "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
-                            "[", "]"  // Also adding bracket characters for position/register triggers
+                            "[", "]", "."
                         ]
                     },
-                    FormattingProvider = true,
+                    FormattingProvider = false,
                     RangeFormattingProvider = false,
                 },
                 ServerInfo = new()

@@ -41,6 +41,7 @@ public sealed class LspServerState(string logFilePath)
         new TpMotionInstructionCompletionProvider(),
         new TpAssignmentCompletionProvider(),
         new TpCallCompletionProvider(),
+        new KlVariableCompletionProvider(),
     ];
 
     private static readonly List<IDefinitionProvider> DefinitionProviders =
@@ -325,6 +326,7 @@ public sealed class LspServerState(string logFilePath)
             var klFiles = Directory.EnumerateFiles(Path.Combine(currentDirectory, "KAREL"), "*.kl", SearchOption.AllDirectories).ToList();
             LogMessage($"Found ${klFiles.Count} KL files.");
 
+            // TODO: Multithread this process, it is way too slow
             Dictionary<string, TextDocumentState> dict = new();
             foreach (var path in lsFiles)
             {
