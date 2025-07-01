@@ -10,25 +10,25 @@ public partial class TpFormatter : IFormatter
     [GeneratedRegex(@"^\s*([JLCS])\s+")]
     private static partial Regex MotionInstructionRegex();
 
-    [GeneratedRegex("IF\\s+.+THEN")]
+    [GeneratedRegex("^IF\\s+.+THEN")]
     private static partial Regex IfThenRegex();
 
-    [GeneratedRegex("FOR\\s+.+")]
+    [GeneratedRegex("^FOR\\s+.+")]
     private static partial Regex ForRegex();
 
-    [GeneratedRegex("ENDIF|ENDFOR")]
+    [GeneratedRegex("^(ENDIF|ENDFOR)")]
     private static partial Regex EndBlockRegex();
 
-    [GeneratedRegex("ELSE\\s*;")]
+    [GeneratedRegex(@"^\s*ELSE$")]
     private static partial Regex ElseRegex();
 
-    [GeneratedRegex("SELECT\\s+")]
+    [GeneratedRegex(@"^SELECT\s+")]
     private static partial Regex SelectRegex();
 
-    [GeneratedRegex("=\\s*[^,]+,")]
+    [GeneratedRegex(@"=\s*[^,]+,")]
     private static partial Regex SelectCaseRegex();
 
-    [GeneratedRegex("^\\s*ELSE,")]
+    [GeneratedRegex(@"^\s*ELSE,")]
     private static partial Regex SelectElseRegex();
 
     private int _indentLevel = 0;
@@ -50,15 +50,18 @@ public partial class TpFormatter : IFormatter
         var rest = sections.Last().Split("/POS", 2);
 
         // First pass: Calculate SELECT statement alignment positions
-        var selectBlocks = FindSelectBlocks(rest.First().Split('\n'));
+        var mainLines = rest.First().Split("\r\n");
+        var selectBlocks = FindSelectBlocks(mainLines);
         _indentLevel = 0;
 
-        // Second pass: Format lines
-        rest.First()
-            .Split("\r\n")
-            .Select(line => FormatMainLine(line, options, selectBlocks))
-            .ToList()
-            .ForEach(line => output.WriteLine(line));
+        for (var i = 0; i < mainLines.Length; ++i)
+        {
+            var line = FormatMainLine(i, mainLines[i], options, selectBlocks);
+            if (!string.IsNullOrWhiteSpace(line))
+            {
+                output.WriteLine(line);
+            }
+        }
 
         if (rest.Length != 2)
         {
@@ -66,7 +69,7 @@ public partial class TpFormatter : IFormatter
         }
 
         output.WriteLine("/POS");
-        output.Write(rest.Last());
+        output.Write(rest.Last().Trim());
 
         return output.ToString();
     }
@@ -131,7 +134,7 @@ public partial class TpFormatter : IFormatter
         return selectBlocks;
     }
 
-    private string FormatMainLine(string line, FormattingOptions options, Dictionary<int, SelectInfo> selectBlocks)
+    private string FormatMainLine(int lineNumber, string line, FormattingOptions options, Dictionary<int, SelectInfo> selectBlocks)
     {
         var match = LineContentRegex().Match(line);
         var content = match.Success ? match.Groups[1].Value.Trim() : line;
@@ -164,13 +167,13 @@ public partial class TpFormatter : IFormatter
 
         foreach (var kvp in selectBlocks)
         {
-            if (kvp.Value.Cases.Contains(line.GetHashCode()))
+            if (kvp.Value.Cases.Contains(lineNumber))
             {
                 isSelectCase = true;
                 selectInfo = kvp.Value;
                 break;
             }
-            else if (kvp.Value.ElseCase.HasValue && kvp.Value.ElseCase.Value == line.GetHashCode())
+            else if (kvp.Value.ElseCase.HasValue && kvp.Value.ElseCase.Value == lineNumber)
             {
                 isElseBranch = true;
                 selectInfo = kvp.Value;
@@ -228,7 +231,7 @@ public partial class TpFormatter : IFormatter
 
     private class SelectInfo
     {
-        public List<int> Cases { get; set; } = new();
+        public List<int> Cases { get; init; } = [];
         public int? ElseCase { get; set; }
         public int MaxEqualsPos { get; set; }
         public int MaxCommaPos { get; set; }
