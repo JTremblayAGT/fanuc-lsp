@@ -64,7 +64,10 @@ public sealed class LspServerState(string logFilePath)
         // TODO: need to make this a background task (probably with a directory watcher)
         // in order to let the server start faster (maybe later)
         // TODO: We'll also want to index references to stuff in a worker thread
-        Task.Run(() => FindLsAndKlFiles());
+        Task.Run(() => FindLsFiles());
+        Task.Run(() => FindKlFiles());
+        Task.Run(() => BuildSysVarIndex());
+        Task.Run(() => BuildKlBuiltinIndex());
 
         return IsInitialized;
     }
@@ -314,7 +317,7 @@ public sealed class LspServerState(string logFilePath)
     private static KlProgram? KarelValueOr(IResult<KarelProgram> result)
         => result.WasSuccessful ? new KlProgram(result.Value) : null;
 
-    private void FindLsAndKlFiles()
+    private void FindLsFiles()
     {
         var currentDirectory = Directory.GetCurrentDirectory();
         LogMessage($"Searching directory for files: {currentDirectory}");
@@ -323,9 +326,6 @@ public sealed class LspServerState(string logFilePath)
             // Use SearchOption.AllDirectories to recursively search all subdirectories
             var lsFiles = Directory.EnumerateFiles(Path.Combine(currentDirectory, "TPP"), "*.ls", SearchOption.AllDirectories).ToList();
             LogMessage($"Found ${lsFiles.Count} LS files.");
-
-            var klFiles = Directory.EnumerateFiles(Path.Combine(currentDirectory, "KAREL"), "*.kl", SearchOption.AllDirectories).ToList();
-            LogMessage($"Found ${klFiles.Count} KL files.");
 
             Parallel.ForEach(lsFiles, path =>
             {
@@ -338,6 +338,23 @@ public sealed class LspServerState(string logFilePath)
                     Text = text
                 }, new(), DocumentType.Tp, TppValueOr(TpProgram.GetParser().TryParse(text))));
             });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error searching for files: {ex.Message}");
+            LogMessage($"Error while searching:{ex.GetType()} {ex.Message}");
+        }
+    }
+
+    private void FindKlFiles()
+    {
+        var currentDirectory = Directory.GetCurrentDirectory();
+        LogMessage($"Searching directory for files: {currentDirectory}");
+        try
+        {
+            var klFiles = Directory.EnumerateFiles(Path.Combine(currentDirectory, "KAREL"), "*.kl", SearchOption.AllDirectories).ToList();
+            LogMessage($"Found ${klFiles.Count} KL files.");
+
             Parallel.ForEach(klFiles, path =>
             {
                 var text = File.ReadAllText(path);
@@ -355,6 +372,16 @@ public sealed class LspServerState(string logFilePath)
             Console.WriteLine($"Error searching for files: {ex.Message}");
             LogMessage($"Error while searching:{ex.GetType()} {ex.Message}");
         }
+    }
+
+    private void BuildSysVarIndex()
+    {
+        // TODO: Parse VA files in resources & build tree
+    }
+
+    private void BuildKlBuiltinIndex()
+    {
+        // TODO: Parse karelbuiltin.code-snippets file into dict
     }
 
     private void LogMessage(string message)

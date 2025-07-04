@@ -2,6 +2,14 @@
 
 namespace KarelParser;
 
+/*
+ * TODO:
+ * Translator directives:
+ *
+ * The translator directives should probably be parsed (and then removed or ignored)
+ * In a first pass to avoid conflicting with the rest of the program for parsing
+ */
+
 public sealed record KarelProgram(string Name,
     List<KarelTranslatorDirective> TranslatorDirectives,
     List<KarelDeclaration> Declarations,
@@ -12,7 +20,7 @@ public sealed record KarelProgram(string Name,
 
     public static Parser<KarelProgram> GetParser()
         => from name in KarelCommon.Keyword("PROGRAM").Then(_ => KarelCommon.Identifier).IgnoreComments()
-           from translatorDirectives in KarelTranslatorDirective.GetParser().IgnoreComments().XMany() // TODO: translator directives can actually be anywhere
+           from translatorDirectives in KarelTranslatorDirective.GetParser().IgnoreComments().XMany()
            from declarations in KarelDeclaration.GetParser().IgnoreComments().XMany()
            from routines in KarelRoutine.GetParser().IgnoreComments().XMany()
            from begin in KarelCommon.Keyword("BEGIN").IgnoreComments()
@@ -33,13 +41,6 @@ public sealed record KarelProgram(string Name,
             .TakeWhile(line => line.StartsWith("--") || string.IsNullOrWhiteSpace(line))
             .Where(line => !string.IsNullOrWhiteSpace(line))
             .ToList();
-
-        //var filteredLines = lines
-        //    .Select(line => line.StartsWith("--") ? string.Empty : line)
-        //    .Select(line => line.Replace("\t", "    "))
-        //    .Select(line => line.Split("--").First());
-
-        //var processedInput = lines.Aggregate((acc, line) => acc + "\r\n" + line);
 
         return GetParser().WithErrorContext("PROGRAM").TryParse(input) switch
         {

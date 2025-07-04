@@ -1,0 +1,2920 @@
+{
+    "ABS Built-In Function":{
+        "prefix": "ABS",
+        "body": ["ABS(${1:x})"],
+        "description": ["Purpose: Returns the absolute value of the argument x, which can be an INTEGER or REAL expression. \n",
+        "    Function Return Type :INTEGER or REAL",
+        "    [in] x :INTEGER or REAL expression \n",
+        "%ENVIRONMENT  :SYSTEM\n\n"]
+    },
+    
+    "ACOS Built-In Function":{
+        "prefix": "ACOS",
+        "body": ["ACOS(${1:x})"],
+        "description": ["Purpose: Returns the arc cosine (cos-1) in degrees of the specified argument. \n",
+        "    Function Return Type :REAL",
+        "    [in] x :REAL \n",
+        "%ENVIRONMENT  :SYSTEM\n\n"]
+    },
+    
+    "APPROACH Built-In Function":{
+        "prefix": "APPROACH",
+        "body": ["APPROACH(${1:posn})"],
+        "description": ["Purpose: Returns a unit VECTOR representing the z-axis of a POSITION argument. \n",
+        "    Function Return Type :VECTOR",
+        "    [in] posn :POSITION \n",
+        "%ENVIRONMENT  :VECTR\n\n"]
+    },
+    
+    "ARRAY_LEN Built-In Function":{
+        "prefix": "ARRAY_LEN",
+        "body": ["ARRAY_LEN(${1:ary_var})"],
+        "description": ["Purpose: Returns the number of elements contained in the specified array argument. \n",
+        "    Function Return Type :INTEGER",
+        "    [in] ary_var :ARRAY \n",
+        "%ENVIRONMENT  :SYSTEM\n\n"]
+    },
+    
+    "ASIN Built-In Function":{
+        "prefix": "ASIN",
+        "body": ["ASIN(${1:x})"],
+        "description": ["Purpose: Returns arcsine (sin-1) in degrees of the specified argument. \n",
+        "    Function Return Type :REAL",
+        "    [in] x :REAL \n",
+        "%ENVIRONMENT  :SYSTEM\n\n"]
+    },
+    
+    "ATAN2 Built-In Function":{
+        "prefix": "ATAN2",
+        "body": ["ATAN2(${1:x1},${2:y1})"],
+        "description": ["Purpose: Returns a REAL angle, measured counterclockwise in degrees, from the positive x-axis to a line connecting the origin and a point whose x- and y- coordinates are specified as the x- and yarguments. \n",
+        "    Function Return Type :REAL",
+        "    [in] x1 :REAL",
+        "    [in] y1 :REAL \n",
+        "%ENVIRONMENT  :SYSTEM\n\n"]
+    },
+    
+    "BYNAME Built-In Function":{
+        "prefix": "BYNAME",
+        "body": ["BYNAME(${1:prog_name},${2:var_name},${3:entry})"],
+        "description": ["Purpose: Allows a KAREL program to pass a variable, whose name is contained in a STRING, as a parameter to a KAREL routine. This means the programmer does not have to determine the variable name during program creation and translation.  \n",
+        "    [in] prog_name :STRING",
+        "    [in] var_name :STRING",
+        "    [in,out] entry :INTEGER \n",
+        "%ENVIRONMENT  :SYSTEM\n\n"]
+    },
+    
+    "BYTES_LEFT Built-In Function":{
+        "prefix": "BYTES_LEFT",
+        "body": ["BYTES_LEFT(${1:file_id})"],
+        "description": ["Purpose: Returns the number of bytes remaining in the current input data record. \n",
+        "    Function Return Type :INTEGER",
+        "    [in] file_id :FILE \n",
+        "%ENVIRONMENT  :FLBT\n\n"]
+    },
+    
+    "CHR Built-In Function":{
+        "prefix": "CHR",
+        "body": ["CHR(${1:code})"],
+        "description": ["Purpose: Returns the character that corresponds to a numeric code. \n",
+        "    Function Return Type :STRING",
+        "    [in] code :INTEGER \n",
+        "%ENVIRONMENT  :SYSTEM\n\n"]
+    },
+    
+    "COS Built-In Function":{
+        "prefix": "COS",
+        "body": ["COS(${1:angle})"],
+        "description": ["Purpose: Returns the REAL cosine of the REAL angle argument, specified in degrees. \n",
+        "    Function Return Type :REAL",
+        "    [in] angle :REAL expression \n",
+        "%ENVIRONMENT  :SYSTEM\n\n"]
+    },
+    
+    "CURJPOS Built-In Function":{
+        "prefix": "CURJPOS",
+        "body": ["CURJPOS(${1:axs_lim_mask},${2:ovr_trv_mask},${3:group_no})"],
+        "description": ["Purpose: Returns the current joint position of the tool center point (TCP) for the specified group of axes, even if one of the axes is in an overtravel. \n",
+        "    Function Return Type :JOINTPOS",
+        "    [out] axs_lim_mask :INTEGER",
+        "    [out] ovr_trv_mask :INTEGER",
+        "    [in] group_no :INTEGER \n",
+        "%ENVIRONMENT  :SYSTEM\n\n"]
+    },
+    
+    "CURPOS Built-In Function":{
+        "prefix": "CURPOS",
+        "body": ["CURPOS(${1:axis_limit_mask},${2:ovr_trv_mask},${3:group_no})"],
+        "description": ["Purpose: Returns the current Cartesian position of the tool center point (TCP) for the specified group of axes even if one of the axes is in an overtravel. \n",
+        "    Function Return Type :XYZWPREXT",
+        "    [out] axis_limit_mask :INTEGER",
+        "    [out] ovr_trv_mask :INTEGER",
+        "    [in] group_no :INTEGER \n",
+        "%ENVIRONMENT  :SYSTEM\n\n"]
+    },
+    
+    "CURR_PROG Built-In Function":{
+        "prefix": "CURR_PROG",
+        "body": ["CURR_PROG"],
+        "description": ["Purpose: Returns the name of the program currently being executed. \n",
+        "    Function Return Type :STRING[12] \n",
+        "%ENVIRONMENT  :BYNAM\n\n"]
+    },
+    
+    "EXP Built-In Function":{
+        "prefix": "EXP",
+        "body": ["EXP(${1:x})"],
+        "description": ["Purpose: Returns a REAL value equal to e (approximately 2.71828) raised to the power specified by a REAL argument. \n",
+        "    Function Return Type :REAL",
+        "    [in] x :REAL \n",
+        "%ENVIRONMENT  :SYSTEM\n\n"]
+    },
+    
+    "FRAME Built-In Function":{
+        "prefix": "FRAME",
+        "body": ["FRAME(${1:pos1},${2:pos2},${3:pos3},${4:pos4})"],
+        "description": ["Purpose: Returns a frame with a POSITION data type representing the transformation to the coordinate frame specified by three (or four) POSITION arguments.  \n",
+        "    Function Return Type :Position",
+        "    [in]pos1 :POSITION",
+        "    [in]pos2 :POSITION",
+        "    [in]pos3 :POSITION",
+        "    [in]pos4 :POSITION \n",
+        "%ENVIRONMENT  :SYSTEM\n\n"]
+    },
+    
+    "GET_FILE_POS Built-In Function":{
+        "prefix": "GET_FILE_POS",
+        "body": ["GET_FILE_POS(${1:file_id})"],
+        "description": ["Purpose: Returns the current file position (where the next READ or WRITE operation will take place) in the specified file. \n",
+        "    Function Return Type :INTEGER",
+        "    [in] file_id :FILE \n",
+        "%ENVIRONMENT  :FLBT\n\n"]
+    },
+    
+    "GET_JPOS_REG Built-In Function":{
+        "prefix": "GET_JPOS_REG",
+        "body": ["GET_JPOS_REG(${1:register_no},${2:status},${3:group_no})"],
+        "description": ["Purpose: Gets a JOINTPOS value from the specified register. \n",
+        "    Function Return Type :REGOPE",
+        "    [in] register_no :INTEGER",
+        "    [out] status :INTEGER",
+        "    [in] group_no :INTEGER \n",
+        "%ENVIRONMENT  :REGOPE\n\n"]
+    },
+    
+    "GET_JPOS_TPE Built-In Function":{
+        "prefix": "GET_JPOS_TPE",
+        "body": ["GET_JPOS_TPE(${1:open_id},${2:position_no},${3:status},${4:group_no})"],
+        "description": ["Purpose: Gets a JOINTPOS value from the specified position in the specified teach pendant program. \n",
+        "    Function Return Type :JOINTPOS",
+        "    [in] open_id :INTEGER",
+        "    [in] position_no :INTEGER",
+        "    [out] status :INTEGER",
+        "    [in] group_no :INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "GET_PORT_ATR Built-In Function":{
+        "prefix": "GET_PORT_ATR",
+        "body": ["GET_PORT_ATR(${1:port_id},${2:atr_type},${3:atr_value})"],
+        "description": ["Purpose: Gets an attribute from the specified port. \n",
+        "    Function Return Type :INTEGER",
+        "    [in] port_id :INTEGER",
+        "    [in] atr_type :INTEGER",
+        "    [out] atr_value :INTEGER \n",
+        "%ENVIRONMENT  :FLBT\n\n"]
+    },
+    
+    "GET_POS_REG Built-In Function":{
+        "prefix": "GET_POS_REG",
+        "body": ["GET_POS_REG(${1:register_no},${2:status},${3:group_no})"],
+        "description": ["Purpose: Gets an XYZWPR value from the specified register. \n",
+        "    Function Return Type :XYZWPREXT",
+        "    [in] register_no :INTEGER",
+        "    [out] status :INTEGER",
+        "    [in] group_no :INTEGER \n",
+        "%ENVIRONMENT  :REGOPE\n\n"]
+    },
+    
+    "GET_POS_TPE Built-In Function":{
+        "prefix": "GET_POS_TPE",
+        "body": ["GET_POS_TPE(${1:open_id},${2:position_no},${3:status},${4:group_no})"],
+        "description": ["Purpose: Gets an XYZWPREXT value from the specified position in the specified teach pendant program. \n",
+        "    Function Return Type :XYZWPREXT",
+        "    [in] open_id : INTEGER",
+        "    [in] position_no : INTEGER",
+        "    [out] status : INTEGER",
+        "    [in] group_no : INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "GET_USEC_TIM Built-In Function":{
+        "prefix": "GET_USEC_TIM",
+        "body": ["GET_USEC_TIM"],
+        "description": ["Purpose: Returns an INTEGER value indicating the current time in microseconds (1/1,000,000) from within the KAREL system.  \n",
+        "    Function Return Type: INTEGER \n",
+        "%ENVIRONMENT : TIM\n\n"]
+    },
+    
+    "INDEX Built-In Function":{
+        "prefix": "INDEX",
+        "body": ["INDEX(${1:main},${2:find})"],
+        "description": ["Purpose: Returns the index for the first character of the first occurrence of a specified STRING argument in another specified STRING argument. If the argument is not found, a 0 value is returned.  \n",
+        "    Function Return Type :INTEGER",
+        "    [in] main :STRING",
+        "    [in] find :STRING \n",
+        "%ENVIRONMENT  :SYSTEM\n\n"]
+    },
+    
+    "IN_RANGE Built-In Function":{
+        "prefix": "IN_RANGE",
+        "body": ["IN_RANGE(${1:posn})"],
+        "description": ["Purpose: Returns a BOOLEAN value indicating whether or not the specified position argument can be reached by a group of axes. \n",
+        "    Function Return Type :BOOLEAN",
+        "    [in] posn : XYZWPREXT \n",
+        "%ENVIRONMENT  :SYSTEM\n\n"]
+    },
+    
+    "INV Built-In Function":{
+        "prefix": "INV",
+        "body": ["INV(${1:pos})"],
+        "description": ["Purpose: Used in coordinate frame transformations with the relative position operator (:) to determine the coordinate values of a POSITION in a frame that differs from the frame in which that POSITION was recorded. \n",
+        "    Function Return Type :POSITION",
+        "    [in] pos :POSITION \n",
+        "%ENVIRONMENT  :SYSTEM\n\n"]
+    },
+    
+    "IO_STATUS Built-In Function":{
+        "prefix": "IO_STATUS",
+        "body": ["IO_STATUS(${1:file_id})"],
+        "description": ["Purpose: Returns an INTEGER value indicating the success or type of failure of the last operation on the file argument. \n",
+        "    Function Return Type :INTEGER",
+        "    [in] file_id :FILE \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "J_IN_RANGE Built-In Function":{
+        "prefix": "J_IN_RANGE",
+        "body": ["J_IN_RANGE(${1:posn})"],
+        "description": ["Purpose: Returns a BOOLEAN value indicating whether or not the specified joint position argument can be reached by a group of axes. \n",
+        "    Function Return Type :BOOLEAN",
+        "    [in] posn :JOINTPOS \n",
+        "%ENVIRONMENT  :SYSTEM\n\n"]
+    },
+    
+    "JOINT2POS Built-In Function":{
+        "prefix": "JOINT2POS",
+        "body": ["JOINT2POS(${1:in_jnt},${2:uframe},${3:utool},${4:config_ref},${5:out_pos},${6:wjnt_cfg},${7:ext_ang},${8:status})"],
+        "description": ["Purpose: This routine is used to convert joint angles (in_jnt) to a Cartesian position (out_pos) by calling the forward kinematics routine.  \n",
+        "    [in] in_jnt :Jointpos",
+        "    [in] uframe :POSITION",
+        "    [in] utool :POSITION",
+        "    [in] config_ref :INTEGER",
+        "    [out] out_pos :POSITION",
+        "    [out] wjnt_cfg :CONFIG",
+        "    [out] ext_ang :ARRAY OF REAL",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :MOTN\n\n"]
+    },
+    
+    "LN Built-In Function":{
+        "prefix": "LN",
+        "body": ["LN(${1:x})"],
+        "description": ["Purpose: Returns the natural logarithm of a specified REAL argument. \n",
+        "    Function Return Type :REAL",
+        "    [in] x : REAL \n",
+        "%ENVIRONMENT  :SYSTEM\n\n"]
+    },
+    
+    "MIRROR Built-In Function":{
+        "prefix": "MIRROR",
+        "body": ["MIRROR(${1:old_pos},${2:mirror_frame},${3:orientation_flag})"],
+        "description": ["Purpose: Determines the mirror image of a specified position variable.  \n",
+        "    Function Return Type: XYZWPREXT",
+        "    [in] old_pos :POSITION",
+        "    [in] mirror_frame :POSITION",
+        "    [in] orient_flag :BOOLEAN \n",
+        "%ENVIRONMENT  :MIR\n\n"]
+    },
+    
+    "MOTION_CTL Built-In Function":{
+        "prefix": "MOTION_CTL",
+        "body": ["MOTION_CTL(${1:group_mask})"],
+        "description": ["Purpose: Determines whether the KAREL program has motion control for the specified group of axes. \n",
+        "    Function Return Type :BOOLEAN",
+        "    [in] group_mask :INTEGER \n",
+        "%ENVIRONMENT  :MOTN\n\n"]
+    },
+    
+    "NODE_SIZE Built-In Function":{
+        "prefix": "NODE_SIZE",
+        "body": ["NODE_SIZE(${1:path_var})"],
+        "description": ["Purpose: Returns the size (in bytes) of a PATH node. \n",
+        "    Function Return Type :INTEGER",
+        "    [in] path_var : PATH \n",
+        "%ENVIRONMENT  :PATHOP\n\n"]
+    },
+    
+    "ORD Built-In Function":{
+        "prefix": "ORD",
+        "body": ["ORD(${1:str},${2:str_index})"],
+        "description": ["Purpose: Returns the numeric ASCII code corresponding to the character in the STRING argument that is referenced by the index argument. \n",
+        "    Function Return Type :INTEGER",
+        "    [in] str :STRING",
+        "    [in] str_index :INTEGER \n",
+        "%ENVIRONMENT  :SYSTEM\n\n"]
+    },
+    
+    "ORIENT Built-In Function":{
+        "prefix": "ORIENT",
+        "body": ["ORIENT(${1:posn})"],
+        "description": ["Purpose: Returns a unit VECTOR representing the y-axis (orient vector) of the specified POSITION argument. \n",
+        "    Function Return Type :VECTOR",
+        "    [in] posn : POSITION \n",
+        "%ENVIRONMENT  :VECTR\n\n"]
+    },
+    
+    "PATH_LEN Built-In Function":{
+        "prefix": "PATH_LEN",
+        "body": ["PATH_LEN(${1:path_nam})"],
+        "description": ["Purpose: Returns the number of nodes in the PATH argument. \n",
+        "    Function Return Type : INTEGER",
+        "    [in] path_nam : PATH \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "POS Built-In Function":{
+        "prefix": "POS",
+        "body": ["POS(${1:x},${2:y},${3:z},${4:w},${5:p},${6:r},${7:c})"],
+        "description": ["Purpose: Returns an XYZWPR composed of the specified location arguments (x,y,z), orientation arguments (w,p,r), and configuration argument (c). \n",
+        "    Function Return Type : XYZWPR",
+        "    [in] x, y, z, w, p, and r :REAL",
+        "    [in] c :CONFIG \n",
+        "%ENVIRONMENT  :SYSTEM\n\n"]
+    },
+    
+    "POS2JOINT Built-In Function":{
+        "prefix": "POS2JOINT",
+        "body": ["POS2JOINT(${1:ref_jnt},${2:in_pos},${3:uframe},${4:utool},${5:config_ref},${6:wjnt_cfg},${7:ext_ang},${8:out_jnt},${9:status})"],
+        "description": ["Purpose: This routine is used to convert Cartesian positions (in_pos) to joint angles (out_jnt) by calling the inverse kinematics routine.  \n",
+        "    [in] ref_jnt :JOINTPOS",
+        "    [in] in_pos :POSITION",
+        "    [in] uframe :POSITION",
+        "    [in] utool :POSITION",
+        "    [in] config_ref :INTEGER",
+        "    [in] wjnt_cfg :CONFIG",
+        "    [in] ext_ang :ARRAY OF REAL",
+        "    [out] out_jnt :JOINTPOS",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :MOTN\n\n"]
+    },
+    
+    "ROUND Built-In Function":{
+        "prefix": "ROUND",
+        "body": ["ROUND(${1:x})"],
+        "description": ["Purpose: Returns the INTEGER value closest to the specified REAL argument.  \n",
+        "    Function Return Type :INTEGER",
+        "    [in] x :REAL \n",
+        "%ENVIRONMENT  :SYSTEM\n\n"]
+    },
+    
+    "SEMA_COUNT Built-In Function":{
+        "prefix": "SEMA_COUNT",
+        "body": ["SEMA_COUNT(${1:semaphore_no})"],
+        "description": ["Purpose: Returns the current value of the specified semaphore. \n",
+        "    Function Return Type :INTEGER",
+        "    [in] semaphore_no : INTEGER \n",
+        "%ENVIRONMENT  :MULTI\n\n"]
+    },
+    
+    "SET_PORT_ATR Built-In Function":{
+        "prefix": "SET_PORT_ATR",
+        "body": ["SET_PORT_ATR(${1:port_id},${2:atr_type},${3:atr_value})"],
+        "description": ["Purpose: Sets the attributes of a port. \n",
+        "    Function Return Type :INTEGER",
+        "    [in] port_id : INTEGER",
+        "    [in] atr_type : INTEGER",
+        "    [in] atr_value : INTEGER \n",
+        "%ENVIRONMENT  :FLBT\n\n"]
+    },
+    
+    "SIN Built-In Function":{
+        "prefix": "SIN",
+        "body": ["SIN(${1:angle})"],
+        "description": ["Purpose: Returns a REAL value that is the sine of the specified angle argument. \n",
+        "    Function Return Type :REAL",
+        "    [in] angle : REAL \n",
+        "%ENVIRONMENT  :SYSTEM\n\n"]
+    },
+    
+    "SQRT Built-In Function":{
+        "prefix": "SQRT",
+        "body": ["SQRT(${1:x})"],
+        "description": ["Purpose: Returns a REAL value that is the positive square root of the specified REAL argument. \n",
+        "    Function Return Type :REAL",
+        "    [in] x : REAL \n",
+        "%ENVIRONMENT  :SYSTEM\n\n"]
+    },
+    
+    "STR_LEN Built-In Function":{
+        "prefix": "STR_LEN",
+        "body": ["STR_LEN(${1:str})"],
+        "description": ["Purpose: Returns the current length of the specified STRING argument. \n",
+        "    Function Return Type :INTEGER",
+        "    [in] str : STRING \n",
+        "%ENVIRONMENT  :SYSTEM\n\n"]
+    },
+    
+    "SUB_STR Built-In Function":{
+        "prefix": "SUB_STR",
+        "body": ["SUB_STR(${1:src},${2:strt},${3:len})"],
+        "description": ["Purpose: Returns a copy of part of a specified STRING argument. \n",
+        "    Function Return Type :STRING",
+        "    [in] src : STRING",
+        "    [in] strt : INTEGER",
+        "    [in] len : INTEGER \n",
+        "%ENVIRONMENT  :SYSTEM\n\n"]
+    },
+    
+    "TAN Built-In Function":{
+        "prefix": "TAN",
+        "body": ["TAN(${1:angle})"],
+        "description": ["Purpose: Returns a REAL value that is the tangent of the specified REAL argument. \n",
+        "    Function Return Type :REAL",
+        "    [in] angle : REAL \n",
+        "%ENVIRONMENT  :SYSTEM\n\n"]
+    },
+    
+    "TRUNC Built-In Function":{
+        "prefix": "TRUNC",
+        "body": ["TRUNC(${1:x})"],
+        "description": ["Purpose: Converts the specified REAL argument to an INTEGER value by removing the fractional part of the REAL argument. \n",
+        "    Function Return Type :INTEGER",
+        "    [in] x : REAL \n",
+        "%ENVIRONMENT  :SYSTEM\n\n"]
+    },
+    
+    "UNINIT Built-In Function":{
+        "prefix": "UNINIT",
+        "body": ["UNINIT(${1:variable})"],
+        "description": ["Purpose: Returns a BOOLEAN value indicating whether or not the specified argument is uninitialized. \n",
+        "    Function Return Type :BOOLEAN",
+        "    [in] variable :any KAREL variable \n",
+        "%ENVIRONMENT  :SYSTEM\n\n"]
+    },
+    
+    "ABORT_TASK Built-In Procedure":{
+        "prefix": "ABORT_TASK",
+        "body": ["ABORT_TASK(${1:task_name},${2:force_sw},${3:cancel_mtn_sw},${4:status})"],
+        "description": ["Purpose: Aborts the specified running or paused task. \n",
+        "    [in] task_name :STRING",
+        "    [in] force_sw :BOOLEAN",
+        "    [in] cancel_mtn_sw :BOOLEAN",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :MULTI\n\n"]
+    },
+    
+    "ACT_SCREEN Built-In Procedure":{
+        "prefix": "ACT_SCREEN",
+        "body": ["ACT_SCREEN(${1:screen_name},${2:old_screen_n},${3:status})"],
+        "description": ["Purpose: Activates a screen. \n",
+        "    [in] screen_name :STRING",
+        "    [out] old_screen_n :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "ACT_TBL Built-In Procedure":{
+        "prefix": "ACT_TBL",
+        "body": ["ACT_TBL(${1:action},${2:def_item},${3:table_data},${4:term_char},${5:attach_wind},${6:status})"],
+        "description": ["Purpose: Acts on a key while displaying a table on the teach pendant. \n",
+        "    [in,out] action :INTEGER",
+        "    [in,out] def_item :INTEGER",
+        "    [in,out] table_data :XWORK_T",
+        "    [out] term_char :INTEGER",
+        "    [out] attach_wind :BOOLEAN",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :UIF\n\n"]
+    },
+    
+    "ADD_BYNAMEPC Built-In Procedure":{
+        "prefix": "ADD_BYNAMEPC",
+        "body": ["ADD_BYNAMEPC(${1:dat_buffer},${2:dat_index},${3:prog_name},${4:var_name},${5:status})"],
+        "description": ["Purpose: To add an integer, real, or string value into a KAREL byte given a data buffer.  \n",
+        "    [in] dat_buffer :ARRAY OF BYTE",
+        "    [in,out] dat_index :INTEGER",
+        "    [in] prog_name :STRING",
+        "    [in] var_name :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PC\n\n"]
+    },
+    
+    "ADD_DICT Built-In Procedure":{
+        "prefix": "ADD_DICT",
+        "body": ["ADD_DICT(${1:file_name},${2:dict_name},${3:lang_name},${4:add_option},${5:status})"],
+        "description": ["Purpose: Adds the specified dictionary to the specified language.  \n",
+        "    [in] file_name :STRING",
+        "    [in] dict_name :STRING",
+        "    [in] lang_name :STRING",
+        "    [in] add_option :INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "ADD_INTPC Built-In Procedure":{
+        "prefix": "ADD_INTPC",
+        "body": ["ADD_INTPC(${1:dat_buffer},${2:dat_index},${3:number},${4:status})"],
+        "description": ["Purpose: To add an INTEGER value (type 16 - 10 HEX) into a KAREL byte data buffer.  \n",
+        "    [in] dat_buffer :ARRAY OF BYTE",
+        "    [in,out] dat_index :INTEGER",
+        "    [in] number :INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PC\n\n"]
+    },
+    
+    "ADD_REALPC Built-In Procedure":{
+        "prefix": "ADD_REALPC",
+        "body": ["ADD_REALPC(${1:dat_buffer},${2:dat_index},${3:number},${4:status})"],
+        "description": ["Purpose: To add a REAL value (type 17 - 11 HEX) into a KAREL byte data buffer.  \n",
+        "    [in] dat_buffer :ARRAY OF BYTE",
+        "    [in,out] dat_index :INTEGER",
+        "    [in] number :REAL",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PC\n\n"]
+    },
+    
+    "ADD_STRINGPC Built-In Procedure":{
+        "prefix": "ADD_STRINGPC",
+        "body": ["ADD_STRINGPC(${1:dat_buffer},${2:dat_index},${3:item},${4:status})"],
+        "description": ["Purpose: To add a string value (type 209 - D1 HEX) into a KAREL byte data buffer.  \n",
+        "    [in] dat_buffer :ARRAY OF BYTE",
+        "    [in,out] dat_index :INTEGER",
+        "    [in] item :string",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PC\n\n"]
+    },
+    
+    "APPEND_NODE Built-In Procedure":{
+        "prefix": "APPEND_NODE",
+        "body": ["APPEND_NODE(${1:path_var},${2:status})"],
+        "description": ["Purpose: Adds an uninitialized node to the end of the PATH argument. \n",
+        "    [in] path_ var :PATH",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "APPEND_QUEUE Built-In Procedure":{
+        "prefix": "APPEND_QUEUE",
+        "body": ["APPEND_QUEUE(${1:value},${2:queue},${3:queue_data},${4:sequence_no},${5:status})"],
+        "description": ["Purpose: Appends an entry to a queue if the queue is not full. \n",
+        "    [in] value :INTEGER",
+        "    [in,out] queue :QUEUE_TYPE",
+        "    [in,out] queue_data :ARRAY OF INTEGER",
+        "    [out] sequence_no :INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PBQMGR\n\n"]
+    },
+    
+    "ATT_WINDOW_D Built-In Procedure":{
+        "prefix": "ATT_WINDOW_D",
+        "body": ["ATT_WINDOW_D(${1:window_name},${2:disp_dev_nam},${3:row},${4:col},${5:screen_name},${6:status})"],
+        "description": ["Purpose: Attach a window to the screen on a display device. \n",
+        "    [in] window_name :STRING",
+        "    [in] disp_dev_nam :STRING",
+        "    [in] row :INTEGER",
+        "    [in] col :INTEGER",
+        "    [out] screen_name :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "ATT_WINDOW_S Built-In Procedure":{
+        "prefix": "ATT_WINDOW_S",
+        "body": ["ATT_WINDOW_S(${1:window_name},${2:screen_name},${3:row},${4:col},${5:status})"],
+        "description": ["Purpose: Attach a window to a screen. \n",
+        "    [in] window_name :STRING",
+        "    [in] screen_name :STRING",
+        "    [in] row :INTEGER",
+        "    [in] col :INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "AVL_POS_NUM Built-In Procedure":{
+        "prefix": "AVL_POS_NUM",
+        "body": ["AVL_POS_NUM(${1:open_id},${2:pos_num},${3:status})"],
+        "description": ["Purpose: Returns the first available position number in a teach pendant program. \n",
+        "    [in] open_id :INTEGER",
+        "    [out] pos_num : INTEGER",
+        "    [out] status : INTEGER \n",
+        "%ENVIRONMENT  :TPE\n\n"]
+    },
+    
+    "BYTES_AHEAD Built-In Procedure":{
+        "prefix": "BYTES_AHEAD",
+        "body": ["BYTES_AHEAD(${1:file_id},${2:n_bytes},${3:status})"],
+        "description": ["Purpose: Returns the number of bytes of input data presently in the read-ahead buffer for a KAREL file. Allows KAREL programs to check instantly if data has been received from a serial port and is available to be read by the program. BYTES_AHEAD is also supported on socket messaging and pipes.  \n",
+        "    [in] file_id :FILE",
+        "    [out] n_bytes :INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :FLBT\n\n"]
+    },
+    
+    "CALL_PROG Built-In Procedure":{
+        "prefix": "CALL_PROG",
+        "body": ["CALL_PROG(${1:prog_name},${2:prog_index})"],
+        "description": ["Purpose: Allows a KAREL program to call an external KAREL or teach pendant program. This means that the programmer does not have to determine the program to be called until run time.  \n",
+        "    [in] prog_name :STRING",
+        "    [in,out] prog_index :INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "CALL_PROGLIN Built-In Procedure":{
+        "prefix": "CALL_PROGLIN",
+        "body": ["CALL_PROGLIN(${1:prog_name},${2:prog_line},${3:prog_index},${4:pause_entry})"],
+        "description": ["Purpose: Allows a KAREL program to call an external KAREL or teach pendant program, beginning at a specified line. This means that the programmer does not need to know, at creation and translation, what program will be called. The programmer can decide this at run time.  \n",
+        "    [in] prog_name :STRING",
+        "    [in] prog_line :INTEGER",
+        "    [in,out] prog_index :INTEGER",
+        "    [in] pause_entry :BOOLEAN \n",
+        "%ENVIRONMENT  :BYNAM\n\n"]
+    },
+    
+    "CHECK_DICT Built-In Procedure":{
+        "prefix": "CHECK_DICT",
+        "body": ["CHECK_DICT(${1:dict_name},${2:element_no},${3:status})"],
+        "description": ["Purpose: Checks the specified dictionary for a specified element. \n",
+        "    [in] dict_name :STRING",
+        "    [in] element_no :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :UIF\n\n"]
+    },
+    
+    "CHECK_EPOS Built-In Procedure":{
+        "prefix": "CHECK_EPOS",
+        "body": ["CHECK_EPOS(${1:eposn},${2:uframe},${3:utool},${4:status},${5:group_no})"],
+        "description": ["Purpose: Checks that the specified position is valid and that no motion errors will be generated when moving to this position. \n",
+        "    [in] eposn :XYZWPREXT",
+        "    [in] uframe :POSITION",
+        "    [in] utool :POSITION",
+        "    [out] status :INTEGER",
+        "    [in] group_no :INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "CHECK_NAME Built-In Procedure":{
+        "prefix": "CHECK_NAME",
+        "body": ["CHECK_NAME(${1:name_spec},${2:status})"],
+        "description": ["Purpose: Checks a specified file or program name for illegal characters.  \n",
+        "    [in] name_spec :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :FDEV\n\n"]
+    },
+    
+    "CLEAR Built-In Procedure":{
+        "prefix": "CLEAR",
+        "body": ["CLEAR(${1:file_spec},${2:status})"],
+        "description": ["Purpose: Clears the specified program and/or variables from memory. \n",
+        "    [in] file_spec :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "CLEAR_SEMA Built-In Procedure":{
+        "prefix": "CLEAR_SEMA",
+        "body": ["CLEAR_SEMA(${1:semaphore_no})"],
+        "description": ["Purpose: Clear the indicated semaphore by setting the count to zero. \n",
+        "    [in] semaphore_no :INTEGER \n",
+        "%ENVIRONMENT  :MULTI\n\n"]
+    },
+    
+    "CLOSE_TPE Built-In Procedure":{
+        "prefix": "CLOSE_TPE",
+        "body": ["CLOSE_TPE(${1:open_id},${2:status})"],
+        "description": ["Purpose: Closes the specified teach pendant program. \n",
+        "    [in] open_id :INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "CLR_IO_STAT Built-In Procedure":{
+        "prefix": "CLR_IO_STAT",
+        "body": ["CLR_IO_STAT(${1:file_id})"],
+        "description": ["Purpose: Clear the results of the last operation on the file argument. \n",
+        "    [in] file_id :FILE \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "CLR_PORT_SIM Built-In Procedure":{
+        "prefix": "CLR_PORT_SIM",
+        "body": ["CLR_PORT_SIM(${1:port_type},${2:port_no},${3:status})"],
+        "description": ["Purpose: Sets the specified port to be unsimulated. \n",
+        "    [in] port_type :INTEGER",
+        "    [in] port_no :INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :IOSETUP\n\n"]
+    },
+    
+    "CLR_POS_REG Built-In Procedure":{
+        "prefix": "CLR_POS_REG",
+        "body": ["CLR_POS_REG(${1:register_no},${2:group_no},${3:status})"],
+        "description": ["Purpose: Removes all data for the specified group in the specified position register. \n",
+        "    [in] register_no :INTEGER",
+        "    [in] group_no :INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :REGOPE\n\n"]
+    },
+    
+    "CNC_DYN_DISB Built-In Procedure":{
+        "prefix": "CNC_DYN_DISB",
+        "body": ["CNC_DYN_DISB(${1:b_var},${2:window_name},${3:status})"],
+        "description": ["Purpose: Cancels the dynamic display based on the value of a BOOLEAN variable in a specified window.  \n",
+        "    [in] b_var :BOOLEAN",
+        "    [in] window_name :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :UIF\n\n"]
+    },
+    
+    "CNC_DYN_DISE Built-In Procedure":{
+        "prefix": "CNC_DYN_DISE",
+        "body": ["CNC_DYN_DISE(${1:e_var},${2:window_name},${3:status})"],
+        "description": ["Purpose: Cancels the dynamic display based on the value of an INTEGER variable in a specified window.  \n",
+        "    [in] e_var :INTEGER",
+        "    [in] window_name :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :UIF\n\n"]
+    },
+    
+    "CNC_DYN_DISI Built-In Procedure":{
+        "prefix": "CNC_DYN_DISI",
+        "body": ["CNC_DYN_DISI(${1:int_var},${2:window_name},${3:status})"],
+        "description": ["Purpose: Cancels the dynamic display of an INTEGER variable in a specified window.  \n",
+        "    [in] int_var :INTEGER",
+        "    [in] window_name :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :UIF\n\n"]
+    },
+    
+    "CNC_DYN_DISP Built-In Procedure":{
+        "prefix": "CNC_DYN_DISP",
+        "body": ["CNC_DYN_DISP(${1:port_type},${2:port_no},${3:window_name},${4:status})"],
+        "description": ["Purpose: Cancels the dynamic display based on the value of a port in a specified window.  \n",
+        "    [in] port_type :INTEGER",
+        "    [in] port_no :INTEGER",
+        "    [in] window_name :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :UIF\n\n"]
+    },
+    
+    "CNC_DYN_DISR Built-In Procedure":{
+        "prefix": "CNC_DYN_DISR",
+        "body": ["CNC_DYN_DISR(${1:real_var},${2:window_name},${3:status})"],
+        "description": ["Purpose: Cancels the dynamic display of a REAL number variable in a specified window.  \n",
+        "    [in] real_var :REAL",
+        "    [in] window_name :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :UIF\n\n"]
+    },
+    
+    "CNC_DYN_DISS Built-In Procedure":{
+        "prefix": "CNC_DYN_DISS",
+        "body": ["CNC_DYN_DISS(${1:str_var},${2:window_name},${3:status})"],
+        "description": ["Purpose: Cancels the dynamic display of a STRING variable in a specified window.  \n",
+        "    [in] str_var :STRING",
+        "    [in] window_name :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :UIF\n\n"]
+    },
+    
+    "CNCL_STP_MTN Built-In Procedure":{
+        "prefix": "CNCL_STP_MTN",
+        "body": ["CNCL_STP_MTN"],
+        "description": ["Purpose: Cancels all stopped motions. \n",
+        
+        "%ENVIRONMENT  :MOTN\n\n"]
+    },
+    
+    "CNV_CNF_STRG Built-In Procedure":{
+        "prefix": "CNV_CNF_STRG",
+        "body": ["CNV_CNF_STRG(${1:source},${2:target},${3:group_no})"],
+        "description": ["Purpose: Converts the specified CONFIG into a STRING using an optional group_no. \n",
+        "    [in] source :CONFIG",
+        "    [out] target :STRING",
+        "    [in] group_no :INTEGER \n",
+        "%ENVIRONMENT  :STRNG\n\n"]
+    },
+    
+    "CNV_CONF_STR Built-In Procedure":{
+        "prefix": "CNV_CONF_STR",
+        "body": ["CNV_CONF_STR(${1:source},${2:target})"],
+        "description": ["Purpose: Converts the specified CONFIG into a STRING. \n",
+        "    [in] source :CONFIG",
+        "    [out] target :STRING \n",
+        "%ENVIRONMENT  :STRNG\n\n"]
+    },
+    
+    "CNV_INT_STR Built-In Procedure":{
+        "prefix": "CNV_INT_STR",
+        "body": ["CNV_INT_STR(${1:source},${2:length},${3:base},${4:target})"],
+        "description": ["Purpose: Formats the specified INTEGER into a STRING. \n",
+        "    [in] source :INTEGER expression",
+        "    [in] length :INTEGER expression",
+        "    [in] base :INTEGER expression",
+        "    [out] target :STRING expression \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "CNV_JPOS_REL Built-In Procedure":{
+        "prefix": "CNV_JPOS_REL",
+        "body": ["CNV_JPOS_REL(${1:jointpos},${2:real_array},${3:status})"],
+        "description": ["Purpose: Allows a KAREL program to examine individual joint angles as REAL values. \n",
+        "    [in] joint_pos :JOINTPOS",
+        "    [out] real_array :ARRAY [num_joints] OF REAL",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :SYSTEM\n\n"]
+    },
+    
+    "CNV_REAL_STR Built-In Procedure":{
+        "prefix": "CNV_REAL_STR",
+        "body": ["CNV_REAL_STR(${1:source},${2:length},${3:num_digits},${4:target})"],
+        "description": ["Purpose: Formats the specified REAL value into a STRING. \n",
+        "    [in] source :REAL expression",
+        "    [in] length :INTEGER expression",
+        "    [in] num_digits :INTEGER expression",
+        "    [out] target :STRING \n",
+        "%ENVIRONMENT  :STRNG\n\n"]
+    },
+    
+    "CNV_REL_JPOS Built-In Procedure":{
+        "prefix": "CNV_REL_JPOS",
+        "body": ["CNV_REL_JPOS(${1:real_array},${2:joint_pos},${3:status})"],
+        "description": ["Purpose: Allows a KAREL program to manipulate individual angles of a joint position. \n",
+        "    [in] real_array :ARRAY [num_joints] OF REAL",
+        "    [out] joint_pos :JOINTPOS",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :SYSTEM\n\n"]
+    },
+    
+    "CNV_STR_CONF Built-In Procedure":{
+        "prefix": "CNV_STR_CONF",
+        "body": ["CNV_STR_CONF(${1:source},${2:target},${3:status})"],
+        "description": ["Purpose: Converts the specified configuration string into a CONFIG data type. \n",
+        "    [in] source :STRING",
+        "    [out] target :CONFIG",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :STRNG\n\n"]
+    },
+    
+    "CNV_STR_INT Built-In Procedure":{
+        "prefix": "CNV_STR_INT",
+        "body": ["CNV_STR_INT(${1:source},${2:target})"],
+        "description": ["Purpose: Converts the specified STRING into an INTEGER. \n",
+        "    [in] source :STRING",
+        "    [out] target :INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "CNV_STR_REAL Built-In Procedure":{
+        "prefix": "CNV_STR_REAL",
+        "body": ["CNV_STR_REAL(${1:source},${2:target})"],
+        "description": ["Purpose: Converts the specified STRING into a REAL. \n",
+        "    [in] source :STRING",
+        "    [out] target :REAL \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "CNV_STR_TIME Built-In Procedure":{
+        "prefix": "CNV_STR_TIME",
+        "body": ["CNV_STR_TIME(${1:source},${2:target})"],
+        "description": ["Purpose: Converts a string representation of time to an integer representation of time.  \n",
+        "    [in] source :STRING",
+        "    [out] target :INTEGER \n",
+        "%ENVIRONMENT  :TIM\n\n"]
+    },
+    
+    "CNV_TIME_STR Built-In Procedure":{
+        "prefix": "CNV_TIME_STR",
+        "body": ["CNV_TIME_STR(${1:source},${2:target})"],
+        "description": ["Purpose: Converts an INTEGER representation of time to a STRING. \n",
+        "    [in] source :INTEGER",
+        "    [out] target :STRING \n",
+        "%ENVIRONMENT  :TIM\n\n"]
+    },
+    
+    "CONT_TASK Built-In Procedure":{
+        "prefix": "CONT_TASK",
+        "body": ["CONT_TASK(${1:task_name},${2:status})"],
+        "description": ["Purpose: Continues the specified task. \n",
+        "    [in] task_name :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :MULTI\n\n"]
+    },
+    
+    "COPY_FILE Built-In Procedure":{
+        "prefix": "COPY_FILE",
+        "body": ["COPY_FILE(${1:from_file},${2:to_file},${3:overwrite_sw},${4:nowait_sw},${5:status})"],
+        "description": ["Purpose: Copies the contents of one file to another with the overwrite option. \n",
+        "    [in] from_file :STRING",
+        "    [in] to_file :STRING",
+        "    [in] overwrite_sw :BOOLEAN",
+        "    [in] nowait_sw :BOOLEAN",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :FDEV\n\n"]
+    },
+    
+    "COPY_PATH Built-In Procedure":{
+        "prefix": "COPY_PATH",
+        "body": ["COPY_PATH(${1:source_path},${2:start_node},${3:end_node},${4:dest_path},${5:status})"],
+        "description": ["Purpose: Copies a complete path, part of a path, or a path in reverse node order (including associated data), to another identical type path variable.  \n",
+        "    [in] source_path :PATH",
+        "    [in] start_node :INTEGER",
+        "    [in] end_node :INTEGER",
+        "    [in] dest_path :PATH",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PATHOP\n\n"]
+    },
+    
+    "COPY_QUEUE Built-In Procedure":{
+        "prefix": "COPY_QUEUE",
+        "body": ["COPY_QUEUE(${1:queue},${2:queue_data},${3:sequence_no},${4:n_skip},${5:out_data},${6:n_got},${7:status})"],
+        "description": ["Purpose: Copies one or more consecutive entries from a queue into an array of integers. The entries are not removed but are copied, starting with the oldest and proceeding to the newest, or until the output array, or integers, are full. A parameter specifies the number of entries at the head of the list (oldest entries) to be skipped.  \n",
+        "    [in] queue_t :QUEUE_TYPE",
+        "    [in] queue_data :ARRAY OF INTEGER",
+        "    [in] n_skip :INTEGER",
+        "    [in] sequence_no :integer",
+        "    [out] out_data :ARRAY OF INTEGER",
+        "    [out] n_got :INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PBQMGR\n\n"]
+    },
+    
+    "COPY_TPE Built-In Procedure":{
+        "prefix": "COPY_TPE",
+        "body": ["COPY_TPE(${1:from_prog},${2:to_prog},${3:overwrite_sw},${4:status})"],
+        "description": ["Purpose: Copies one teach pendant program to another teach pendant program.  \n",
+        "    [in] from_prog :STRING",
+        "    [in] to_prog :STRING",
+        "    [in] overwrite_sw :BOOLEAN",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :TPE\n\n"]
+    },
+    
+    "CREATE_TPE Built-In Procedure":{
+        "prefix": "CREATE_TPE",
+        "body": ["CREATE_TPE(${1:prog_name},${2:prog_type},${3:status})"],
+        "description": ["Purpose: Creates a teach pendant program of the specified name. \n",
+        "    [in] prog_name :STRING",
+        "    [in] prog_type :INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :TPE\n\n"]
+    },
+    
+    "CREATE_VAR Built-In Procedure":{
+        "prefix": "CREATE_VAR",
+        "body": ["CREATE_VAR(${1:var_prog_nam},${2:var_nam},${3:typ_prog_nam},${4:type_nam},${5:group_num},${6:inner_dim},${7:mid_dim},${8:outer_dim},${9:status},${10:mem_pool})"],
+        "description": ["Purpose: Creates the specified KAREL variable. \n",
+        "    [in] var_prog_nam :STRING",
+        "    [in] var_nam :STRING",
+        "    [in] typ_prog_nam :STRING",
+        "    [in] type_nam :STRING",
+        "    [in] group_num :INTEGER",
+        "    [in] inner_dim :INTEGER",
+        "    [in] mid_dim :INTEGER",
+        "    [in] outer_dim :INTEGER",
+        "    [out] status :INTEGER",
+        "    [in] mem_pool :INTEGER \n",
+        "%ENVIRONMENT  :MEMO\n\n"]
+    },
+    
+    "DAQ_CHECKP Built-In Procedure":{
+        "prefix": "DAQ_CHECKP",
+        "body": ["DAQ_CHECKP(${1:pipe_num},${2:pipe_stat},${3:bytes_avail})"],
+        "description": ["Purpose: To check the status of a pipe and the number of bytes available to be read from the pipe.  \n",
+        "    [in] screen_name :STRING",
+        "    [in] disp_dev_name :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :UIF\n\n"]
+    },
+    
+    "DAQ_REGPIPE Built-In Procedure":{
+        "prefix": "DAQ_REGPIPE",
+        "body": ["DAQ_REGPIPE(${1:pipe_num},${2:mem_type},${3:pipe_size},${4:prog_name},${5:var_name},${6:pipe_name},${7:stream_size},${8:andstatus})"],
+        "description": ["Purpose: To register a pipe for use in KAREL.  \n",
+        "    [in] screen_name :STRING",
+        "    [in] disp_dev_name :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :UIF\n\n"]
+    },
+    
+    "DAQ_START Built-In Procedure":{
+        "prefix": "DAQ_START",
+        "body": ["DAQ_START(${1:pipe_num},${2:pipe_mode},${3:stream_dev},${4:status})"],
+        "description": ["Purpose: To activate a KAREL pipe for writing.  \n",
+        "    [in] screen_name :STRING",
+        "    [in] disp_dev_name :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :UIF\n\n"]
+    },
+    
+    "DAQ_STOP Built-In Procedure":{
+        "prefix": "DAQ_STOP",
+        "body": ["DAQ_STOP(${1:pipe_num},${2:force_off},${3:status})"],
+        "description": ["Purpose: To stop a KAREL pipe for writing.  \n",
+        "    [in] screen_name :STRING",
+        "    [in] disp_dev_name :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :UIF\n\n"]
+    },
+    
+    "DAQ_UNREG Built-In Procedure":{
+        "prefix": "DAQ_UNREG",
+        "body": ["DAQ_UNREG(${1:pipe_num},${2:status})"],
+        "description": ["Purpose: To unregister a previously-registered KAREL pipe, so that it may be used for other data.  \n",
+        "    [in] screen_name :STRING",
+        "    [in] disp_dev_name :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :UIF\n\n"]
+    },
+    
+    "DAQ_WRITE Built-In Procedure":{
+        "prefix": "DAQ_WRITE",
+        "body": ["DAQ_WRITE(${1:pipe_num},${2:prog_name},${3:var_name},${4:status})"],
+        "description": ["Purpose: To write data to a KAREL pipe.  \n",
+        "    [in] screen_name :STRING",
+        "    [in] disp_dev_name :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :UIF\n\n"]
+    },
+    
+    "DEF_SCREEN Built-In Procedure":{
+        "prefix": "DEF_SCREEN",
+        "body": ["DEF_SCREEN(${1:screen_name},${2:disp_dev_name},${3:status})"],
+        "description": ["Purpose: Defines a screen. \n",
+        "    [in] screen_name :STRING",
+        "    [in] disp_dev_name :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :UIF\n\n"]
+    },
+    
+    "DEF_WINDOW Built-In Procedure":{
+        "prefix": "DEF_WINDOW",
+        "body": ["DEF_WINDOW(${1:window_name},${2:n_rows},${3:n_cols},${4:options},${5:status})"],
+        "description": ["Purpose: Define a window. \n",
+        "    [in] window_name :STRING",
+        "    [in] n_rows :INTEGER",
+        "    [in] n_cols :INTEGER",
+        "    [in] options :INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "DELETE_FILE Built-In Procedure":{
+        "prefix": "DELETE_FILE",
+        "body": ["DELETE_FILE(${1:file_spec},${2:nowait_sw},${3:status})"],
+        "description": ["Purpose: Deletes the specified file. \n",
+        "    [in] file_spec :STRING",
+        "    [in] nowait_sw :BOOLEAN",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :FDEV\n\n"]
+    },
+    
+    "DELETE_NODE Built-In Procedure":{
+        "prefix": "DELETE_NODE",
+        "body": ["DELETE_NODE(${1:path_var},${2:node_num},${3:status})"],
+        "description": ["Purpose: Deletes a path node from a PATH. \n",
+        "    [in] path_var :PATH",
+        "    [in] node_num :INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PATHOP\n\n"]
+    },
+    
+    "DELETE_QUEUE Built-In Procedure":{
+        "prefix": "DELETE_QUEUE",
+        "body": ["DELETE_QUEUE(${1:sequence_no},${2:queue},${3:queue_data},${4:status})"],
+        "description": ["Purpose: Deletes an entry from a queue. \n",
+        "    [in] sequence_no :INTEGER",
+        "    [in,out] queue_t :QUEUE_TYPE",
+        "    [in,out] queue_data :ARRAY OF INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PBQMGR\n\n"]
+    },
+    
+    "DEL_INST_TPE Built-In Procedure":{
+        "prefix": "DEL_INST_TPE",
+        "body": ["DEL_INST_TPE(${1:open_id},${2:lin_num},${3:status})"],
+        "description": ["Purpose: Deletes the specified instruction in the specified teach pendant program. \n",
+        "    [in] open_id :INTEGER",
+        "    [in] lin_num :INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :TPE\n\n"]
+    },
+    
+    "DET_WINDOW Built-In Procedure":{
+        "prefix": "DET_WINDOW",
+        "body": ["DET_WINDOW(${1:window_name},${2:screen_name},${3:status})"],
+        "description": ["Purpose: Detach a window from a screen. \n",
+        "    [in] window_name :STRING",
+        "    [in] screen_name :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "DISCTRL_LIST Built-In Procedure":{
+        "prefix": "DISCTRL_LIST",
+        "body": ["DISCTRL_LIST(${1:file_var},${2:display_data},${3:list_data},${4:action},${5:status})"],
+        "description": ["Purpose: Displays and controls cursor movement and selection in a list in a specified window. \n",
+        "    [in] file_ var :FILE",
+        "    [in,out] display_data :DISP_DAT_T",
+        "    [in] list_data :ARRAY OF STRING",
+        "    [in] action :INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "DISCTRL_PLMN Built-In Procedure":{
+        "prefix": "DISCTRL_PLMN",
+        "body": ["DISCTRL_PLMN(${1:dict_name},${2:element_no},${3:ftn_key_no},${4:def_item},${5:term_char},${6:status})"],
+        "description": ["Purpose: Creates and controls cursor movement and selection in a pull-up menu. \n",
+        "    [in] dict_name :STRING",
+        "    [in] element_no :INTEGER",
+        "    [in] ftn_key_num :INTEGER",
+        "    [in,out] def_item :INTEGER",
+        "    [out] term_char :INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  : UIF\n\n"]
+    },
+    
+    "DISCTRL_SBMN Built-In Procedure":{
+        "prefix": "DISCTRL_SBMN",
+        "body": ["DISCTRL_SBMN(${1:dict_name},${2:element_no},${3:def_item},${4:term_char},${5:status})"],
+        "description": ["Purpose: Creates and controls cursor movement and selection in a sub-window menu. \n",
+        "    [in] dict_name :STRING",
+        "    [in] element_no :INTEGER",
+        "    [in,out] def_item :INTEGER",
+        "    [out] term_char :INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  : UIF\n\n"]
+    },
+    
+    "DISCTRL_TBL Built-In Procedure":{
+        "prefix": "DISCTRL_TBL",
+        "body": ["DISCTRL_TBL(${1:dict_name},${2:ele_number},${3:num_rows},${4:num_columns},${5:col_data},${6:inact_array},${7:change_array},${8:def_item},${9:term_char},${10:term_mask},${11:value_array},${12:attach_wind},${13:status})"],
+        "description": ["Purpose: Displays and controls a table on the teach pendant. \n",
+        "    [in] dict_name :STRING",
+        "    [in] ele_number :INTEGER",
+        "    [in] num_rows :INTEGER",
+        "    [in] num_columns :INTEGER",
+        "    [in] col_data :ARRAY OF COL_DESC_T",
+        "    [in] inact_array :ARRAY OF BOOLEAN",
+        "    [out] change_array :ARRAY OF BOOLEAN",
+        "    [in,out] def_item :INTEGER",
+        "    [out] term_char :INTEGER",
+        "    [in] term_mask :INTEGER",
+        "    [in] value_array :ARRAY OF STRING",
+        "    [in] attach_wind :BOOLEAN",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  : UIF\n\n"]
+    },
+    
+    "DISMOUNT_DEV Built-In Procedure":{
+        "prefix": "DISMOUNT_DEV",
+        "body": ["DISMOUNT_DEV(${1:device},${2:status})"],
+        "description": ["Purpose: Dismounts the specified device.  \n",
+        "    [in] device :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :FDEV\n\n"]
+    },
+    
+    "DOSFILE_INF Built-In Procedure":{
+        "prefix": "DOSFILE_INF",
+        "body": ["DOSFILE_INF(${1:device},${2:item},${3:value_str},${4:status})"],
+        "description": ["Purpose: Returns information for a device as a string in the value parameter.  \n",
+        "    [in] device :STRING",
+        "    [in] item :INTEGER",
+        "    [out] value_str :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "ERR_DATA Built-In Procedure":{
+        "prefix": "ERR_DATA",
+        "body": ["ERR_DATA(${1:seq_num},${2:error_code},${3:error_string},${4:cause_code},${5:cause_string},${6:time_int},${7:severity},${8:prog_nam})"],
+        "description": ["Purpose: Reads the requested error from the error history and returns the error. \n",
+        "    [in,out] seq_num :INTEGER",
+        "    [out] error_code :INTEGER",
+        "    [out] error_string :STRING",
+        "    [out] cause_code :INTEGER",
+        "    [out] cause_string :STRING",
+        "    [out] time_int :INTEGER",
+        "    [out] severity :INTEGER",
+        "    [out] prog_nam :STRING \n",
+        "%ENVIRONMENT  :ERRS\n\n"]
+    },
+    
+    "FILE_LIST Built-In Procedure":{
+        "prefix": "FILE_LIST",
+        "body": ["FILE_LIST(${1:file_spec},${2:n_skip},${3:format},${4:ary_nam},${5:n_files},${6:status})"],
+        "description": ["Purpose: Generates a list of files with the specified name and type on the specified device.  \n",
+        "    [in] file_spec :STRING",
+        "    [in] n_skip :INTEGER",
+        "    [in] format :INTEGER",
+        "    [out] ary_nam :ARRAY of STRING",
+        "    [out] n_files :INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :BYNAM\n\n"]
+    },
+    
+    "FORCE_SPMENU Built-In Procedure":{
+        "prefix": "FORCE_SPMENU",
+        "body": ["FORCE_SPMENU(${1:device_code},${2:spmenu_id},${3:screen_no})"],
+        "description": ["Purpose: Forces the display of the specified menu. \n",
+        "    [in] device_code :INTEGER",
+        "    [in] spmenu_id :INTEGER",
+        "    [in] screen_no :INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "FORMAT_DEV Built-In Procedure":{
+        "prefix": "FORMAT_DEV",
+        "body": ["FORMAT_DEV(${1:device},${2:volume_name},${3:nowait_sw},${4:status})"],
+        "description": ["Purpose: Deletes any existing information and records a directory and other internal information on the specified device.  \n",
+        "    [in] device :STRING",
+        "    [in] volume_name :STRING",
+        "    [in] nowait_sw :BOOLEAN",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :FDEV\n\n"]
+    },
+    
+    "GET_ATTR_PRG Built-In Procedure":{
+        "prefix": "GET_ATTR_PRG",
+        "body": ["GET_ATTR_PRG(${1:program_name},${2:attr_number},${3:int_value},${4:string_value},${5:status})"],
+        "description": ["Purpose: Gets attribute data from the specified teach pendant or KAREL program. \n",
+        "    [in] program_name :STRING",
+        "    [in] attr_number :INTEGER",
+        "    [out] int_value :INTEGER",
+        "    [out] string_value :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "GET_PORT_CMT Built-In Procedure":{
+        "prefix": "GET_PORT_CMT",
+        "body": ["GET_PORT_CMT(${1:port_type},${2:port_no},${3:comment_str},${4:status})"],
+        "description": ["Purpose: Allows a KAREL program to determine the comment that is set for a specified logical port. \n",
+        "    [in] port_type :INTEGER",
+        "    [in] port_no :INTEGER",
+        "    [out] comment_str :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :IOSETUP\n\n"]
+    },
+    
+    "GET_PORT_MOD Built-In Procedure":{
+        "prefix": "GET_PORT_MOD",
+        "body": ["GET_PORT_MOD(${1:port_type},${2:port_no},${3:mode_mask},${4:status})"],
+        "description": ["Purpose: Allows a KAREL program to determine what special port modes are set for a specified logical port. \n",
+        "    [in] port_type :INTEGER",
+        "    [in] port_no :INTEGER",
+        "    [out] mode_mask :INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :IOSETUP\n\n"]
+    },
+    
+    "GET_PORT_SIM Built-In Procedure":{
+        "prefix": "GET_PORT_SIM",
+        "body": ["GET_PORT_SIM(${1:port_type},${2:port_no},${3:simulated},${4:status})"],
+        "description": ["Purpose: Gets port simulation status. \n",
+        "    [in] port_type :INTEGER",
+        "    [in] port_no :INTEGER",
+        "    [out] simulated :INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :IOSETUP\n\n"]
+    },
+    
+    "GET_PORT_VAL Built-In Procedure":{
+        "prefix": "GET_PORT_VAL",
+        "body": ["GET_PORT_VAL(${1:port_type},${2:port_no},${3:value},${4:status})"],
+        "description": ["Purpose: Allows a KAREL program to determine the current value of a specified logical port. \n",
+        "    [in] port_type :INTEGER",
+        "    [in] port_no :INTEGER",
+        "    [out] value :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :IOSETUP\n\n"]
+    },
+    
+    "GET_POS_FRM Built-In Procedure":{
+        "prefix": "GET_POS_FRM",
+        "body": ["GET_POS_FRM(${1:open_id},${2:position_no},${3:gnum},${4:ufram_no},${5:utool_no},${6:status})"],
+        "description": ["Purpose: Gets the uframe number and utool number of the specified position in the specified teach pendant program.  \n",
+        "    [in] open_id :INTEGER",
+        "    [in] position_no :INTEGER",
+        "    [in] gnum :INTEGER",
+        "    [out] ufram_no :INTEGER",
+        "    [out] utool_no :INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "GET_POS_TYP Built-In Procedure":{
+        "prefix": "GET_POS_TYP",
+        "body": ["GET_POS_TYP(${1:open_id},${2:position_no},${3:group_no},${4:posn_typ},${5:num_axs},${6:status})"],
+        "description": ["Purpose: Gets the position representation of the specified position in the specified teach pendant program. \n",
+        "    [in] open_id :INTEGER",
+        "    [in] position_no :INTEGER",
+        "    [in] group_no :INTEGER",
+        "    [out] posn_typ :INTEGER",
+        "    [out] num_axs :INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "GET_QUEUE Built-In Procedure":{
+        "prefix": "GET_QUEUE",
+        "body": ["GET_QUEUE(${1:queue},${2:queue_data},${3:value},${4:status},${5:sequence_no})"],
+        "description": ["Purpose: Retrieves the specified oldest entry from a queue. \n",
+        "    [in,out] queue_t :QUEUE_TYPE",
+        "    [in,out] queue_data :ARRAY OF INTEGER",
+        "    [out] value :INTEGER",
+        "    [out] sequence_no :INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PBQMGR\n\n"]
+    },
+    
+    "GET_REG Built-In Procedure":{
+        "prefix": "GET_REG",
+        "body": ["GET_REG(${1:register_no},${2:real_flag},${3:int_value},${4:real_value},${5:status})"],
+        "description": ["Purpose: Gets an INTEGER or REAL value from the specified register. \n",
+        "    [in] register_no :INTEGER",
+        "    [out] real_flag :BOOLEAN",
+        "    [out] int_value :INTEGER",
+        "    [out] real_value :REAL",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :REGOPE\n\n"]
+    },
+    
+    "GET_STR_REG Built-In Procedure":{
+        "prefix": "GET_STR_REG",
+        "body": ["GET_STR_REG(${1:register_no},${2:value},${3:status})"],
+        "description": ["Purpose: Gets the value from the specified string register.  \n",
+        "    [in] register_no :INTEGER",
+        "    [out] value :STRING[254]",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :REGOPE\n\n"]
+    },
+    
+    "GET_TIME Built-In Procedure":{
+        "prefix": "GET_TIME",
+        "body": ["GET_TIME(${1:i})"],
+        "description": ["Purpose: Retrieves the current time (in integer representation) from within the KAREL system. \n",
+        "    [out] i :INTEGER \n",
+        "%ENVIRONMENT  :TIM\n\n"]
+    },
+    
+    "GET_TSK_INFO Built-In Procedure":{
+        "prefix": "GET_TSK_INFO",
+        "body": ["GET_TSK_INFO(${1:task_name},${2:task_no},${3:attribute},${4:value_int},${5:value_str},${6:status})"],
+        "description": ["Purpose: Get the value of the specified task attribute. \n",
+        "    [in,out] task_name :STRING",
+        "    [in,out] task_no :INTEGER",
+        "    [in] attribute :INTEGER",
+        "    [out] value_int :INTEGER",
+        "    [out] value_str :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "GET_USEC_SUB Built-In Procedure":{
+        "prefix": "GET_USEC_SUB",
+        "body": ["GET_USEC_SUB(${1:us2},${2:us1})"],
+        "description": ["Purpose: Returns an INTEGER value indicating the elapsed time in microseconds (1/1,000,000).  \n",
+        "    Function Return Type :INTEGER",
+        "    [in] us2: INTEGER",
+        "    [in] us1: INTEGER \n",
+        "%ENVIRONMENT :TIM\n\n"]
+    },
+    
+    "GET_VAR Built-In Procedure":{
+        "prefix": "GET_VAR",
+        "body": ["GET_VAR(${1:entry},${2:prog_name},${3:var_name},${4:value},${5:status})"],
+        "description": ["Purpose: Allows a KAREL program to retrieve the value of a specified variable. \n",
+        "    [in,out] entry :INTEGER",
+        "    [in] prog_name :STRING",
+        "    [in] var_name :STRING",
+        "    [out] value :Any valid KAREL data type except PATH",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :SYSTEM\n\n"]
+    },
+    
+    "INI_DYN_DISB Built-In Procedure":{
+        "prefix": "INI_DYN_DISB",
+        "body": ["INI_DYN_DISB(${1:b_var},${2:window_name},${3:field_width},${4:attr_mask},${5:char_size},${6:row},${7:col},${8:interval},${9:strings},${10:status})"],
+        "description": ["Purpose: Initiates the dynamic display of a BOOLEAN variable. This procedure displays elements of a STRING ARRAY depending of the current value of the BOOLEAN variable.  \n",
+        "    [in] b_var :BOOLEAN",
+        "    [in] window_name :STRING",
+        "    [in] field_width :INTEGER",
+        "    [in] attr_mask :INTEGER",
+        "    [in] char_size :INTEGER",
+        "    [in] row :INTEGER",
+        "    [in] col :INTEGER",
+        "    [in] interval :INTEGER",
+        "    [in] strings :ARRAY OF STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :UIF\n\n"]
+    },
+    
+    "INI_DYN_DISE Built-In Procedure":{
+        "prefix": "INI_DYN_DISE",
+        "body": ["INI_DYN_DISE(${1:e_var},${2:window_name},${3:field_width},${4:attr_mask},${5:char_size},${6:row},${7:col},${8:interval},${9:strings},${10:status})"],
+        "description": ["Purpose: Initiates the dynamic display of an INTEGER variable. This procedure displays elements of a STRING ARRAY depending of the current value of the INTEGER variable.  \n",
+        "    [in] e_var :INTEGER",
+        "    [in] window_name :STRING",
+        "    [in] field_width :INTEGER",
+        "    [in] attr_mask :INTEGER",
+        "    [in] char_size :INTEGER",
+        "    [in] row :INTEGER",
+        "    [in] col :INTEGER",
+        "    [in] interval :INTEGER",
+        "    [in] strings :ARRAY OF STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :UIF\n\n"]
+    },
+    
+    "INI_DYN_DISI Built-In Procedure":{
+        "prefix": "INI_DYN_DISI",
+        "body": ["INI_DYN_DISI(${1:i_var},${2:window_name},${3:field_width},${4:attr_mask},${5:char_size},${6:row},${7:col},${8:interval},${9:buffer_size},${10:format},${11:status})"],
+        "description": ["Purpose: Initiate the dynamic display of an INTEGER variable in a specified window.  \n",
+        "    [in] i_var :INTEGER",
+        "    [in] window_name :STRING",
+        "    [in] field_width :INTEGER",
+        "    [in] attr_mask :INTEGER",
+        "    [in] char_size :INTEGER",
+        "    [in] row :INTEGER",
+        "    [in] col :INTEGER",
+        "    [in] interval :INTEGER",
+        "    [in] buffer_size :INTEGER",
+        "    [in] format :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :UIF\n\n"]
+    },
+    
+    "INI_DYN_DISP Built-In Procedure":{
+        "prefix": "INI_DYN_DISP",
+        "body": ["INI_DYN_DISP(${1:port_type},${2:port_no},${3:window_name},${4:field_width},${5:attr_mask},${6:char_size},${7:row},${8:col},${9:interval},${10:strings},${11:status})"],
+        "description": ["Purpose: Initiates the dynamic display of a value of a port in a specified window, based on the port type and port number.  \n",
+        "    [in] r_var :REAL",
+        "    [in] window_name :STRING",
+        "    [in] field_width :INTEGER",
+        "    [in] attr_ mask :INTEGER",
+        "    [in] char_size :INTEGER",
+        "    [in] row :INTEGER",
+        "    [in] col :INTEGER",
+        "    [in] interval :INTEGER",
+        "    [in] buffer_size :INTEGER",
+        "    [in] format :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :UIF\n\n"]
+    },
+    
+    "INI_DYN_DISR Built-In Procedure":{
+        "prefix": "INI_DYN_DISR",
+        "body": ["INI_DYN_DISR(${1:r_var},${2:window_name},${3:field_width},${4:attr_mask},${5:char_size},${6:row},${7:col},${8:interval},${9:buffer_size},${10:format},${11:status})"],
+        "description": ["Purpose: Initiates the dynamic display of a REAL variable in a specified window.  \n",
+        "    [in] r_var :REAL",
+        "    [in] window_name :STRING",
+        "    [in] field_width :INTEGER",
+        "    [in] attr_ mask :INTEGER",
+        "    [in] char_size :INTEGER",
+        "    [in] row :INTEGER",
+        "    [in] col :INTEGER",
+        "    [in] interval :INTEGER",
+        "    [in] buffer_size :INTEGER",
+        "    [in] format :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :UIF\n\n"]
+    },
+    
+    "INI_DYN_DISS Built-In Procedure":{
+        "prefix": "INI_DYN_DISS",
+        "body": ["INI_DYN_DISS(${1:s_var},${2:window_name},${3:field_width},${4:attr_mask},${5:char_size},${6:row},${7:col},${8:interval},${9:buffer_size},${10:format},${11:status})"],
+        "description": ["Purpose: Initiates the dynamic display of a STRING variable in a specified window.  \n",
+        "    [in] s_var :STRING",
+        "    [in] window_name :STRING",
+        "    [in] field_width :INTEGER",
+        "    [in] attr_ mask :INTEGER",
+        "    [in] char_size :INTEGER",
+        "    [in] row :INTEGER",
+        "    [in] col :INTEGER",
+        "    [in] interval :INTEGER",
+        "    [in] buffer_size :INTEGER",
+        "    [in] format :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :UIF\n\n"]
+    },
+    
+    "INIT_QUEUE Built-In Procedure":{
+        "prefix": "INIT_QUEUE",
+        "body": ["INIT_QUEUE(${1:queue})"],
+        "description": ["Purpose: Sets a queue variable entry to have no entries in the queue. \n",
+        "    [out] queue_t :QUEUE_TYPE \n",
+        "%ENVIRONMENT  : PBQMGR\n\n"]
+    },
+    
+    "INIT_TBL Built-In Procedure":{
+        "prefix": "INIT_TBL",
+        "body": ["INIT_TBL(${1:dict_name},${2:ele_number},${3:num_rows},${4:num_columns},${5:col_data},${6:inact_array},${7:change_array},${8:value_array},${9:vptr_array},${10:table_data},${11:status})"],
+        "description": ["Purpose: Initializes a table on the teach pendant. \n",
+        "    [in] dict_name :STRING",
+        "    [in] ele_number :INTEGER",
+        "    [in] num_rows :INTEGER",
+        "    [in] num_columns :INTEGER",
+        "    [in] col_data :ARRAY OF COL_DESC_T",
+        "    [in] inact_array :ARRAY OF BOOLEAN",
+        "    [in] change_array :ARRAY OF ARRAY OF BOOLEAN",
+        "    [in] value_array :ARRAY OF STRING",
+        "    [out] vptr_array :ARRAY OF ARRAY OF INTEGER",
+        "    [in,out] table_data :XWORK_T",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :UIF\n\n"]
+    },
+    
+    "INSERT_NODE Built-In Procedure":{
+        "prefix": "INSERT_NODE",
+        "body": ["INSERT_NODE(${1:path_var},${2:node_num},${3:status})"],
+        "description": ["Purpose: Inserts an uninitialized node in the specified PATH argument preceding the specified path node number. \n",
+        "    [in] path_var :PATH",
+        "    [in] node_num :INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PATHOP\n\n"]
+    },
+    
+    "INSERT_QUEUE Built-In Procedure":{
+        "prefix": "INSERT_QUEUE",
+        "body": ["INSERT_QUEUE(${1:value},${2:sequence_no},${3:queue},${4:queue_data},${5:status})"],
+        "description": ["Purpose: Inserts an entry into a queue if the queue is not full. \n",
+        "    [in] value :INTEGER",
+        "    [in] sequence_no :INTEGER",
+        "    [in,out] queue_t :QUEUE_TYPE",
+        "    [in,out] queue_data :ARRAY OF INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PBQMGR\n\n"]
+    },
+    
+    "IO_MOD_TYPE Built-In Procedure":{
+        "prefix": "IO_MOD_TYPE",
+        "body": ["IO_MOD_TYPE(${1:rack_no},${2:slot_no},${3:mod_type},${4:status})"],
+        "description": ["Purpose: Allows a KAREL program to determine the type of module in a specified rack/slot. \n",
+        "    [in] rack_no :INTEGER",
+        "    [in] slot_no :INTEGER",
+        "    [out] mod_type :INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :IOSETUP\n\n"]
+    },
+    
+    "KCL Built-In Procedure":{
+        "prefix": "KCL",
+        "body": ["KCL(${1:command},${2:status})"],
+        "description": ["Purpose: Sends the KCL command specified by the STRING argument to KCL for execution.  \n",
+        "    [in] command :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :KCLOP\n\n"]
+    },
+    
+    "KCL_NO_WAIT Built-In Procedure":{
+        "prefix": "KCL_NO_WAIT",
+        "body": ["KCL_NO_WAIT(${1:command},${2:status})"],
+        "description": ["Purpose: Sends the KCL command specified by the STRING argument to KCL for execution, but does not wait for completion of the command before continuing program execution.  \n",
+        "    [in] command :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :KCLOP\n\n"]
+    },
+    
+    "KCL_STATUS Built-In Procedure":{
+        "prefix": "KCL_STATUS",
+        "body": ["KCL_STATUS"],
+        "description": ["Purpose: Returns the status of the last executed command from either KCL or KCL_NO_WAIT built-in procedures.  \n",
+        "    Function Return Type :INTEGER \n",
+        "%ENVIRONMENT  :KCLOP\n\n"]
+    },
+    
+    "LOAD Built-In Procedure":{
+        "prefix": "LOAD",
+        "body": ["LOAD(${1:file_spec},${2:option_sw},${3:status})"],
+        "description": ["Purpose: Loads the specified file. \n",
+        "    [in] file_spec :STRING",
+        "    [in] option_sw :INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "LOAD_STATUS Built-In Procedure":{
+        "prefix": "LOAD_STATUS",
+        "body": ["LOAD_STATUS(${1:prog_name},${2:loaded},${3:initialized})"],
+        "description": ["Purpose: Determines whether the specified KAREL program and its variables are loaded into memory. \n",
+        "    [in] prog_name :STRING",
+        "    [out] loaded :BOOLEAN",
+        "    [out] initialized :BOOLEAN \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "LOCK_GROUP Built-In Procedure":{
+        "prefix": "LOCK_GROUP",
+        "body": ["LOCK_GROUP(${1:group_mask},${2:status})"],
+        "description": ["Purpose: Locks motion control for the specified group of axes. \n",
+        "    [in] group_mask : INTEGER",
+        "    [out] status : INTEGER \n",
+        "%ENVIRONMENT  :MULTI\n\n"]
+    },
+    
+    "MODIFY_QUEUE Built-In Procedure":{
+        "prefix": "MODIFY_QUEUE",
+        "body": ["MODIFY_QUEUE(${1:value},${2:sequence_no},${3:queue_t},${4:queue_data},${5:status})"],
+        "description": ["Purpose: Replaces the value of an entry of a queue.  \n",
+        "    [in] value :INTEGER",
+        "    [in] sequence_no :INTEGER",
+        "    [in,out] queue_t :QUEUE_TYPE",
+        "    [in,out] queue_data :ARRAY OF INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PBQMGR\n\n"]
+    },
+    
+    "MOUNT_DEV Built-In Procedure":{
+        "prefix": "MOUNT_DEV",
+        "body": ["MOUNT_DEV(${1:device},${2:status})"],
+        "description": ["Purpose: Mounts the specified device. \n",
+        "    [in] device : STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :FDEV\n\n"]
+    },
+    
+    "MOVE_FILE Built-In Procedure":{
+        "prefix": "MOVE_FILE",
+        "body": ["MOVE_FILE(${1:file_spec},${2:status})"],
+        "description": ["Purpose: Moves the specified file from one memory file device to another. \n",
+        "    [in] file_spec : string",
+        "    [out] status : integer \n",
+        "%ENVIRONMENT  :FDEV\n\n"]
+    },
+    
+    "MSG_CONNECT Built-In Procedure":{
+        "prefix": "MSG_CONNECT",
+        "body": ["MSG_CONNECT(${1:tag},${2:status})"],
+        "description": ["Purpose: Connect a client or server port to another computer for use in Socket Messaging.  \n",
+        "    [in] tag :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :FLBT\n\n"]
+    },
+    
+    "MSG_DISCO Built-In Procedure":{
+        "prefix": "MSG_DISCO",
+        "body": ["MSG_DISCO(${1:tag},${2:status})"],
+        "description": ["Purpose: Disconnect a client or server port from another computer.  \n",
+        "    [in] tag :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :FLBT\n\n"]
+    },
+    
+    "OPEN_TPE Built-In Procedure":{
+        "prefix": "OPEN_TPE",
+        "body": ["OPEN_TPE(${1:prog_name},${2:open_mode},${3:reject_mode},${4:open_id},${5:status})"],
+        "description": ["Purpose: Opens the specified teach pendant program. \n",
+        "    [in] prog_name :STRING",
+        "    [in] open_mode :INTEGER",
+        "    [in] reject_mode :INTEGER",
+        "    [out] open_id :INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "PAUSE_TASK Built-In Procedure":{
+        "prefix": "PAUSE_TASK",
+        "body": ["PAUSE_TASK(${1:task_name},${2:force_sw},${3:stop_mtn_sw},${4:status})"],
+        "description": ["Purpose: Pauses the specified executing task. \n",
+        "    [in] task_name :STRING",
+        "    [in] force_sw :BOOLEAN",
+        "    [in] stop_mtn_sw :BOOLEAN",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :MULTI\n\n"]
+    },
+    
+    "PEND_SEMA Built-In Procedure":{
+        "prefix": "PEND_SEMA",
+        "body": ["PEND_SEMA(${1:semaphore_no},${2:max_time},${3:time_out})"],
+        "description": ["Purpose: Suspends execution of the task until either the value of the semaphore is greater than zero or max_time expires. \n",
+        "    [in] semaphore_no :INTEGER",
+        "    [in] max_time :INTEGER",
+        "    [out] time_out :BOOLEAN \n",
+        "%ENVIRONMENT  :MULTI\n\n"]
+    },
+    
+    "PIPE_CONFIG Built-In Procedure":{
+        "prefix": "PIPE_CONFIG",
+        "body": ["PIPE_CONFIG(${1:pipe_name},${2:cmos_flag},${3:n_sectors},${4:record_size},${5:form_dict},${6:form_ele},${7:status})"],
+        "description": ["Purpose: Configure a pipe for special use.  \n",
+        "    [in] pipe_name :STRING",
+        "    [in] cmos_flag :BOOLEAN",
+        "    [in] n_sectors :INTEGER",
+        "    [in] record_size :INTEGER",
+        "    [in] form_dict :STRING",
+        "    [in] form_ele :INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :FLBT\n\n"]
+    },
+    
+    "POP_KEY_RD Built-In Procedure":{
+        "prefix": "POP_KEY_RD",
+        "body": ["POP_KEY_RD(${1:key_dev_name},${2:pop_index},${3:status})"],
+        "description": ["Purpose: Resumes key input from a keyboard device. \n",
+        "    [in] key_dev_name :STRING",
+        "    [in] pop_index :INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "POS_REG_TYPE Built-In Procedure":{
+        "prefix": "POS_REG_TYPE",
+        "body": ["POS_REG_TYPE(${1:register_no},${2:group_no},${3:posn_type},${4:num_axes},${5:status})"],
+        "description": ["Purpose: Returns the position representation of the specified position register. \n",
+        "    [in] register : INTEGER",
+        "    [in] group_no : INTEGER",
+        "    [out] posn_type : INTEGER",
+        "    [out] num_axes : INTEGER",
+        "    [out] status : INTEGER \n",
+        "%ENVIRONMENT  :REGOPE\n\n"]
+    },
+    
+    "POST_ERR Built-In Procedure":{
+        "prefix": "POST_ERR",
+        "body": ["POST_ERR(${1:error_code},${2:parameter},${3:cause_code},${4:severity})"],
+        "description": ["Purpose: Posts the error code and reason code to the error reporting system to display and keep history of the errors. \n",
+        "    [in] error_code :INTEGER",
+        "    [in] parameter :STRING",
+        "    [in] cause_code :INTEGER",
+        "    [in] severity :INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "POST_ERR_L Built-In Procedure":{
+        "prefix": "POST_ERR_L",
+        "body": ["POST_ERR_L(${1:error_code},${2:parameter},${3:cause_code},${4:severity})"],
+        "description": ["Purpose: Posts the error code with local severity to the error reporting system to display and keep history of the errors. \n",
+        "    [in] error_code :INTEGER",
+        "    [in] parameter :STRING",
+        "    [in] cause_code :INTEGER",
+        "    [in] severity :INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "POST_SEMA Built-In Procedure":{
+        "prefix": "POST_SEMA",
+        "body": ["POST_SEMA(${1:semaphore_no})"],
+        "description": ["Purpose: Add one to the value of the indicated semaphore. \n",
+        "    [in] semaphore_ no : INTEGER \n",
+        "%ENVIRONMENT  : MULTI\n\n"]
+    },
+    
+    "PRINT_FILE Built-In Procedure":{
+        "prefix": "PRINT_FILE",
+        "body": ["PRINT_FILE(${1:file_spec},${2:nowait_sw},${3:status})"],
+        "description": ["Purpose: Prints the contents of an ASCII file to the default device. \n",
+        "    [in] file_spec :STRING",
+        "    [in] nowait_sw :BOOLEAN",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  : FDEV\n\n"]
+    },
+    
+    "PROG_BACKUP Built-In Procedure":{
+        "prefix": "PROG_BACKUP",
+        "body": ["PROG_BACKUP(${1:file_spec},${2:prog_type},${3:max_size},${4:write_prot},${5:status})"],
+        "description": ["Purpose: Saves the specified program and all called programs from execution memory to a storage device. If the called programs call other programs they will be saved recursively. You can specify that any associated program variables be saved.  \n",
+        "    [in] file_spec :STRING",
+        "    [in] prog_type :INTEGER",
+        "    [in] max_size: INTEGER",
+        "    [in] write_prot: BOOLEAN",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT : CORE\n\n"]
+    },
+    
+    "PROG_CLEAR Built-In Procedure":{
+        "prefix": "PROG_CLEAR",
+        "body": ["PROG_CLEAR(${1:prog_name},${2:prog_type},${3:status})"],
+        "description": ["Purpose: Clear the specified program and all called programs from execution memory. If the called programs call other programs they will be cleared recursively. You can specify that any associated program variables also be cleared. Variables which are referenced from other programs will not be cleared.  \n",
+        "    [in] prog_name :STRING",
+        "    [in] prog_type :INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT : CORE\n\n"]
+    },
+    
+    "PROG_RESTORE Built-In Procedure":{
+        "prefix": "PROG_RESTORE",
+        "body": ["PROG_RESTORE(${1:file_spec},${2:status})"],
+        "description": ["Purpose: Restores (loads) the specified program and all called programs into execution memory. If the called programs call other programs they will be loaded recursively. Any associated program variables will also be loaded if the VR files exist.  \n",
+        "    [in] file_spec :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT : CORE\n\n"]
+    },
+    
+    "PROG_LIST Built-In Procedure":{
+        "prefix": "PROG_LIST",
+        "body": ["PROG_LIST(${1:prog_name},${2:prog_type},${3:n_skip},${4:format},${5:ary_name},${6:n_progs},${7:f_index})"],
+        "description": ["Purpose: Returns a list of program names.  \n",
+        "    [in] prog_name :STRING",
+        "    [in] prog_type :INTEGER",
+        "    [in] n_skip :INTEGER",
+        "    [in] format :INTEGER",
+        "    [out] ary_name :ARRAY of string",
+        "    [out] n_progs :INTEGER",
+        "    [out] status :INTEGER",
+        "    [in,out] f_index :INTEGER \n",
+        "%ENVIRONMENT  :BYNAM\n\n"]
+    },
+    
+    "PURGE_DEV Built-In Procedure":{
+        "prefix": "PURGE_DEV",
+        "body": ["PURGE_DEV(${1:device},${2:status})"],
+        "description": ["Purpose: Purges the specified memory file device by freeing any used blocks that are no longer needed. \n",
+        "    [in] device : STRING",
+        "    [out] status : INTEGER \n",
+        "%ENVIRONMENT  :FDEV\n\n"]
+    },
+    
+    "PUSH_KEY_RD Built-In Procedure":{
+        "prefix": "PUSH_KEY_RD",
+        "body": ["PUSH_KEY_RD(${1:key_dev_name},${2:key_mask},${3:pop_index},${4:status})"],
+        "description": ["Purpose: Suspend key input from a keyboard device. \n",
+        "    [in] key_dev_name :STRING",
+        "    [in] key_mask :INTEGER",
+        "    [out] pop_index :INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "READ_DICT Built-In Procedure":{
+        "prefix": "READ_DICT",
+        "body": ["READ_DICT(${1:dict_name},${2:element_no},${3:ksta},${4:first_line},${5:last_line},${6:status})"],
+        "description": ["Purpose: Reads information from a dictionary.  \n",
+        "    [in] dict_name : STRING",
+        "    [in] element_no : INTEGER",
+        "    [out] ksta : ARRAY OF STRING",
+        "    [in] first_line : INTEGER",
+        "    [out] last_line : INTEGER",
+        "    [out] status : INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "READ_KB Built-In Procedure":{
+        "prefix": "READ_KB",
+        "body": ["READ_KB(${1:file_var},${2:buffer},${3:buffer_size},${4:accept_mask},${5:term_mask},${6:time_out},${7:init_data},${8:n_chars_got},${9:term_char},${10:status})"],
+        "description": ["Purpose: Read from a keyboard device and wait for completion.  \n",
+        "    [in] file_var : FILE",
+        "    [out] buffer : STRING",
+        "    [in] buffer_size : INTEGER",
+        "    [in] accept_mask : INTEGER",
+        "    [in] time_out : INTEGER",
+        "    [in] term_mask : INTEGER",
+        "    [in] init_data : STRING",
+        "    [out] n_chars_got : INTEGER",
+        "    [out] term _char : INTEGER",
+        "    [out] stat us : INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "REMOVE_DICT Built-In Procedure":{
+        "prefix": "REMOVE_DICT",
+        "body": ["REMOVE_DICT(${1:dict_name},${2:lang_name},${3:status})"],
+        "description": ["Purpose: Removes the specified dictionary from the specified language or from all existing languages.  \n",
+        "    [in] dict_name : STRING",
+        "    [in] lang_name : STRING",
+        "    [out] status : INTEGER \n",
+        "%ENVIRONMENT  :UIF\n\n"]
+    },
+    
+    "RENAME_FILE Built-In Procedure":{
+        "prefix": "RENAME_FILE",
+        "body": ["RENAME_FILE(${1:old_file},${2:new_file},${3:nowait_sw},${4:status})"],
+        "description": ["Purpose: Renames the specified file name.  \n",
+        "    [in] old_file : STRING",
+        "    [in] new_file : STRING",
+        "    [in] nowait_sw : BOOLEAN",
+        "    [out] status : INTEGER \n",
+        "%ENVIRONMENT  :FDEV\n\n"]
+    },
+    
+    "RENAME_VAR Built-In Procedure":{
+        "prefix": "RENAME_VAR",
+        "body": ["RENAME_VAR(${1:prog_nam},${2:old_nam},${3:new_nam},${4:status})"],
+        "description": ["Purpose: Renames a specified variable in a specified program to a new variable name.  \n",
+        "    [in] prog_nam : STRING",
+        "    [in] old_nam : STRING",
+        "    [in] new_nam : STRING",
+        "    [out] status : INTEGER \n",
+        "%ENVIRONMENT  :MEMO\n\n"]
+    },
+    
+    "RENAME_VARS Built-In Procedure":{
+        "prefix": "RENAME_VARS",
+        "body": ["RENAME_VARS(${1:old_nam},${2:new_nam},${3:status})"],
+        "description": ["Purpose: Renames all of the variables in a specified program to a new program name.  \n",
+        "    [in] old_nam : STRING",
+        "    [in] new_nam : STRING",
+        "    [out] status : INTEGER \n",
+        "%ENVIRONMENT  :MEMO\n\n"]
+    },
+    
+    "RESET Built-In Procedure":{
+        "prefix": "RESET",
+        "body": ["RESET(${1:successful})"],
+        "description": ["Purpose: Resets the controller.  \n",
+        "    [out] successful : BOOLEAN \n",
+        "%ENVIRONMENT  :MOTN\n\n"]
+    },
+    
+    "RUN_TASK Built-In Procedure":{
+        "prefix": "RUN_TASK",
+        "body": ["RUN_TASK(${1:task_name},${2:line_number},${3:pause_on_sft},${4:tp_motion},${5:lock_mask},${6:status})"],
+        "description": ["Purpose: Runs the specified program as a child task.  \n",
+        "    [in] task_name : STRING",
+        "    [in] line_number : INTEGER",
+        "    [in] pause_on_sft : BOOLEAN",
+        "    [in] tp_motion : BOOLEAN",
+        "    [in] lock_mask : INTEGER",
+        "    [out] status : INTEGER \n",
+        "%ENVIRONMENT  :MULTI\n\n"]
+    },
+    
+    "SAVE Built-In Procedure":{
+        "prefix": "SAVE",
+        "body": ["SAVE(${1:prog_nam},${2:file_spec},${3:status})"],
+        "description": ["Purpose: Saves the program or variables into the specified file. \n",
+        "    [in] prog_nam :STRING",
+        "    [in] file_spec :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :MEMO\n\n"]
+    },
+    
+    "SAVE_DRAM Built-In Procedure":{
+        "prefix": "SAVE_DRAM",
+        "body": ["SAVE_DRAM(${1:prog_nam},${2:status})"],
+        "description": ["Purpose: Saves the RAM variable content to FlashROM.  \n",
+        "    [in] prog_nam: STRING",
+        "    [out] status: INTEGER \n",
+        "%ENVIRONMENT : MEMO\n\n"]
+    },
+    
+    "SELECT_TPE Built-In Procedure":{
+        "prefix": "SELECT_TPE",
+        "body": ["SELECT_TPE(${1:prog_name},${2:status})"],
+        "description": ["Purpose: Selects the program of the specified name. \n",
+        "    [in] prog_name :STRING",
+        "    [out] status : :INTEGER \n",
+        "%ENVIRONMENT  :TPE\n\n"]
+    },
+    
+    "SEND_DATAPC Built-In Procedure":{
+        "prefix": "SEND_DATAPC",
+        "body": ["SEND_DATAPC(${1:event_no},${2:dat_buffer},${3:status})"],
+        "description": ["Purpose: To send an event message and other data to the PC.  \n",
+        "    [in] event_no :INTEGER",
+        "    [in] dat_buffer :ARRAY OF BYTE",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PC\n\n"]
+    },
+    
+    "SEND_EVENTPC Built-In Procedure":{
+        "prefix": "SEND_EVENTPC",
+        "body": ["SEND_EVENTPC(${1:event_no},${2:status})"],
+        "description": ["Purpose: To send an event message to the PC.  \n",
+        "    [in] event_no :INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PC\n\n"]
+    },
+    
+    "SET_ATTR_PRG Built-In Procedure":{
+        "prefix": "SET_ATTR_PRG",
+        "body": ["SET_ATTR_PRG(${1:program_name},${2:attr_number},${3:int_value},${4:string_value},${5:status})"],
+        "description": ["Purpose: Sets attribute data of the specified teach pendant or KAREL program. \n",
+        "    [in] program_name : STRING",
+        "    [in] attr_number : INTEGER",
+        "    [in] int_value : INTEGER",
+        "    [in] string_value : STRING",
+        "    [out] status : INTEGER \n",
+        "%ENVIRONMENT  :TPE\n\n"]
+    },
+    
+    "SET_CURSOR Built-In Procedure":{
+        "prefix": "SET_CURSOR",
+        "body": ["SET_CURSOR(${1:file_var},${2:row},${3:col},${4:status})"],
+        "description": ["Purpose: Set the cursor position in the window. \n",
+        "    [in] file_var : FILE",
+        "    [in] row : INTEGER",
+        "    [in] col : INTEGER",
+        "    [out] status : INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "SET_EPOS_REG Built-In Procedure":{
+        "prefix": "SET_EPOS_REG",
+        "body": ["SET_EPOS_REG(${1:register_no},${2:posn},${3:status},${4:group_no})"],
+        "description": ["Purpose: Stores an XYZWPREXT value in the specified register. \n",
+        "    [in] register_no : INTEGER",
+        "    [in] posn : XYZWPREXT",
+        "    [out] status : INTEGER",
+        "    [in] group_no :INTEGER \n",
+        "%ENVIRONMENT  :REGOPE\n\n"]
+    },
+    
+    "SET_EPOS_TPE Built-In Procedure":{
+        "prefix": "SET_EPOS_TPE",
+        "body": ["SET_EPOS_TPE(${1:open_id},${2:position_no},${3:posn},${4:status},${5:group_no})"],
+        "description": ["Purpose: Stores an XYZWPREXT value in the specified position in the specified teach pendant program. \n",
+        "    [in] open_id : INTEGER",
+        "    [in] position_no : INTEGER",
+        "    [in] posn : XYZWPREXT",
+        "    [out] status : INTEGER",
+        "    [in] group_no : INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "SET_FILE_ATR Built-In Procedure":{
+        "prefix": "SET_FILE_ATR",
+        "body": ["SET_FILE_ATR(${1:file_id},${2:atr_type},${3:atr_value})"],
+        "description": ["Purpose: Sets the attributes of a file before it is opened. \n",
+        "    [in] file_id: FILE",
+        "    [in] atr_type : INTEGER expression",
+        "    [in] atr_value : INTEGER expression \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "SET_FILE_POS Built-In Procedure":{
+        "prefix": "SET_FILE_POS",
+        "body": ["SET_FILE_POS(${1:file_id},${2:new_file_pos},${3:status})"],
+        "description": ["Purpose: Sets the file position for the next READ or WRITE operation to take place in the specified file to the value of the new specified file position. \n",
+        "    [in] file_id : FILE",
+        "    [in] new_file_pos : INTEGER expression",
+        "    [out] status : INTEGER variable \n",
+        "%ENVIRONMENT  :FLBT\n\n"]
+    },
+    
+    "SET_INT_REG Built-In Procedure":{
+        "prefix": "SET_INT_REG",
+        "body": ["SET_INT_REG(${1:register_no},${2:int_value},${3:status})"],
+        "description": ["Purpose: Stores an integer value in the specified register. \n",
+        "    [in] register_no : INTEGER",
+        "    [in] int_value : INTEGER",
+        "    [out] status : INTEGER \n",
+        "%ENVIRONMENT  :REGOPE\n\n"]
+    },
+    
+    "SET_JPOS_REG Built-In Procedure":{
+        "prefix": "SET_JPOS_REG",
+        "body": ["SET_JPOS_REG(${1:register_no},${2:jpos},${3:status},${4:group_no})"],
+        "description": ["Purpose: Stores a JOINTPOS value in the specified register. \n",
+        "    [in] register_no : INTEGER",
+        "    [in] jpos : JOINTPOS",
+        "    [out] status :INTEGER",
+        "    [in] group_no :INTEGER \n",
+        "%ENVIRONMENT  :REGOPE\n\n"]
+    },
+    
+    "SET_JPOS_TPE Built-In Procedure":{
+        "prefix": "SET_JPOS_TPE",
+        "body": ["SET_JPOS_TPE(${1:open_id},${2:position_no},${3:posn},${4:status},${5:group_no})"],
+        "description": ["Purpose: Stores a JOINTPOS value in the specified position in the specified teach pendant program. \n",
+        "    [in] open_id : INTEGER",
+        "    [in] position_no : INTEGER",
+        "    [in] posn : JOINTPOS",
+        "    [out] status : INTEGER",
+        "    [in] group_no :INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "SET_LANG Built-In Procedure":{
+        "prefix": "SET_LANG",
+        "body": ["SET_LANG(${1:lang_name},${2:status})"],
+        "description": ["Purpose: Changes the current language. \n",
+        "    [in] lang_name :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "SET_PERCH Built-In Procedure":{
+        "prefix": "SET_PERCH",
+        "body": ["SET_PERCH(${1:jpos},${2:tolerance},${3:indx})"],
+        "description": ["Purpose: Sets the perch position and tolerance for a group of axes. \n",
+        "    [in] jpos : JOINTPOS",
+        "    [in] tolerance : ARRAY[6] of REAL",
+        "    [in] indx : INTEGER \n",
+        "%ENVIRONMENT  :SYSTEM\n\n"]
+    },
+    
+    "SET_PORT_ASG Built-In Procedure":{
+        "prefix": "SET_PORT_ASG",
+        "body": ["SET_PORT_ASG(${1:log_port_type},${2:log_port_no},${3:rack_no},${4:slot_no},${5:phy_port_type},${6:phy_port_no},${7:n_ports},${8:status})"],
+        "description": ["Purpose: Allows a KAREL program to assign one or more logical ports to specified physical port(s). \n",
+        "    [in] log_port_type : INTEGER",
+        "    [in] log_port_no : INTEGER",
+        "    [in] rack_no : INTEGER",
+        "    [in] slot_no : INTEGER",
+        "    [in] phy_port_type : INTEGER",
+        "    [in] phy_port_no : INTEGER",
+        "    [in] n_ports : INTEGER",
+        "    [out] status : INTEGER \n",
+        "%ENVIRONMENT  :IOSETUP\n\n"]
+    },
+    
+    "SET_PORT_CMT Built-In Procedure":{
+        "prefix": "SET_PORT_CMT",
+        "body": ["SET_PORT_CMT(${1:port_type},${2:port_no},${3:comment_str},${4:status})"],
+        "description": ["Purpose: Allows a KAREL program to set the comment displayed on the teach pendant, for a specified logical port. \n",
+        "    [in] port_type : INTEGER",
+        "    [in] port_no : INTEGER",
+        "    [in] comment_str : STRING",
+        "    [out] status : INTEGER \n",
+        "%ENVIRONMENT  :IOSETUP\n\n"]
+    },
+    
+    "SET_PORT_MOD Built-In Procedure":{
+        "prefix": "SET_PORT_MOD",
+        "body": ["SET_PORT_MOD(${1:port_type},${2:port_no},${3:mode_mask},${4:status})"],
+        "description": ["Purpose: Allows a KAREL program to set (or reset) special port modes for a specified logical port. \n",
+        "    [in] port_type : INTEGER",
+        "    [in] port_no : INTEGER",
+        "    [in] mode_mask : INTEGER",
+        "    [out] status : INTEGER \n",
+        "%ENVIRONMENT  :IOSETUP\n\n"]
+    },
+    
+    "SET_PORT_SIM Built-In Procedure":{
+        "prefix": "SET_PORT_SIM",
+        "body": ["SET_PORT_SIM(${1:port_type},${2:port_no},${3:value},${4:status})"],
+        "description": ["Purpose: Sets port simulated. \n",
+        "    [in] port_type : INTEGER",
+        "    [in] port_no : INTEGER",
+        "    [in] value : INTEGER",
+        "    [out] status : INTEGER \n",
+        "%ENVIRONMENT  :IOSETUP\n\n"]
+    },
+    
+    "SET_PORT_VAL Built-In Procedure":{
+        "prefix": "SET_PORT_VAL",
+        "body": ["SET_PORT_VAL(${1:port_type},${2:port_no},${3:value},${4:status})"],
+        "description": ["Purpose: Allows a KAREL program to set a specified output (or simulated input) for a specified logical port. \n",
+        "    [in] port_type : INTEGER",
+        "    [in] port_no : INTEGER",
+        "    [in] value : INTEGER",
+        "    [out] status : INTEGER \n",
+        "%ENVIRONMENT  :IOSETUP\n\n"]
+    },
+    
+    "SET_POS_REG Built-In Procedure":{
+        "prefix": "SET_POS_REG",
+        "body": ["SET_POS_REG(${1:register_no},${2:posn},${3:status},${4:group_no})"],
+        "description": ["Purpose: Stores an XYZWPR value in the specified position register. \n",
+        "    [in] register_no : INTEGER",
+        "    [in] posn : XYZWPR",
+        "    [out] status : INTEGER",
+        "    [in] group_no : INTEGER \n",
+        "%ENVIRONMENT  :REGOPE\n\n"]
+    },
+    
+    "SET_POS_TPE Built-In Procedure":{
+        "prefix": "SET_POS_TPE",
+        "body": ["SET_POS_TPE(${1:open_id},${2:position_no},${3:posn},${4:status},${5:group_no})"],
+        "description": ["Purpose: Stores an XYZWPR value in the specified position in the specified teach pendant program. \n",
+        "    [in] open_id : INTEGER",
+        "    [in] position_no : INTEGER",
+        "    [in] posn : XYZWPR",
+        "    [out] status : INTEGER",
+        "    [in] group_no : INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "SET_REAL_REG Built-In Procedure":{
+        "prefix": "SET_REAL_REG",
+        "body": ["SET_REAL_REG(${1:register_no},${2:real_value},${3:status})"],
+        "description": ["Purpose: Stores a REAL value in the specified register. \n",
+        "    [in] register_no : INTEGER",
+        "    [in] real_value : REAL",
+        "    [out] status : INTEGER \n",
+        "%ENVIRONMENT  :REGOPE\n\n"]
+    },
+    
+    "SET_TIME Built-In Procedure":{
+        "prefix": "SET_TIME",
+        "body": ["SET_TIME(${1:i})"],
+        "description": ["Purpose: Set the current time within the KAREL system. \n",
+        "    [in] i : INTEGER \n",
+        "%ENVIRONMENT  :TIM\n\n"]
+    },
+    
+    "SET_TPE_CMT Built-In Procedure":{
+        "prefix": "SET_TPE_CMT",
+        "body": ["SET_TPE_CMT(${1:open_id},${2:pos_no},${3:comment},${4:status})"],
+        "description": ["Purpose: Provides the ability for a KAREL program to set the comment associated with a specified position in a teach pendant program.  \n",
+        "    [in] open_id :INTEGER",
+        "    [in] pos_no :INTEGER",
+        "    [in] comment :STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :TPE\n\n"]
+    },
+    
+    "SET_TRNS_TPE Built-In Procedure":{
+        "prefix": "SET_TRNS_TPE",
+        "body": ["SET_TRNS_TPE(${1:open_id},${2:position_no},${3:posn},${4:status})"],
+        "description": ["Purpose: Stores a POSITION value within the specified position in the specified teach pendant program. \n",
+        "    [in] open_id : INTEGER",
+        "    [in] position_no : INTEGER",
+        "    [in] posn : POSITION",
+        "    [out] status : INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "SET_TSK_ATTR Built-In Procedure":{
+        "prefix": "SET_TSK_ATTR",
+        "body": ["SET_TSK_ATTR(${1:task_name},${2:attribute},${3:value},${4:status})"],
+        "description": ["Purpose: Set the value of the specified running task attribute. \n",
+        "    [in] task_name : STRING",
+        "    [in] attribute : INTEGER",
+        "    [in] value : INTEGER",
+        "    [out] status : INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "SET_TSK_NAME Built-In Procedure":{
+        "prefix": "SET_TSK_NAME",
+        "body": ["SET_TSK_NAME(${1:old_name},${2:new_name},${3:status})"],
+        "description": ["Purpose: Set the name of the specified task. \n",
+        "    [in] old_name : STRING",
+        "    [in] new_name : STRING",
+        "    [out] status : INTEGER \n",
+        "%ENVIRONMENT  :MULTI\n\n"]
+    },
+    
+    "SET_VAR Built-In Procedure":{
+        "prefix": "SET_VAR",
+        "body": ["SET_VAR(${1:entry},${2:prog_name},${3:var_name},${4:value},${5:status})"],
+        "description": ["Purpose: Allows a KAREL program to set the value of a specified variable. \n",
+        "    [in,out] entry : INTEGER",
+        "    [in] prog_name : STRING",
+        "    [in] var_name : STRING",
+        "    [in] value : Any valid KAREL data type except PATH",
+        "    [out] status : INTEGER \n",
+        "%ENVIRONMENT  :SYSTEM\n\n"]
+    },
+    
+    "TRANSLATE Built-In Procedure":{
+        "prefix": "TRANSLATE",
+        "body": ["TRANSLATE(${1:file_spec},${2:listing_sw},${3:status})"],
+        "description": ["Purpose: Translates a KAREL source file (.KL file type) into p-code (.PC file type), which can be loaded into memory and executed.  \n",
+        "    [in] file_spec : STRING",
+        "    [in] listing_sw : BOOLEAN",
+        "    [out] status : INTEGER \n",
+        "%ENVIRONMENT  :TRANS\n\n"]
+    },
+    
+    "UNLOCK_GROUP Built-In Procedure":{
+        "prefix": "UNLOCK_GROUP",
+        "body": ["UNLOCK_GROUP(${1:group_mask},${2:status})"],
+        "description": ["Purpose: Unlocks motion control for the specified group of axes. \n",
+        "    [in] group_mask :INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :MULTI\n\n"]
+    },
+    
+    "UNPOS Built-In Procedure":{
+        "prefix": "UNPOS",
+        "body": ["UNPOS(${1:posn},${2:x},${3:y},${4:z},${5:w},${6:p},${7:r},${8:c})"],
+        "description": ["Purpose: Sets the specified REAL variables to the location (x,y,z) and orientation (w,p,r) components of the specified XYZWPR variable and sets the specified CONFIG variable to the configuration component of the XYZWPR. \n",
+        "    [in] posn :XYZWPR",
+        "    [out] x, y, z :REAL",
+        "    [out] w, p, r :REAL",
+        "    [out] c :CONFIG \n",
+        "%ENVIRONMENT  :SYSTEM\n\n"]
+    },
+    
+    "V_ACQ_VAMAP Built-In Procedure":{
+        "prefix": "V_ACQ_VAMAP",
+        "body": ["V_ACQ_VAMAP(${1:sensor_name},${2:partial},${3:center_pos},${4:status})"],
+        "description": ["Purpose: Acquires a 3D area map using the specified 3D area sensor tool.  \n",
+        "    [in] sensor_name: STRING",
+        "    [in] partial: BOOLEAN",
+        "    [in] center_pos: VECTOR",
+        "    [out] status: INTEGER \n",
+        "%ENVIRONMENT GROUP: CVIS\n\n"]
+    },
+    
+    "D Built-In Procedure":{
+        "prefix": "D",
+        "body": ["D(${1:register_no},${2:x},${3:y},${4:status})"],
+        "description": ["Purpose: Modifies the offset in a specified vision register by X and Y.  \n",
+        "    [in] register_no: INTEGER",
+        "    [in] x: REAL",
+        "    [in] y: REAL",
+        "    [out] status: INTEGER \n",
+        "%ENVIRONMENT GROUP: CVIS\n\n"]
+    },
+    
+    "V_CAM_CALIB Built-In Procedure":{
+        "prefix": "V_CAM_CALIB",
+        "body": ["V_CAM_CALIB(${1:cal_name},${2:func_code},${3:status})"],
+        "description": ["Purpose: Finds the calibration grid for either a single plane or multiple plane calibration.  \n",
+        "    [in] cal_name : STRING",
+        "    [in] func_code : INTEGER",
+        "    [out] status : INTEGER \n",
+        "%ENVIRONMENT : CVIS\n\n"]
+    },
+    
+    "V_CLR_VAMAP Built-In Procedure":{
+        "prefix": "V_CLR_VAMAP",
+        "body": ["V_CLR_VAMAP(${1:sensor_name},${2:status})"],
+        "description": ["Purpose: Clears the 3D area map of a specified area sensor tool from memory.  \n",
+        "    [in] sensor_name: STRING",
+        "    [out] status: INTEGER \n",
+        "%ENVIRONMENT GROUP: CVIS\n\n"]
+    },
+    
+    "V_DISPLAY4D Built-In Procedure":{
+        "prefix": "V_DISPLAY4D",
+        "body": ["V_DISPLAY4D(${1:vistool_name},${2:status})"],
+        "description": ["Purpose: Displays the 4D Graphics screen for the specified vision tool on the iPendant.  \n",
+        "    [in] vistool_name: STRING",
+        "    [out] status: INTEGER \n",
+        "%ENVIRONMENT GROUP: CVIS\n\n"]
+    },
+    
+    "V_FIND_VIEW Built-In Procedure":{
+        "prefix": "V_FIND_VIEW",
+        "body": ["V_FIND_VIEW(${1:vp_name},${2:camera_view},${3:image_reg},${4:status})"],
+        "description": ["Purpose: Runs vision find processing on the specified vision process, using a previously captured image. When the vision process has more than one camera view, processing is performed for the specified view.  \n",
+        "    [in] vp_name: STRING",
+        "    [in] camera_view: INTEGER",
+        "    [in] image_reg: INTEGER",
+        "    [out] status: INTEGER \n",
+        "%ENVIRONMENT GROUP: CVIS\n\n"]
+    },
+    
+    "V_GET_OFFSET Built-In Procedure":{
+        "prefix": "V_GET_OFFSET",
+        "body": ["V_GET_OFFSET(${1:vp_name},${2:register_no},${3:status})"],
+        "description": ["Purpose: Gets a vision offset from a vision process and stores it in a specified vision register.  \n",
+        "    [in] vp_name : STRING",
+        "    [in] register_no : INTEGER",
+        "    [out] status : INTEGER \n",
+        "%ENVIRONMENT GROUP: CVIS\n\n"]
+    },
+    
+    "V_GET_PASSFL Built-In Procedure":{
+        "prefix": "V_GET_PASSFL",
+        "body": ["V_GET_PASSFL(${1:vp_name},${2:register_no},${3:status})"],
+        "description": ["Purpose: Gets the status of the error proofing vision process. It then stores the result in a specified numeric register.  \n",
+        "    [in] vp_name : STRING",
+        "    [in] register_no : INTEGER",
+        "    [out] status : INTEGER \n",
+        "%ENVIRONMENT GROUP: CVIS\n\n"]
+    },
+    
+    "V_GET_VPARAM Built-In Procedure":{
+        "prefix": "V_GET_VPARAM",
+        "body": ["V_GET_VPARAM(${1:vp_name},${2:param_no},${3:camera_view},${4:reg_no},${5:status})"],
+        "description": ["Purpose: Retrieves the value of a vision parameter from a specified vision process. When the vision process has more than one camera view, the value is retrieved for the specified view.  \n",
+        "    [in] vp_name: STRING",
+        "    [in] param_no: INTEGER",
+        "    [in] camera_view: INTEGER",
+        "    [in] reg_no: INTEGER",
+        "    [out] status: INTEGER \n",
+        "%ENVIRONMENT GROUP: CVIS\n\n"]
+    },
+    
+    "V_IRCONNECT Built-In Procedure":{
+        "prefix": "V_IRCONNECT",
+        "body": ["V_IRCONNECT(${1:desc_string},${2:priority},${3:vis_reg_no},${4:status})"],
+        "description": ["Purpose: Sends the most recent iRVision result to mobile devices using iRConnect.  \n",
+        "    [in] desc_string: STRING",
+        "    [in] priority: INTEGER",
+        "    [in] vis_reg_no: INTEGER",
+        "    [out] status: INTEGER \n",
+        "%ENVIRONMENT GROUP: CVIS\n\n"]
+    },
+    
+    "V_LED_OFF Built-In Procedure":{
+        "prefix": "V_LED_OFF",
+        "body": ["V_LED_OFF(${1:status})"],
+        "description": ["Purpose: Turns off an attached LED light for vision. The LED light must be attached to a multiplexer for analog cameras.  \n",
+        "    [out] status: INTEGER \n",
+        "%ENVIRONMENT GROUP: CVIS\n\n"]
+    },
+    
+    "V_LED_ON Built-In Procedure":{
+        "prefix": "V_LED_ON",
+        "body": ["V_LED_ON(${1:channel},${2:intensity},${3:status})"],
+        "description": ["Purpose: Turns on an LED light attached for vision. The LED light must be connected to a multiplexer for analog cameras.  \n",
+        "    [in] channel: INTEGER",
+        "    [in] intensity: INTEGER",
+        "    [out] status: INTEGER \n",
+        "%ENVIRONMENT GROUP: CVIS\n\n"]
+    },
+    
+    "V_OVERRIDE Built-In Procedure":{
+        "prefix": "V_OVERRIDE",
+        "body": ["V_OVERRIDE(${1:ovrd_name},${2:value},${3:status})"],
+        "description": ["Purpose: Sets the value of the specified Vision Override tool.  \n",
+        "    [in] ovrd_name: STRING",
+        "    [in] value: REAL",
+        "    [out] status: INTEGER \n",
+        "%ENVIRONMENT GROUP: CVIS\n\n"]
+    },
+    
+    "V_RUN_FIND Built-In Procedure":{
+        "prefix": "V_RUN_FIND",
+        "body": ["V_RUN_FIND(${1:vp_name},${2:camera_view},${3:status})"],
+        "description": ["Purpose: Starts an iRVision process. When a specified vision process has more than one camera view, location is performed for the specified camera views.  \n",
+        "    [in] vp_name: STRING",
+        "    [in] camera_view: INTEGER",
+        "    [out] status: INTEGER \n",
+        "%ENVIRONMENT GROUP: CVIS\n\n"]
+    },
+    
+    "V_SAVE_IMREG Built-In Procedure":{
+        "prefix": "V_SAVE_IMREG",
+        "body": ["V_SAVE_IMREG(${1:image_reg},${2:value},${3:status})"],
+        "description": ["Purpose: Saves an image from an image register to a file.  \n",
+        "    [in] image_reg: INTEGER",
+        "    [in] output_path : STRING",
+        "    [out] status: INTEGER \n",
+        "%ENVIRONMENT GROUP: CVIS\n\n"]
+    },
+    
+    "V_SET_REF Built-In Procedure":{
+        "prefix": "V_SET_REF",
+        "body": ["V_SET_REF(${1:vp_name},${2:status})"],
+        "description": ["Purpose: Sets the reference position in the specified vision process after V_RUN_FIND has been run.  \n",
+        "    [in] vp_name: STRING",
+        "    [out] status: INTEGER \n",
+        "%ENVIRONMENT GROUP: CVIS\n\n"]
+    },
+    
+    "V_SNAP_VIEW Built-In Procedure":{
+        "prefix": "V_SNAP_VIEW",
+        "body": ["V_SNAP_VIEW(${1:vp_name},${2:camera_view},${3:image_reg},${4:status})"],
+        "description": ["Purpose: Acquires an image using the specified vision process and stores it in an image register. When the vision process has more than one camera view, the image is acquired using the specified view.  \n",
+        "    [in] vp_name: STRING",
+        "    [in] camera_view: INTEGER",
+        "    [in] image_reg: INTEGER",
+        "    [out] status: INTEGER \n",
+        "%ENVIRONMENT GROUP: CVIS\n\n"]
+    },
+    
+    "VAR_INFO Built-In Procedure":{
+        "prefix": "VAR_INFO",
+        "body": ["VAR_INFO(${1:prog_name},${2:var_name},${3:uninit},${4:type_nam},${5:type_value},${6:dims},${7:slen},${8:status})"],
+        "description": ["Purpose: Allows a KAREL program to determine data type and numerical information regarding internal or external program variables. \n",
+        "    [in] prog_name: STRING",
+        "    [in] var_name: STRING",
+        "    [out] uninit_b :BOOLEAN",
+        "    [out] type_nam :STRING",
+        "    [out] dims:ARRAY[3] OF INTEGER",
+        "    [out] type_value :INTEGER",
+        "    [out] status :INTEGER",
+        "    [out] slen :INTEGER \n",
+        "%ENVIRONMENT  :BYNAM\n\n"]
+    },
+    
+    "VAR_LIST Built-In Procedure":{
+        "prefix": "VAR_LIST",
+        "body": ["VAR_LIST(${1:prog_name},${2:var_name},${3:var_type},${4:n_skip},${5:format},${6:ary_nam},${7:n_vars},${8:status})"],
+        "description": ["Purpose: Locates variables in the specified KAREL program with the specified name and data type. \n",
+        "    [in] prog_name : STRING",
+        "    [in] var_name : STRING",
+        "    [in] var_type : INTEGER",
+        "    [in] n_skip : INTEGER",
+        "    [in] format : INTEGER",
+        "    [out] ary_nam : ARRAY of STRING",
+        "    [out] n_vars : INTEGER",
+        "    [out] status : INTEGER \n",
+        "%ENVIRONMENT  :BYNAM\n\n"]
+    },
+    
+    "VOL_SPACE Built-In Procedure":{
+        "prefix": "VOL_SPACE",
+        "body": ["VOL_SPACE(${1:device},${2:total},${3:free},${4:volume})"],
+        "description": ["Purpose: Returns the total bytes, free bytes, and volume name for the specified device. \n",
+        "    [in] device :STRING",
+        "    [out] total :INTEGER",
+        "    [out] free :INTEGER",
+        "    [out] volume :STRING \n",
+        "%ENVIRONMENT  :FLBT\n\n"]
+    },
+    
+    "WRITE_DICT Built-In Procedure":{
+        "prefix": "WRITE_DICT",
+        "body": ["WRITE_DICT(${1:file_var},${2:dict_name},${3:element_no},${4:status})"],
+        "description": ["Purpose: Writes information from a dictionary. \n",
+        "    [in] file_var :FILE",
+        "    [in] dict_name :STRING",
+        "    [in] element_no :INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "WRITE_DICT_V Built-In Procedure":{
+        "prefix": "WRITE_DICT_V",
+        "body": ["WRITE_DICT_V(${1:file_var},${2:dict_name},${3:element_no},${4:value_array},${5:status})"],
+        "description": ["Purpose: Writes information from a dictionary with formatted variables. \n",
+        "    [in] file_var :FILE",
+        "    [in] dict_name :STRING",
+        "    [in] element_no :INTEGER",
+        "    [in] value_array :ARRAY OF STRING",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :UIF\n\n"]
+    },
+    
+    "XML_ADDTAG Built-In Procedure":{
+        "prefix": "XML_ADDTAG",
+        "body": ["XML_ADDTAG(${1:xml_file},${2:tag_name},${3:numchar},${4:caseflag},${5:tag_ident},${6:status})"],
+        "description": ["Purpose: Associates the tag 'tag_name' with the 'xml_file'.  \n",
+        "    [in] xml_file :FILE",
+        "    [in] tag_name:STRING",
+        "    [in] numchar:INTEGER",
+        "    [in] caseflag:boolean",
+        "    [in] tag_ident:INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :PBCORE\n\n"]
+    },
+    
+    "XML_GETDATA Built-In Procedure":{
+        "prefix": "XML_GETDATA",
+        "body": ["XML_GETDATA(${1:xml_file},${2:numattr},${3:attrnames},${4:attrvalues},${5:text},${6:textdone})"],
+        "description": ["Purpose: Returns the attribute names and values associated with the tag causing the return.  \n",
+        "    [in] xml_file :FILE",
+        "    [out] numattr: INTEGER",
+        "    [out] attrnames: ARRAY OF STRING",
+        "    [out] attrvalues: ARRAY OF STRING",
+        "    [out] textdata: STRING",
+        "    [out] textdone: BOOLEAN",
+        "    [out] status: INTEGER \n",
+        "%ENVIRONMENT  :\n\n"]
+    },
+    
+    "XML_REMTAG Built-In Procedure":{
+        "prefix": "XML_REMTAG",
+        "body": ["XML_REMTAG(${1:xml_file},${2:tag_name},${3:tag_ident},${4:status})"],
+        "description": ["Purpose: Removes the tag name from the list.  \n",
+        "    [in] xml_file :FILE",
+        "    [in] tag_name: STRING",
+        "    [out] status: INTEGER \n",
+        "%ENVIRONMENT  :\n\n"]
+    },
+    
+    "XML_SCAN Built-In Procedure":{
+        "prefix": "XML_SCAN",
+        "body": ["XML_SCAN(${1:xml_file},${2:tag_name},${3:func_code},${4:status})"],
+        "description": ["Purpose: Scan through a previously opened XML file. \n",
+        "    [in] xml_file :FILE",
+        "    [out] tag_name:STRING",
+        "    [out] tag_ident:INTEGER",
+        "    [out] func_code::INTEGER",
+        "    [out] status :INTEGER \n",
+        "%ENVIRONMENT  :\n\n"]
+    },
+    
+    "XML_SETVAR Built-In Procedure":{
+        "prefix": "XML_SETVAR",
+        "body": ["XML_SETVAR(${1:xml_file},${2:prog_name},${3:var_name},${4:status})"],
+        "description": ["Purpose: Sets the variable [prog_name]var_name according to the attributes that were associated with the tag causing the return.  \n",
+        "    [in] xml_file :FILE",
+        "    [in] prog_name:STRING",
+        "    [in] var_name:STRING",
+        "    [out] status:INTEGER \n",
+        "%ENVIRONMENT  :\n\n"]
+    },
+    
+    "ABORT Action":{
+        "prefix": "ABORT",
+        "body": ["ABORT PROGRAM[${1:#}]"],
+        "description": ["Purpose: Aborts execution of a running or paused task. \n",
+        
+        "\n\n"]
+    },
+    
+    "CANCEL Action":{
+        "prefix": "CANCEL",
+        "body": ["CANCEL GROUP[${1:#}]"],
+        "description": ["Purpose: Terminates any motion in progress. \n",
+        
+        "\n\n"]
+    },
+    
+    "CONTINUE Action":{
+        "prefix": "CONTINUE",
+        "body": ["CONTINUE PROGRAM[${1:#}]"],
+        "description": ["Purpose: Continues execution of a paused task. \n",
+        
+        "\n\n"]
+    },
+    
+    "DISABLE CONDITION Action":{
+        "prefix": "DISABLE CONDITION",
+        "body": ["DISABLE CONDITION[${1:cond_hand_no}]"],
+        "description": ["Purpose: Used within a condition handler to disable the specified condition handler. \n",
+        "    cond_hand_no :an INTEGER expression \n",
+        "\n\n"]
+    },
+    
+    "ENABLE CONDITION Action":{
+        "prefix": "ENABLE CONDITION",
+        "body": ["ENABLE CONDITION[${1:cond_hand_no}]"],
+        "description": ["Purpose: Enables the specified condition handler. \n",
+        "    cond_hand_no :an INTEGER expression \n",
+        "\n\n"]
+    },
+    
+    "HOLD Action":{
+        "prefix": "HOLD",
+        "body": ["HOLD GROUP[${1:#}]"],
+        "description": ["Purpose: Causes the current motion to be held and prevents subsequent motions from starting. \n",
+        
+        "\n\n"]
+    },
+    
+    "NOABORT Action":{
+        "prefix": "NOABORT",
+        "body": ["NOABORT"],
+        "description": ["Purpose: Suppresses the display and logging of error messages. \n",
+        
+        "\n\n"]
+    },
+    
+    "NOMESSAGE Action":{
+        "prefix": "NOMESSAGE",
+        "body": ["NOMESSAGE"],
+        "description": ["Purpose: Suppresses the display and logging of error messages. \n",
+        
+        "\n\n"]
+    },
+    
+    "NOPAUSE Action":{
+        "prefix": "NOPAUSE",
+        "body": ["NOPAUSE"],
+        "description": ["Purpose: Resumes program execution if the program was paused, or prevents program execution from pausing. \n",
+        
+        "\n\n"]
+    },
+    
+    "PAUSE Action":{
+        "prefix": "PAUSE",
+        "body": ["PAUSE PROGRAM[${1:#}]"],
+        "description": ["Purpose: Suspends execution of a running task. \n",
+        
+        "\n\n"]
+    },
+    
+    "PULSE Action":{
+        "prefix": "PULSE",
+        "body": ["PULSE DOUT[${1:port_no}] FOR ${2:time_in_ms}"],
+        "description": ["Purpose: Pulses a digital output port for a specified number of milliseconds. \n",
+        "    port_no : an INTEGER variable or literal",
+        "    time_in_ms : an INTEGER \n",
+        "\n\n"]
+    },
+    
+    "RESUME Action":{
+        "prefix": "RESUME",
+        "body": ["RESUME GROUP[${1:#}]"],
+        "description": ["Purpose: Restarts the last stopped motion issued by the task.  \n",
+        
+        "\n\n"]
+    },
+    
+    "SIGNAL EVENT Action":{
+        "prefix": "SIGNAL EVENT",
+        "body": ["SIGNAL EVENT[${1:event_no}]"],
+        "description": ["Purpose: Signals an event that might satisfy a condition handler or release a waiting program. \n",
+        "    event_no : an INTEGER expression \n",
+        "\n\n"]
+    },
+    
+    "SIGNAL SEMAPHORE Action":{
+        "prefix": "SIGNAL SEMAPHORE",
+        "body": ["SIGNAL SEMAPHORE[${1:semaphore_no}]"],
+        "description": ["Purpose: Adds one to the value of the indicated semaphore. \n",
+        "    semaphore_no : an INTEGER expression \n",
+        "\n\n"]
+    },
+    
+    "STOP Action":{
+        "prefix": "STOP",
+        "body": ["STOP GROUP[${1:#}]"],
+        "description": ["Purpose: Stops any motion in progress, leaving it in a resumable state. \n",
+        
+        "\n\n"]
+    },
+    
+    "UNHOLD Action":{
+        "prefix": "UNHOLD",
+        "body": ["UNHOLD GROUP[${1:#}]"],
+        "description": ["Purpose: Releases a HOLD of motion. \n",
+        
+        "\n\n"]
+    },
+    
+    "UNPAUSE Action":{
+        "prefix": "UNPAUSE",
+        "body": ["UNPAUSE"],
+        "description": ["Purpose: Resumes program execution long enough for a routine action to be executed. \n",
+        
+        "\n\n"]
+    },
+    
+    "ARRAY Data Type":{
+        "prefix": "ARRAY",
+        "body": ["ARRAY[${1:size}] OF ${2:data_type}"],
+        "description": ["Purpose: Defines a variable, function return type, or routine parameter as ARRAY data type. \n",
+        "    size : an INTEGER literal or constant",
+        "    data_type : any type except PATH \n",
+        "\n\n"]
+    },
+    
+    "BOOLEAN Data Type":{
+        "prefix": "BOOLEAN",
+        "body": ["BOOLEAN"],
+        "description": ["Purpose: Defines a variable, function return type, or routine parameter as a BOOLEAN data type. \n",
+        
+        "\n\n"]
+    },
+    
+    "BYTE Data Type":{
+        "prefix": "BYTE",
+        "body": ["BYTE"],
+        "description": ["Purpose: Defines a variable as a BYTE data type. \n",
+        
+        "\n\n"]
+    },
+    
+    "CONFIG Data Type":{
+        "prefix": "CONFIG",
+        "body": ["CONFIG"],
+        "description": ["Purpose: Defines a variable or structure field as a CONFIG data type. \n",
+        
+        "\n\n"]
+    },
+    
+    "FILE Data Type":{
+        "prefix": "FILE",
+        "body": ["FILE"],
+        "description": ["Purpose: Defines a variable as FILE data type. \n",
+        
+        "\n\n"]
+    },
+    
+    "INTEGER Data Type":{
+        "prefix": "INTEGER",
+        "body": ["INTEGER"],
+        "description": ["Purpose: Defines a variable, function return type, or routine parameter as INTEGER data type. \n",
+        
+        "\n\n"]
+    },
+    
+    "JOINTPOS Data Type":{
+        "prefix": "JOINTPOS",
+        "body": ["JOINTPOS IN GROUP[${1:#}]"],
+        "description": ["Purpose: Defines a variable, function return type, or routine parameter as JOINTPOS data type.  \n",
+        
+        "\n\n"]
+    },
+    
+    "PATH Data Type":{
+        "prefix": "PATH",
+        "body": ["PATH"],
+        "description": ["Purpose: Defines a variable or routine parameter as PATH data type. \n",
+        
+        "\n\n"]
+    },
+    
+    "POSITION Data Type":{
+        "prefix": "POSITION",
+        "body": ["POSITION IN GROUP[${1:#}]"],
+        "description": ["Purpose: Defines a variable, function return type, or routine parameter as POSITION data type. \n",
+        
+        "\n\n"]
+    },
+    
+    "REAL Data Type":{
+        "prefix": "REAL",
+        "body": ["REAL"],
+        "description": ["Purpose: Defines a variable, function return type, or routine parameter as a REAL data type with a numeric value that includes a decimal point and a fractional part, or numbers expressed in scientific notation.  \n",
+        
+        "\n\n"]
+    },
+    
+    "SHORT Data Type":{
+        "prefix": "SHORT",
+        "body": ["SHORT"],
+        "description": ["Purpose: Defines a variable as a SHORT data type. \n",
+        
+        "\n\n"]
+    },
+    
+    "STRING Data Type":{
+        "prefix": "STRING",
+        "body": ["STRING[${1:length}]"],
+        "description": ["Purpose: Defines a variable or routine parameter as STRING data type. \n",
+        "    length : an INTEGER constant or literal \n",
+        "\n\n"]
+    },
+    
+    "VECTOR Data Type":{
+        "prefix": "VECTOR",
+        "body": ["VECTOR"],
+        "description": ["Purpose: Defines a variable, function return type, or routine parameter as VECTOR data type. \n",
+        
+        "\n\n"]
+    },
+    
+    "XYZWPR Data Type":{
+        "prefix": "XYZWPR",
+        "body": ["XYZWPR IN GROUP[${1:#}]"],
+        "description": ["Purpose: Defines a variable, function return type, or routine parameter as XYZWPR data type. \n",
+        
+        "\n\n"]
+    },
+    
+    "XYZWPREXT Data Type":{
+        "prefix": "XYZWPREXT",
+        "body": ["XYZWPREXT IN GROUP[${1:#}]"],
+        "description": ["Purpose: Defines a variable, function return type, or routine parameter as an XYZWPREXT. \n",
+        
+        "\n\n"]
+    },
+    
+    "CONDITION...ENDCONDITION Statement":{
+        "prefix": "CONDITION...ENDCONDITION",
+        "body": ["CONDITION[${1:cond_hand_no}]:\n\tWHEN ${2:cond_list} DO ${3:action_list}\nENDCONDITION\n"],
+        "description": ["Purpose: Defines a global condition handler. \n",
+        
+        "\n\n"]
+    },
+    
+    "FOR...ENDFOR Statement":{
+        "prefix": "FOR...ENDFOR",
+        "body": ["FOR (${1:count} = ${2:initial}) ${3:TO} ${4:DOWNTO} (${5:final}) DO\n\t${6:statement} \nENDFOR\n"],
+        "description": ["Purpose: Looping construct based on an INTEGER counter. \n",
+        "    [in]count :INTEGER variable",
+        "    [in]initial :INTEGER expression",
+        "    [in]final :INTEGER expression",
+        "    [in]statement :executable KAREL statement \n",
+        "\n\n"]
+    },
+    
+    "IF...ENDIF Statement":{
+        "prefix": "IF...ENDIF",
+        "body": ["IF (${1:bool_exp}) THEN\n\t${2:true_statement} \nELSE\n\t${3:false_statement} \nENDIF\n"],
+        "description": ["Purpose: Executes a sequence of statements if a BOOLEAN expression is TRUE; an alternate sequence can be executed if the condition is FALSE.  \n",
+        "    bool_exp : BOOLEAN",
+        "    true_statement : An executable KAREL statement",
+        "    false_statement : An executable KAREL statement \n",
+        "\n\n"]
+    },
+    
+    "REPEAT...UNTIL Statement":{
+        "prefix": "REPEAT...UNTIL",
+        "body": ["REPEAT\n\t${1:statement}\nUNTIL (${2:boolean_exp})\n"],
+        "description": ["Purpose: Repeats statement(s) until a BOOLEAN expression evaluates to TRUE.  \n",
+        "    statement : a valid KAREL executable statement",
+        "    boolean_exp : a BOOLEAN expression \n",
+        "\n\n"]
+    },
+    
+    "SELECT...ENDSELECT Statement":{
+        "prefix": "SELECT...ENDSELECT",
+        "body": ["SELECT (${1:case_val}) OF\n\tCASE(${2:value}):\n\t\t${3:statement}\n\tCASE(${2:value}):\n\t\t${3:statement}\n\tELSE:\n\t\t${3:statement}\nENDSELECT\n"],
+        "description": ["Purpose: Permits execution of one out of a series of statement sequences, depending on the value of an INTEGER expression.  \n",
+        "    case_val : an INTEGER expression",
+        "    value : an INTEGER constant or literal",
+        "    statement : a valid KAREL executable statement \n",
+        "\n\n"]
+    },
+    
+    "USING...ENDUSING Statement":{
+        "prefix": "USING...ENDUSING",
+        "body": ["USING (${1:struct_var}) DO\n\t${2:statement} \nENDUSING\n"],
+        "description": ["Purpose: Defines a range of executable statements in which fields of a variable of a STRUCTURE type can be accessed without repeating the name of the variable.  \n",
+        "    struct_var : a variable of STRUCTURE type",
+        "    statement : an executable KAREL statement \n",
+        "\n\n"]
+    },
+    
+    "WHILE...ENDWHILE Statement":{
+        "prefix": "WHILE...ENDWHILE",
+        "body": ["WHILE (${1:boolean_exp}) DO\n\t${2:statement}\nENDWHILE\n"],
+        "description": ["Purpose: Used when an action is to be executed as long as a BOOLEAN expression remains TRUE. \n",
+        "    statement : a valid KAREL executable statement",
+        "    boolean_exp : a BOOLEAN expression \n",
+        "\n\n"]
+    },
+    "ROUTINE":{
+        "prefix": "ROUTINE",
+        "body": ["ROUTINE ${1:routine_name}\n\nCONST\n\nVAR\n\nBEGIN\n\nEND ${2:routine_name}"]
+    },
+    "PROGRAM":{
+        "prefix": "PROGRAM",
+        "body": ["PROGRAM ${1:program_name}\n\n%COMMENT='${2:program_comment}'\n%ENVIRONMENT ${4:environment_name}\n%INCLUDE ${5:other_program}\n\nCONST\n\nVAR\n\n\nBEGIN\n\nEND ${8:program_name}"]
+    }
+}
