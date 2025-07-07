@@ -149,6 +149,8 @@ public sealed record KarelFunctionCall(string Identifier, List<KarelExpression> 
 
 public abstract record KarelValue : KarelPrimaryExpression, IKarelParser<KarelValue>
 {
+    public abstract override string ToString();
+
     public new static Parser<KarelValue> GetParser()
         => KarelString.GetParser()
             .Or(KarelReal.GetParser())
@@ -159,6 +161,9 @@ public abstract record KarelValue : KarelPrimaryExpression, IKarelParser<KarelVa
 
 public sealed record KarelString(string Value) : KarelValue, IKarelParser<KarelValue>
 {
+    public override string ToString()
+        => $"\"{Value}\"";
+
     public new static Parser<KarelValue> GetParser()
         => Parse.Char('\'').Then(_ =>
             Parse.AnyChar.Until(Parse.Char('\''))
@@ -171,6 +176,9 @@ public sealed record KarelString(string Value) : KarelValue, IKarelParser<KarelV
 
 public sealed record KarelInteger(int Value) : KarelValue, IKarelParser<KarelValue>
 {
+    public override string ToString()
+        => Value.ToString();
+
     public new static Parser<KarelValue> GetParser()
         => from negated in KarelCommon.Keyword("-").Optional()
            from num in Parse.Number.Select(int.Parse)
@@ -183,6 +191,9 @@ public sealed record KarelInteger(int Value) : KarelValue, IKarelParser<KarelVal
 
 public sealed record KarelReal(float Value) : KarelValue, IKarelParser<KarelValue>
 {
+    public override string ToString()
+        => Value.ToString();
+
     public new static Parser<KarelValue> GetParser()
         => from negated in KarelCommon.Keyword("-").Optional()
            from num in Parse.Decimal.Select(float.Parse)
@@ -195,6 +206,9 @@ public sealed record KarelReal(float Value) : KarelValue, IKarelParser<KarelValu
 
 public sealed record KarelBool(bool Value) : KarelValue, IKarelParser<KarelValue>
 {
+    public override string ToString()
+        => Value.ToString();
+
     public new static Parser<KarelValue> GetParser()
         => KarelCommon.Keyword("TRUE").Return(new KarelBool(true))
             .Or(KarelCommon.Keyword("FALSE").Return(new KarelBool(false)));

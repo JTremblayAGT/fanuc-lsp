@@ -47,7 +47,7 @@ public partial class TpFormatter : IFormatter
         output.Write(header);
         output.WriteLine("/MN");
 
-        var rest = sections.Last().Split("/POS", 2);
+        var rest = sections.Last().Split("\n/POS", 2);
 
         // First pass: Calculate SELECT statement alignment positions
         var mainLines = rest.First().Split("\r\n");

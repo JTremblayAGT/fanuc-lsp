@@ -52,16 +52,35 @@ internal sealed partial class KlVariableCompletionProvider : ICompletionProvider
             .OfType<KarelVariableDeclaration>()
             .SelectMany(decl => decl.Variable.Select(kvar => new CompletionItem
             {
-                Label = kvar.Identifier,
-                Detail = kvar.Type.ToString(),
-                Documentation = string.Empty,
-                InsertText = kvar.Identifier.ToUpper(),
-                InsertTextFormat = InsertTextFormat.PlainText,
+                Label = kvar.Identifier.ToUpper(),
+                Detail = "Karel Variable",
+                Documentation = GetVariableDocumentation(klProg.Program, kvar),
+                InsertText = GetVariableSnippet(kvar),
+                InsertTextFormat = InsertTextFormat.Snippet,
                 Kind = CompletionItemKind.Variable
             })).ToArray(),
             _ => TraverseVariables(labels, klProg.Program)
         };
     }
+
+    private static string GetVariableSnippet(KarelVariable kvar)
+        => kvar.Type switch
+        {
+            KarelTypeArray => $"{kvar.Identifier.ToUpper()}[$1:idx]",
+            _ => kvar.Identifier.ToUpper()
+        };
+
+    private static string GetVariableDocumentation(KarelProgram prog, KarelVariable kvar)
+        => $"**{prog.Name}** (line {kvar.Start.Line})\n*Type*:\n{kvar.Type switch
+        {
+            KarelTypeName name => prog.Declarations
+                .OfType<KarelTypeDeclaration>()
+                .SelectMany(decl => decl.Type)
+                .Where(typ => typ.Type is KarelStructure)
+                .FirstOrDefault(typ => typ.Identifier.Equals(name.Identifier, StringComparison.OrdinalIgnoreCase))
+                ?.ToString() ?? kvar.Type.ToString(),
+            _ => kvar.Type.ToString()
+        }}";
 
     private static CompletionItem[] TraverseVariables(string[] labels, KarelProgram prog)
     {
@@ -99,17 +118,17 @@ internal sealed partial class KlVariableCompletionProvider : ICompletionProvider
 
         return karelVar.Type switch
         {
-            KarelTypeName typeName => TraverseIfStructure(labels[1..], typeName, structures),
+            KarelTypeName typeName => TraverseIfStructure(labels[1..], typeName, structures, prog),
             KarelTypeArray arrayType => arrayType.Type switch
             {
-                KarelTypeName typeName => TraverseIfStructure(labels[1..], typeName, structures),
+                KarelTypeName typeName => TraverseIfStructure(labels[1..], typeName, structures, prog),
                 _ => []
             },
             _ => []
         };
     }
 
-    private static CompletionItem[] TraverseIfStructure(string[] labels, KarelTypeName typeName, Dictionary<string, KarelStructure> structures)
+    private static CompletionItem[] TraverseIfStructure(string[] labels, KarelTypeName typeName, Dictionary<string, KarelStructure> structures, KarelProgram prog)
     {
         var currLabel = labels.First();
         if (currLabel.Contains('['))
@@ -121,18 +140,18 @@ internal sealed partial class KlVariableCompletionProvider : ICompletionProvider
             return [];
         }
 
-        return TraverseFields(labels, structure!, structures);
+        return TraverseFields(labels, structure!, structures, prog);
     }
 
-    private static CompletionItem[] TraverseFields(string[] labels, KarelStructure structure, Dictionary<string, KarelStructure> structures)
+    private static CompletionItem[] TraverseFields(string[] labels, KarelStructure structure, Dictionary<string, KarelStructure> structures, KarelProgram prog)
     {
         if (labels.Length <= 1)
         {
             return structure.Fields.Select(field => new CompletionItem
             {
                 Label = field.Identifier,
-                Detail = field.Type.ToString(),
-                Documentation = string.Empty,
+                Detail = "Structure Field",
+                Documentation = GetFieldDocumentation(field, prog),
                 InsertText = field.Identifier,
                 InsertTextFormat = InsertTextFormat.PlainText,
                 Kind = CompletionItemKind.Field
@@ -153,13 +172,25 @@ internal sealed partial class KlVariableCompletionProvider : ICompletionProvider
 
         return field.Type switch
         {
-            KarelTypeName typeName => TraverseIfStructure(labels[1..], typeName, structures),
+            KarelTypeName typeName => TraverseIfStructure(labels[1..], typeName, structures, prog),
             KarelTypeArray arrayType => arrayType.Type switch
             {
-                KarelTypeName typeName => TraverseIfStructure(labels[1..], typeName, structures),
+                KarelTypeName typeName => TraverseIfStructure(labels[1..], typeName, structures, prog),
                 _ => []
             },
             _ => []
         };
     }
+
+    private static string GetFieldDocumentation(KarelField field, KarelProgram prog)
+        => $"**{prog.Name}** (line {field.Start.Line})\n*Type*:\n{field.Type switch
+        {
+            KarelTypeName name => prog.Declarations
+                .OfType<KarelTypeDeclaration>()
+                .SelectMany(decl => decl.Type)
+                .Where(typ => typ.Type is KarelStructure)
+                .FirstOrDefault(typ => typ.Identifier.Equals(name.Identifier, StringComparison.OrdinalIgnoreCase))
+                ?.ToString() ?? field.Type.ToString(),
+            _ => field.Type.ToString()
+        }}";
 }
