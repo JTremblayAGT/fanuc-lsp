@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using FanucTpLsp.Lsp.State;
 using KarelParser;
@@ -13,6 +14,22 @@ internal interface ICompletionProvider
 internal interface IKlCompletionProvider
 {
     public CompletionItem[] GetCompletions(KarelProgram program, string lineText, int column, LspServerState serverState);
+}
+
+internal struct CodeSnippet
+{
+    [JsonPropertyName("prefix")]
+    public string Prefix = string.Empty;
+
+    [JsonPropertyName("body")]
+    public List<string> Body = [];
+
+    [JsonPropertyName("description")]
+    public List<string>? Description = [];
+
+    public CodeSnippet()
+    {
+    }
 }
 
 internal class CompletionProviderUtils

@@ -36,13 +36,18 @@ public sealed class LspServerState(string logFilePath)
     public ConcurrentDictionary<string, TextDocumentState> OpenedTextDocuments { get; set; } = new();
     public ConcurrentDictionary<string, TextDocumentState> AllTextDocuments { get; set; } = new();
 
-    private static readonly List<ICompletionProvider> CompletionProviders =
+    private static readonly List<ICompletionProvider> TpCompletionProviders =
     [
         new TpLabelCompletionProvider(),
         new TpMotionInstructionCompletionProvider(),
         new TpAssignmentCompletionProvider(),
         new TpCallCompletionProvider(),
         new KlVariableCompletionProvider(),
+    ];
+
+    private static readonly List<IKlCompletionProvider> KlCompletionProviders =
+    [
+        new KlBuiltinCompletionProvider()
     ];
 
     private static readonly List<IDefinitionProvider> DefinitionProviders =
@@ -144,12 +149,6 @@ public sealed class LspServerState(string logFilePath)
             return [];
         }
 
-        if (documentState.Program is not TppProgram prog)
-        {
-            // TODO: support Karel
-            return [];
-        }
-
         // Get the document content
         var document = documentState.TextDocument;
         var lastEdit = documentState.LastEditPosition;
@@ -172,12 +171,27 @@ public sealed class LspServerState(string logFilePath)
         var currentLine = lines[lastEdit.Line];
         var character = Math.Min(lastEdit.Character, currentLine.Length);
 
-        return CompletionProviders.Aggregate(
+        return documentState.Program switch
+        {
+            TppProgram tpp => GetTpCompletionItems(tpp.Program, currentLine, character),
+            KlProgram kl => GetKlCompletionItems(kl.Program, currentLine, character),
+            _ => []
+        };
+    }
+
+    private CompletionItem[] GetTpCompletionItems(TpProgram program, string currentLine, int character)
+        => TpCompletionProviders.Aggregate(
             new CompletionItem[] { }, (accumulator, completionProvider)
-                => accumulator.Concat(completionProvider.GetCompletions(prog.Program!, currentLine, character, this))
+                => accumulator.Concat(completionProvider.GetCompletions(program, currentLine, character, this))
                     .ToArray()
         );
-    }
+
+    private CompletionItem[] GetKlCompletionItems(KarelProgram program, string currentLine, int character)
+        => KlCompletionProviders.Aggregate(
+            new CompletionItem[] { }, (accumulator, completionProvider)
+                => accumulator.Concat(completionProvider.GetCompletions(program, currentLine, character, this))
+                    .ToArray()
+        );
 
     public TextDocumentLocation? GetLocation(string uri, ContentPosition position)
     {

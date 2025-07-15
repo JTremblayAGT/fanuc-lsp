@@ -51,7 +51,7 @@ public class LspUtils
                 },
                 _ => string.Empty
             },
-            KlProgram klProg => string.Empty,
+            KlProgram klProg => klProg.Program.HeaderComment,
             _ => string.Empty
         };
 }

@@ -1,6 +1,4 @@
 ﻿using System.Text;
-using KarelParser.Instructions;
-using Sprache;
 
 namespace KarelParser.Tests;
 
