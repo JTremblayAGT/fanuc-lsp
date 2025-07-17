@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PublishAot>false</PublishAot>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\Karel\karelbuiltin.code-snippets" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Karel\karelbuiltin.code-snippets" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Sprache" Version="2.3.1" />
+    <PackageReference Include="UnderAutomation.Fanuc" Version="1.15.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\KarelParser\KarelParser.csproj" />
+    <ProjectReference Include="..\TPLangParser\TPLangParser.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Resources\Tpp\" />
+  </ItemGroup>
+
+</Project>
