@@ -13,8 +13,7 @@ internal sealed class KlBuiltinCompletionProvider : IKlCompletionProvider
 
     private static CompletionItem[] BuildCompletionList()
     {
-
-        if (EmbeddedResourceReader.GetKarelBuiltInSnippets() is not {} snippets)
+        if (EmbeddedResourceReader.GetKarelBuiltInSnippets() is not { } snippets)
         {
             return [];
         }

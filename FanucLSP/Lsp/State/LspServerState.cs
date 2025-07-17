@@ -61,6 +61,11 @@ public sealed class LspServerState(string logFilePath)
         new CallHoverProvider(),
     ];
 
+    private static readonly List<IKlHoverProvider> klHoverProviders =
+    [
+        new KlBuiltinHoverProvider()
+    ];
+
     public bool Initialize()
     {
         IsInitialized = true;
@@ -216,15 +221,16 @@ public sealed class LspServerState(string logFilePath)
     {
         if (OpenedTextDocuments.TryGetValue(uri, out var documentState))
         {
-            if (documentState.Program is not TppProgram prog)
+            return documentState.Program switch
             {
-                // TODO: Support Karel hovering one day
-                return null;
-            }
-
-            return HoverProviders
-                .Select(provider => provider.GetHoverResult(prog.Program!, position, this))
-                .FirstOrDefault(res => res is not null);
+                TppProgram tpProg => HoverProviders
+                    .Select(provider => provider.GetHoverResult(tpProg.Program!, position, this))
+                    .FirstOrDefault(res => res is not null),
+                KlProgram klProg => klHoverProviders
+                    .Select(provider => provider.GetHoverResult(klProg.Program!, position, documentState.TextDocument.Text))
+                    .FirstOrDefault(res => res is not null),
+                _ => null
+            };
         }
 
         LogMessage($"[TextDocumentDidHover]: Document not opened: {uri}");
