@@ -197,10 +197,20 @@ public class LspServer(string logFilePath)
             return;
         }
 
+        switch (documentState.Type)
+        {
+            case DocumentType.Tp:
+                await _state.UpdateParsedProgram(request.Params.TextDocument.Uri)
+                    .ContinueWith(async result => ParseResultToDiagnostics(await result, request.Params.TextDocument.Uri))
+                    .ConfigureAwait(false);
+                break;
+            case DocumentType.Karel:
+                await _state.UpdateParsedKlProgram(request.Params.TextDocument.Uri)
+                    .ContinueWith(async result => ParseKarelResultToDiagnostics(await result, request.Params.TextDocument.Uri))
+                    .ConfigureAwait(false);
+                break;
+        }
         // Might not actually need to do anything
-        await _state.UpdateParsedProgram(request.Params.TextDocument.Uri)
-            .ContinueWith(async result => ParseResultToDiagnostics(await result, request.Params.TextDocument.Uri))
-            .ConfigureAwait(false);
     }
 
     private async Task HandleTextDocumentDidHover(string json, Func<ResponseMessage, Task> callback)

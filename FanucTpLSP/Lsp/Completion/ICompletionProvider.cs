@@ -16,16 +16,16 @@ internal interface IKlCompletionProvider
     public CompletionItem[] GetCompletions(KarelProgram program, string lineText, int column, LspServerState serverState);
 }
 
-internal struct CodeSnippet
+public class CodeSnippet
 {
     [JsonPropertyName("prefix")]
-    public string Prefix = string.Empty;
+    public string Prefix { get; set; } = string.Empty;
 
     [JsonPropertyName("body")]
-    public List<string> Body = [];
+    public string[] Body { get; set; } = [];
 
     [JsonPropertyName("description")]
-    public List<string>? Description = [];
+    public string[]? Description { get; set; } = [];
 
     public CodeSnippet()
     {

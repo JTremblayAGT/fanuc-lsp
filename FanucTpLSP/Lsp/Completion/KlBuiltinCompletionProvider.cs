@@ -13,8 +13,9 @@ internal sealed class KlBuiltinCompletionProvider : IKlCompletionProvider
 
     private CompletionItem[] BuildCompletionList()
     {
+
         var snippets = JsonSerializer.Deserialize<Dictionary<string, CodeSnippet>>
-            (File.ReadAllText(@"..\..\Resources\karelbuiltin.code-snippets"));
+            (File.ReadAllText(@"C:\Users\justin.tremblay\Projects\fanuctp-lsp\FanucTpLSP\Resources\karelbuiltin.code-snippets"));
 
         if (snippets is null)
         {
@@ -25,7 +26,7 @@ internal sealed class KlBuiltinCompletionProvider : IKlCompletionProvider
         {
             Label = kvp.Value.Prefix,
             Detail = kvp.Key,
-            Documentation = kvp.Value.Description?.FirstOrDefault() ?? string.Empty,
+            Documentation = string.Join('\n', kvp.Value.Description ?? []),
             Kind = CompletionItemKind.Function,
             InsertText = kvp.Value.Body.FirstOrDefault() ?? kvp.Value.Prefix,
             InsertTextFormat = InsertTextFormat.Snippet

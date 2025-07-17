@@ -236,41 +236,43 @@ public sealed class LspServerState(string logFilePath)
     public async Task<IResult<TpProgram>> UpdateParsedProgram(string uri)
         => await UpdateParsedProgram(OpenedTextDocuments[uri]);
 
+    public async Task<IResult<KarelProgram>> UpdateParsedKlProgram(string uri)
+        => await UpdateParsedKlProgram(OpenedTextDocuments[uri]);
+
     private async Task<IResult<TpProgram>> UpdateParsedProgram(TextDocumentState documentState)
     {
         var document = documentState.TextDocument;
 
-        if (documentState.Type == DocumentType.Karel)
+        switch (documentState.Type)
         {
-            throw new InvalidOperationException($"Karel programs aren't parsed");
+            case DocumentType.Tp:
+                var result = await Task.Run(() => TpProgram.GetParser().TryParse(document.Text));
+                OpenedTextDocuments[document.Uri] = documentState with
+                {
+                    Program = result.WasSuccessful ? new TppProgram(result.Value) : documentState.Program
+                };
+                return result;
+            default:
+                throw new InvalidOperationException($"Not a TPP program");
         }
-
-        var result = await Task.Run(() => TpProgram.GetParser().TryParse(document.Text));
-        OpenedTextDocuments[document.Uri] = documentState with
-        {
-            Program = result.WasSuccessful ? new TppProgram(result.Value) : documentState.Program
-        };
-        return result;
     }
-
-    public async Task<IResult<KarelProgram>> UpdateParsedKlProgram(string uri)
-        => await UpdateParsedKlProgram(OpenedTextDocuments[uri]);
 
     private async Task<IResult<KarelProgram>> UpdateParsedKlProgram(TextDocumentState documentState)
     {
         var document = documentState.TextDocument;
 
-        if (documentState.Type == DocumentType.Karel)
+        switch (documentState.Type)
         {
-            throw new InvalidOperationException($"Karel programs aren't parsed");
+            case DocumentType.Karel:
+                var result = await Task.Run(() => KarelProgram.ProcessAndParse(document.Text));
+                OpenedTextDocuments[document.Uri] = documentState with
+                {
+                    Program = result.WasSuccessful ? new KlProgram(result.Value) : documentState.Program
+                };
+                return result;
+            default:
+                throw new InvalidOperationException($"Not a Karel program");
         }
-
-        var result = await Task.Run(() => KarelProgram.ProcessAndParse(document.Text));
-        OpenedTextDocuments[document.Uri] = documentState with
-        {
-            Program = result.WasSuccessful ? new KlProgram(result.Value) : documentState.Program
-        };
-        return result;
     }
 
     /// <summary>
