@@ -18,7 +18,7 @@ internal sealed partial class KlVariableCompletionProvider : ICompletionProvider
     public CompletionItem[] GetCompletions(TpProgram program, string lineText, int column, LspServerState serverState)
         => CompletionProviderUtils.TokenizeInput(lineText[..column]) switch
         {
-            [.., { } variable] when variable.Contains('$') => CompleteVariable(variable[variable.IndexOf('%')..], serverState),
+            [.., { } variable] when variable.Contains('$') => CompleteVariable(variable[variable.IndexOf('$')..], serverState),
             _ => []
         };
 
