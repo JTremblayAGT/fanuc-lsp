@@ -99,12 +99,12 @@ public class LspServer(string logFilePath)
                             "[", "]", "."
                         ]
                     },
-                    FormattingProvider = true,
+                    FormattingProvider = false,
                     RangeFormattingProvider = false,
                 },
                 ServerInfo = new()
                 {
-                    Name = "fanuctp-lsp",
+                    Name = "fanuc-lsp",
                     Version = "0.0.0-alpha1"
                 }
             }

@@ -39,7 +39,6 @@ while (true)
             rawRequest.AppendLine(header);
             header = reader.ReadLine();
         }
-
         // Read the rest of the content (if any)
         if (rawRequest.Length == 0)
         {
@@ -61,20 +60,9 @@ while (true)
         }
 
         var buffer = new char[contentLength];
-        var read = 0;
-        while (read < contentLength)
-        {
-            var n = reader.Read(buffer, read, contentLength - read);
-            if (n == 0)
-            {
-                break;
-            }
-
-            read += n;
-        }
+        var read = reader.Read(buffer, 0, contentLength);
 
         var json = new string(buffer, 0, read);
-
         await HandleRequest(server, json, writer, logFilePath);
     }
     catch (Exception ex)

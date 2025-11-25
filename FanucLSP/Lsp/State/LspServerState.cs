@@ -61,7 +61,7 @@ public sealed class LspServerState(string logFilePath)
         new CallHoverProvider(),
     ];
 
-    private static readonly List<IKlHoverProvider> klHoverProviders =
+    private static readonly List<IKlHoverProvider> KlHoverProviders =
     [
         new KlBuiltinHoverProvider()
     ];
@@ -84,7 +84,7 @@ public sealed class LspServerState(string logFilePath)
     public async Task<IResult<TpProgram>> OnTpDocumentOpen(TextDocumentItem document)
     {
         OpenedTextDocuments.TryAdd(document.Uri,
-            new(document, new(), DocumentType.Tp, default(RobotProgram)));
+            new(document, new(), DocumentType.Tp, null));
 
         return await UpdateParsedProgram(document.Uri);
     }
@@ -92,7 +92,7 @@ public sealed class LspServerState(string logFilePath)
     public async Task<IResult<KarelProgram>> OnKarelDocumentOpen(TextDocumentItem document)
     {
         OpenedTextDocuments.TryAdd(document.Uri,
-            new(document, new(), DocumentType.Karel, default(RobotProgram)));
+            new(document, new(), DocumentType.Karel, null));
 
         return await UpdateParsedKlProgram(document.Uri);
     }
@@ -226,7 +226,7 @@ public sealed class LspServerState(string logFilePath)
                 TppProgram tpProg => HoverProviders
                     .Select(provider => provider.GetHoverResult(tpProg.Program!, position, this))
                     .FirstOrDefault(res => res is not null),
-                KlProgram klProg => klHoverProviders
+                KlProgram klProg => KlHoverProviders
                     .Select(provider => provider.GetHoverResult(klProg.Program!, position, documentState.TextDocument.Text))
                     .FirstOrDefault(res => res is not null),
                 _ => null
