@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using FanucLsp.Lsp.Completion;
 using FanucLsp.Lsp.Definition;
 using FanucLsp.Lsp.Hover;
+using FanucLSP.Lsp.Util;
 using KarelParser;
 using Sprache;
 using TPLangParser.TPLang;
@@ -305,10 +306,11 @@ public sealed class LspServerState(string logFilePath)
         {
             case DocumentType.Karel:
                 var result = await Task.Run(() => KarelProgram.ProcessAndParse(document.Text));
+                var symbolTable = KarelSymbolTableBuilder.Build(result.Value);
                 OpenedTextDocuments[document.Uri] = documentState with
                 {
                     Program = result.WasSuccessful
-                        ? new KlProgram(result.Value)
+                        ? new KlProgram(result.Value, symbolTable)
                         : documentState.Program,
                 };
                 return result;
@@ -378,8 +380,16 @@ public sealed class LspServerState(string logFilePath)
     private static TppProgram? TppValueOr(IResult<TpProgram> result) =>
         result.WasSuccessful ? new TppProgram(result.Value) : null;
 
-    private static KlProgram? KarelValueOr(IResult<KarelProgram> result) =>
-        result.WasSuccessful ? new KlProgram(result.Value) : null;
+    private static KlProgram? KarelValueOr(IResult<KarelProgram> result)
+    {
+        if (!result.WasSuccessful)
+        {
+            return null;
+        }
+
+        var symTable = KarelSymbolTableBuilder.Build(result.Value);
+        return new KlProgram(result.Value, symTable);
+    }
 
     private void FindLsFiles()
     {

@@ -11,7 +11,7 @@ public sealed record KarelWait(KarelGlobalCondition Condition)
            from kww in KarelCommon.Keyword("FOR")
            from cond in ParseCompoundCondition()
            select new KarelWait(cond);
-           
+
     private static Parser<KarelGlobalCondition> ParseCompoundCondition()
         => KarelOrCondition.OrChain(KarelGlobalCondition.GetParser())
            .Or(KarelAndCondition.AndChain(KarelGlobalCondition.GetParser()));

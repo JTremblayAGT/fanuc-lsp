@@ -49,7 +49,7 @@ public record KarelReadItemExpr(KarelExpression Expression, List<KarelExpression
     : KarelItem, IKarelParser<KarelItem>
 {
     public new static Parser<KarelItem> GetParser()
-        => from variable in KarelExpression.GetParser() 
+        => from variable in KarelExpression.GetParser()
            from items in Items()
            select new KarelReadItemExpr(variable, items);
 }

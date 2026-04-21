@@ -8,11 +8,11 @@ public sealed record KarelAndCondition(IReadOnlyList<KarelGlobalCondition> Condi
 {
     public static Parser<KarelGlobalCondition> AndChain(Parser<KarelGlobalCondition> conditionParser)
         => from first in conditionParser
-           from rest in 
+           from rest in
                 (from and in KarelCommon.Keyword("AND").Token()
                  from cond in conditionParser
                  select cond).Many()
-           select rest.Any() 
+           select rest.Any()
                 ? new KarelAndCondition(new[] { first }.Concat(rest).ToList())
                 : first;
 }
@@ -22,11 +22,11 @@ public sealed record KarelOrCondition(IReadOnlyList<KarelGlobalCondition> Condit
 {
     public static Parser<KarelGlobalCondition> OrChain(Parser<KarelGlobalCondition> conditionParser)
         => from first in conditionParser
-           from rest in 
+           from rest in
                 (from or in KarelCommon.Keyword("OR").Token()
                  from cond in conditionParser
                  select cond).Many()
-           select rest.Any() 
+           select rest.Any()
                 ? new KarelOrCondition(new[] { first }.Concat(rest).ToList())
                 : first;
 }

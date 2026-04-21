@@ -11,17 +11,17 @@ internal interface IKarelParser<out TParsedType>
 }
 
 internal static class KarelParserExtensions
-{  
-     private static readonly Parser<string> SingleLineComment =
-            from start in KarelCommon.Keyword("--")
-            from comment in Parse.AnyChar.Until(Parse.LineEnd)
-            select start + new string(comment.ToArray());
+{
+    private static readonly Parser<string> SingleLineComment =
+           from start in KarelCommon.Keyword("--")
+           from comment in Parse.AnyChar.Until(Parse.LineEnd)
+           select start + new string(comment.ToArray());
 
     private static readonly Parser<string> WhiteSpaceOrComments =
         from trivia in Parse.WhiteSpace.Many().Text()
             .Or(SingleLineComment)
             .Many()
-        select trivia.Any() ? trivia.Aggregate((acc, str) => acc + str) : "" ;
+        select trivia.Any() ? trivia.Aggregate((acc, str) => acc + str) : "";
 
     public static Parser<T> IgnoreComments<T>(this Parser<T> parser)
         => parser.Contained(WhiteSpaceOrComments, WhiteSpaceOrComments);
