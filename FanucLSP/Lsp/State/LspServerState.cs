@@ -2,8 +2,8 @@ using System.Collections.Concurrent;
 using FanucLsp.Lsp.Completion;
 using FanucLsp.Lsp.Definition;
 using FanucLsp.Lsp.Hover;
-using FanucLSP.Lsp.Util;
 using KarelParser;
+using KarelParser.SymTable;
 using Sprache;
 using TPLangParser.TPLang;
 
@@ -51,13 +51,18 @@ public sealed class LspServerState(string logFilePath)
         new KlBuiltinCompletionProvider(),
     ];
 
-    private static readonly List<IDefinitionProvider> DefinitionProviders =
+    private static readonly List<IDefinitionProvider> TpDefinitionProviders =
     [
         new TpLabelDefinitionProvider(),
         new TpProgramDefinitionProvider(),
     ];
 
-    private static readonly List<IHoverProvider> HoverProviders =
+    private static readonly List<IKarelDefinitionProvider> KlDefinitionProviders =
+    [
+        new KarelDefinitionProvider()
+    ];
+
+    private static readonly List<IHoverProvider> TpHoverProviders =
     [
         new TpLabelHoverProvider(),
         new CallHoverProvider(),
@@ -87,7 +92,7 @@ public sealed class LspServerState(string logFilePath)
     {
         OpenedTextDocuments.TryAdd(document.Uri, new(document, new(), DocumentType.Tp, null));
 
-        return await UpdateParsedProgram(document.Uri);
+        return await UpdateParsedTpProgram(document.Uri);
     }
 
     public async Task<IResult<KarelProgram>> OnKarelDocumentOpen(TextDocumentItem document)
@@ -224,21 +229,16 @@ public sealed class LspServerState(string logFilePath)
     {
         if (OpenedTextDocuments.TryGetValue(uri, out var documentState))
         {
-            if (documentState.Program is not TppProgram prog)
+            return documentState.Program switch
             {
-                // TODO: support Karel
-                return null;
-            }
-            return DefinitionProviders
-                .Select(provider =>
-                    provider.GetDefinitionLocation(
-                        prog.Program!,
-                        position,
-                        documentState.TextDocument,
-                        this
-                    )
-                )
-                .FirstOrDefault(res => res is not null);
+                TppProgram tpProg => TpDefinitionProviders
+                    .Select(provider => provider.GetDefinitionLocation(tpProg.Program!, position, documentState.TextDocument, this))
+                    .FirstOrDefault(res => res is not null),
+                KlProgram klProg => KlDefinitionProviders
+                    .Select(provider => provider.GetDefinitionLocation(klProg.SymTable, position, documentState.TextDocument, this))
+                    .FirstOrDefault(res => res is not null),
+                _ => null
+            };
         }
 
         LogMessage($"[TextDocumentDefinition]: Document not opened: {uri}");
@@ -251,7 +251,7 @@ public sealed class LspServerState(string logFilePath)
         {
             return documentState.Program switch
             {
-                TppProgram tpProg => HoverProviders
+                TppProgram tpProg => TpHoverProviders
                     .Select(provider => provider.GetHoverResult(tpProg.Program!, position, this))
                     .FirstOrDefault(res => res is not null),
                 KlProgram klProg => KlHoverProviders
@@ -272,13 +272,13 @@ public sealed class LspServerState(string logFilePath)
     }
 
     // TODO: need to refactor this to handle both program types
-    public async Task<IResult<TpProgram>> UpdateParsedProgram(string uri) =>
-        await UpdateParsedProgram(OpenedTextDocuments[uri]);
+    public async Task<IResult<TpProgram>> UpdateParsedTpProgram(string uri) =>
+        await UpdateParsedTpProgram(OpenedTextDocuments[uri]);
 
     public async Task<IResult<KarelProgram>> UpdateParsedKlProgram(string uri) =>
         await UpdateParsedKlProgram(OpenedTextDocuments[uri]);
 
-    private async Task<IResult<TpProgram>> UpdateParsedProgram(TextDocumentState documentState)
+    private async Task<IResult<TpProgram>> UpdateParsedTpProgram(TextDocumentState documentState)
     {
         var document = documentState.TextDocument;
 

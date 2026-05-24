@@ -1,6 +1,5 @@
-using FanucLsp.Lsp.State;
 using FanucLsp.Lsp.Util;
-using FanucLSP.Util;
+using FanucLsp.Util;
 using KarelParser;
 
 namespace FanucLsp.Lsp.Hover;

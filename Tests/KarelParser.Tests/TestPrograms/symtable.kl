@@ -1,0 +1,9 @@
+PROGRAM symtable
+
+VAR
+    intvar : INTEGER
+
+BEGIN
+    -- TODO: add variety of symbols to the programs for the symbol table tests
+
+END symtable

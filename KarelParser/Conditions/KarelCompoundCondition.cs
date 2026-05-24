@@ -1,5 +1,4 @@
 using Sprache;
-using System.Collections.Generic;
 
 namespace KarelParser.Conditions;
 

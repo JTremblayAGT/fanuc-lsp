@@ -2,7 +2,7 @@
 using System.Text.Json;
 using FanucLsp.Lsp.Completion;
 
-namespace FanucLSP.Util;
+namespace FanucLsp.Util;
 public class EmbeddedResourceReader
 {
     public static Dictionary<string, CodeSnippet>? GetKarelBuiltInSnippets()

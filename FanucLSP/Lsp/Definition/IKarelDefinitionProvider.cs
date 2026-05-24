@@ -1,12 +1,12 @@
 using FanucLsp.Lsp.State;
-using KarelParser;
+using KarelParser.SymTable;
 
 namespace FanucLsp.Lsp.Definition;
 
 internal interface IKarelDefinitionProvider
 {
     public TextDocumentLocation? GetDefinitionLocation(
-        KarelProgram program,
+        KarelSymbolTable symTable,
         ContentPosition position,
         TextDocumentItem document,
         LspServerState state

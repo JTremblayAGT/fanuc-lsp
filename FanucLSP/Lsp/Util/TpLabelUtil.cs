@@ -1,7 +1,7 @@
 ﻿using TPLangParser.TPLang;
 using TPLangParser.TPLang.Instructions;
 
-namespace FanucTpLSP.Lsp.Util;
+namespace FanucLsp.Lsp.Util;
 
 public class TpLabelUtil
 {
