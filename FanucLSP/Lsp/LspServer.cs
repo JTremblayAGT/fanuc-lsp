@@ -200,7 +200,7 @@ public class LspServer(string logFilePath)
         switch (documentState.Type)
         {
             case DocumentType.Tp:
-                await _state.UpdateParsedProgram(request.Params.TextDocument.Uri)
+                await _state.UpdateParsedTpProgram(request.Params.TextDocument.Uri)
                     .ContinueWith(async result => ParseResultToDiagnostics(await result, request.Params.TextDocument.Uri))
                     .ConfigureAwait(false);
                 break;
