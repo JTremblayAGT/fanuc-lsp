@@ -67,6 +67,7 @@ public sealed record KarelProgram(
                     HeaderComment = headerCommentLines.Any()
                         ? headerCommentLines.Aggregate((acc, line) => acc + "\r\n" + line)
                         : string.Empty,
+                    SymTable = KarelSymbolTableBuilder.Build(result.Value)
                 },
                 result.Remainder
             ),

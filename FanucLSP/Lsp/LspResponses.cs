@@ -58,6 +58,9 @@ public class ServerCapabilities
     [JsonPropertyName("codeActionProvider")]
     public bool CodeActionProvider { get; set; } = true;
 
+    [JsonPropertyName("referencesProvider")]
+    public bool referencesProvider { get; set; } = true;
+
     [JsonPropertyName("completionProvider")]
     public CompletionOptions CompletionProvider { get; set; } = new();
 

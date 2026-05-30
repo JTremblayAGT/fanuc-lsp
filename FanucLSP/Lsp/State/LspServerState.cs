@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using FanucLsp.Lsp.Completion;
 using FanucLsp.Lsp.Definition;
 using FanucLsp.Lsp.Hover;
+using FanucLsp.Lsp.References;
 using KarelParser;
 using KarelParser.SymbolTable;
 using Sprache;
@@ -33,8 +34,7 @@ public sealed class LspServerState(string logFilePath)
     public bool IsInitialized { get; set; } = false;
     public bool IsShutdown { get; set; } = false;
     public string LastChangedDocumentUri { get; set; } = string.Empty;
-    public ConcurrentDictionary<string, TextDocumentState> OpenedTextDocuments { get; set; } =
-        new();
+    public ConcurrentDictionary<string, TextDocumentState> OpenedTextDocuments { get; set; } = new();
     public ConcurrentDictionary<string, TextDocumentState> AllTextDocuments { get; set; } = new();
 
     private static readonly List<ICompletionProvider> TpCompletionProviders =
@@ -73,6 +73,10 @@ public sealed class LspServerState(string logFilePath)
         new KlBuiltinHoverProvider(),
         new KlSymbolHoverProvider()
     ];
+
+    private static readonly List<ITpReferenceProvider> tpReferencesProviders = [];
+
+    private static readonly List<IKlReferenceProvider> klReferencesProviders = [];
 
     public bool Initialize()
     {
@@ -273,7 +277,26 @@ public sealed class LspServerState(string logFilePath)
         return null;
     }
 
-    // TODO: need to refactor this to handle both program types
+    public TextDocumentLocation[] GetReferences(string uri, ContentPosition position, ReferenceContext context)
+    {
+        if (OpenedTextDocuments.TryGetValue(uri, out var documentState))
+        {
+            return documentState.Program switch
+            {
+                TppProgram tppProgram => tpReferencesProviders
+                    .SelectMany(provider => provider.GetReferences(tppProgram.Program!, position, documentState.TextDocument, this))
+                    .ToArray(),
+                KlProgram klProgram => klReferencesProviders
+                    .SelectMany(provider => provider.GetReferences(klProgram.Program!, position, documentState.TextDocument, this))
+                    .ToArray(),
+                _ => []
+            };
+        }
+
+        LogMessage($"[TextDocumentReferences]: Document not opened: {uri}");
+        return [];
+    }
+
     public async Task<IResult<TpProgram>> UpdateParsedTpProgram(string uri) =>
         await UpdateParsedTpProgram(OpenedTextDocuments[uri]);
 
@@ -308,11 +331,10 @@ public sealed class LspServerState(string logFilePath)
         {
             case DocumentType.Karel:
                 var result = await Task.Run(() => KarelProgram.ProcessAndParse(document.Text));
-                var symbolTable = KarelSymbolTableBuilder.Build(result.Value);
                 OpenedTextDocuments[document.Uri] = documentState with
                 {
                     Program = result.WasSuccessful
-                        ? new KlProgram(result.Value with { SymTable = symbolTable })
+                        ? new KlProgram(result.Value)
                         : documentState.Program,
                 };
                 return result;
@@ -389,8 +411,7 @@ public sealed class LspServerState(string logFilePath)
             return null;
         }
 
-        var symTable = KarelSymbolTableBuilder.Build(result.Value);
-        return new KlProgram(result.Value with { SymTable = symTable });
+        return new KlProgram(result.Value);
     }
 
     private void FindLsFiles()
@@ -471,7 +492,7 @@ public sealed class LspServerState(string logFilePath)
                             },
                             new(),
                             DocumentType.Karel,
-                            KarelValueOr(KarelProgram.GetParser().TryParse(text))
+                            KarelValueOr(KarelProgram.ProcessAndParse(text))
                         )
                     );
                 }

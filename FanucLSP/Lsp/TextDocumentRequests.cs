@@ -292,3 +292,32 @@ public class TextDocumentFormattingResponse : ResponseMessage
 }
 
 #endregion
+
+#region
+
+public class TextDocumentReferencesRequest : RequestMessage
+{
+    [JsonPropertyName("params")]
+    public TextDocumentReferencesParams Params { get; set; } = new();
+}
+
+public class ReferenceContext
+{
+    [JsonPropertyName("includeDeclaration")]
+    public bool IncludeDeclaration { get; set; } = true;
+}
+
+public class TextDocumentReferencesParams : TextDocumentPositionParams
+{
+    [JsonPropertyName("context")]
+    public ReferenceContext Context { get; set; } = new();
+}
+
+public class TextDocumentReferencesResponse : ResponseMessage
+{
+    [JsonPropertyName("result")]
+    public TextDocumentLocation[]? Result { get; set; } = null;
+}
+
+#endregion
+

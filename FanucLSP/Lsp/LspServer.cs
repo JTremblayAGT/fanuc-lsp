@@ -42,6 +42,9 @@ public class LspServer(string logFilePath)
             case LspMethods.TextDocumentCompletion:
                 await HandleTextDocumentCompletion(json, callback);
                 break;
+            case LspMethods.TextDocumentReferences:
+                await HandleTextDocumentReferences(json, callback);
+                break;
             case LspMethods.TextDocumentFormatting:
                 await HandleTextDocumentFormatting(json, callback);
                 break;
@@ -85,7 +88,8 @@ public class LspServer(string logFilePath)
                         Save = true,
                     },
                     HoverProvider = true,
-                    DefinitionProvider = true, // TODO: look into this
+                    DefinitionProvider = true,
+                    referencesProvider = true,
                     CodeActionProvider = false, // TODO: look into this
                     CompletionProvider = new()
                     {
@@ -281,6 +285,21 @@ public class LspServer(string logFilePath)
         {
             Id = request.Id,
             Result = _state.GetCompletionItems()
+        });
+    }
+
+    private async Task HandleTextDocumentReferences(string json, Func<ResponseMessage, Task> callback)
+    {
+        if (JsonRpcDecoder.Decode<TextDocumentReferencesRequest>(json)
+            is not { } request)
+        {
+            throw new JsonRpcException(ErrorCodes.InvalidRequest, "Failed to decode TextDocumentReferencesRequest");
+        }
+
+        await callback(new TextDocumentReferencesResponse
+        {
+            Id = request.Id,
+            Result = _state.GetReferences(request.Params.TextDocument.Uri, request.Params.Position, request.Params.Context),
         });
     }
 

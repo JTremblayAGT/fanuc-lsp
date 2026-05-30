@@ -13,6 +13,7 @@ public class LspMethods
     public const string TextDocumentDefinition = "textDocument/definition";
     public const string TextDocumentCodeAction = "textDocument/codeAction";
     public const string TextDocumentCompletion = "textDocument/completion";
+    public const string TextDocumentReferences = "textDocument/references";
     public const string TextDocumentFormatting = "textDocument/formatting";
     public const string TextDocumentRangeFormatting = "textDocument/rangeFormatting";
 
