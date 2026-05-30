@@ -3,7 +3,6 @@ using Sprache;
 
 namespace KarelParser;
 
-// TODO: pretty printing of types
 public sealed record KarelType(string Identifier, KarelUserType Type, string FromProgram)
     : WithPosition, IKarelParser<KarelType>
 {
@@ -53,9 +52,7 @@ public sealed record KarelTypeName(string Identifier, int? Group)
     : KarelDataType, IKarelParser<KarelDataType>
 {
     public override string ToString()
-    {
-        return Group.HasValue ? $"{Identifier} IN GROUP\\[{Group.Value}\\]" : Identifier;
-    }
+        => Group.HasValue ? $"{Identifier} IN GROUP\\[{Group.Value}\\]" : Identifier;
 
     public new static Parser<KarelDataType> GetParser()
         => from ident in KarelCommon.Identifier.Or(KarelCommon.Reserved)
@@ -70,9 +67,7 @@ public sealed record KarelTypeString(int Size)
     : KarelDataType, IKarelParser<KarelDataType>
 {
     public override string ToString()
-    {
-        return $"STRING\\[{Size}\\]";
-    }
+        => $"STRING\\[{Size}\\]";
 
     public new static Parser<KarelDataType> GetParser()
         => from kw in KarelCommon.Keyword("STRING")
@@ -103,9 +98,7 @@ public sealed record KarelTypePosition(string PosType, int Group)
     : KarelDataType, IKarelParser<KarelDataType>
 {
     public override string ToString()
-    {
-        return $"{PosType} IN GROUP[{Group}]";
-    }
+        => $"{PosType} IN GROUP[{Group}]";
 
     public new static Parser<KarelDataType> GetParser()
         => from posType in KarelCommon.Identifier
@@ -163,9 +156,7 @@ public record KarelField(string Identifier, KarelDataType Type)
     : WithPosition, IKarelParser<KarelField>
 {
     public override string ToString()
-    {
-        return $"    {Identifier} : {Type}";
-    }
+        => $"{Identifier} : {Type}";
 
     private static Parser<KarelField> InternalParser()
         => from ident in KarelCommon.Identifier

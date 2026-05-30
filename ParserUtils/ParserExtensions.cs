@@ -2,7 +2,11 @@
 
 namespace ParserUtils;
 
-public sealed record TokenPosition(int Line, int Column);
+public sealed record TokenPosition(int Line, int Column)
+{
+    public override string ToString()
+        => $"L.{Line}:{Column}";
+}
 
 public abstract record WithPosition
 {

@@ -1,13 +1,17 @@
 using KarelParser.Conditions;
 using KarelParser.Instructions;
 
-namespace KarelParser.SymTable;
+namespace KarelParser.SymbolTable;
 
 public static class KarelSymbolTableBuilder
 {
     public static KarelSymbolTable Build(KarelProgram program)
     {
-        var table = new KarelSymbolTable();
+        var table = new KarelSymbolTable
+        {
+            ScopeStart = program.Start,
+            ScopeEnd = program.End
+        };
         foreach (var decl in program.Declarations)
         {
             TraverseDeclaration(decl, table);
@@ -60,7 +64,7 @@ public static class KarelSymbolTableBuilder
             case KarelStructure s:
                 foreach (var field in s.Fields)
                 {
-                    table.AddSymbol(field.Identifier, KarelSymbolKind.StructField, field.Start);
+                    table.AddSymbol(field.Identifier, KarelSymbolKind.StructField, field.Type, field.Start);
                     if (field.Type is KarelTypeName typeName)
                     {
                         table.AddUsage(typeName.Identifier, typeName.Start);
@@ -74,19 +78,22 @@ public static class KarelSymbolTableBuilder
 
     private static void TraverseRoutine(KarelRoutine routine, KarelSymbolTable table)
     {
-        table.AddSymbol(routine.Identifier, KarelSymbolKind.Routine, routine.Start);
+        table.AddSymbol(routine.Identifier, KarelSymbolKind.Routine, routine.ReturnType, routine.Start);
+        var scope = table.CreateRoutine(routine.Start, routine.End);
         foreach (var arg in routine.Args)
-            table.AddSymbol(arg.Identifier, KarelSymbolKind.Variable, arg.Start);
+        {
+            scope.AddSymbol(arg.Identifier, KarelSymbolKind.Variable, arg.Type, arg.Start);
+        }
         switch (routine.Body)
         {
             case KarelRoutineBody body:
                 foreach (var decl in body.Locals)
                 {
-                    TraverseDeclaration(decl, table);
+                    TraverseDeclaration(decl, scope);
                 }
                 foreach (var stmt in body.Body)
                 {
-                    TraverseStatement(stmt, table);
+                    TraverseStatement(stmt, scope);
                 }
                 break;
             case KarelFromBody _:

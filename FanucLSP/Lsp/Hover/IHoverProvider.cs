@@ -11,6 +11,6 @@ internal interface IHoverProvider
 
 internal interface IKlHoverProvider
 {
-    public HoverResult? GetHoverResult(KarelProgram program, ContentPosition position, string content);
+    public HoverResult? GetHoverResult(KarelProgram program, ContentPosition position, TextDocumentItem document, LspServerState state);
 }
 

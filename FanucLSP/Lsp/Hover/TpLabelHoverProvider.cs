@@ -1,5 +1,5 @@
 using FanucLsp.Lsp.State;
-using FanucTpLSP.Lsp.Util;
+using FanucLsp.Lsp.Util;
 using TPLangParser.TPLang;
 using TPLangParser.TPLang.Instructions;
 

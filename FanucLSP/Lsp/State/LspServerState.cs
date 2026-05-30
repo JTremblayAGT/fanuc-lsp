@@ -3,7 +3,7 @@ using FanucLsp.Lsp.Completion;
 using FanucLsp.Lsp.Definition;
 using FanucLsp.Lsp.Hover;
 using KarelParser;
-using KarelParser.SymTable;
+using KarelParser.SymbolTable;
 using Sprache;
 using TPLangParser.TPLang;
 
@@ -19,7 +19,7 @@ public abstract record RobotProgram;
 
 public sealed record TppProgram(TpProgram Program) : RobotProgram;
 
-public sealed record KlProgram(KarelProgram Program, KarelSymbolTable SymTable) : RobotProgram;
+public sealed record KlProgram(KarelProgram Program) : RobotProgram;
 
 public sealed record TextDocumentState(
     TextDocumentItem TextDocument,
@@ -59,7 +59,7 @@ public sealed class LspServerState(string logFilePath)
 
     private static readonly List<IKarelDefinitionProvider> KlDefinitionProviders =
     [
-        new KarelDefinitionProvider()
+        new KlSymbolDefinitionProvider()
     ];
 
     private static readonly List<IHoverProvider> TpHoverProviders =
@@ -71,6 +71,7 @@ public sealed class LspServerState(string logFilePath)
     private static readonly List<IKlHoverProvider> KlHoverProviders =
     [
         new KlBuiltinHoverProvider(),
+        new KlSymbolHoverProvider()
     ];
 
     public bool Initialize()
@@ -80,10 +81,10 @@ public sealed class LspServerState(string logFilePath)
         // TODO: need to make this a background task (probably with a directory watcher)
         // in order to let the server start faster (maybe later)
         // TODO: We'll also want to index references to stuff in a worker thread
-        Task.Run(() => FindLsFiles());
-        Task.Run(() => FindKlFiles());
-        Task.Run(() => BuildSysVarIndex());
-        Task.Run(() => BuildKlBuiltinIndex());
+        Task.Run(FindLsFiles);
+        Task.Run(FindKlFiles);
+        Task.Run(BuildSysVarIndex);
+        Task.Run(BuildKlBuiltinIndex);
 
         return IsInitialized;
     }
@@ -235,7 +236,7 @@ public sealed class LspServerState(string logFilePath)
                     .Select(provider => provider.GetDefinitionLocation(tpProg.Program!, position, documentState.TextDocument, this))
                     .FirstOrDefault(res => res is not null),
                 KlProgram klProg => KlDefinitionProviders
-                    .Select(provider => provider.GetDefinitionLocation(klProg.SymTable, position, documentState.TextDocument, this))
+                    .Select(provider => provider.GetDefinitionLocation(klProg.Program!, position, documentState.TextDocument, this))
                     .FirstOrDefault(res => res is not null),
                 _ => null
             };
@@ -259,7 +260,8 @@ public sealed class LspServerState(string logFilePath)
                         provider.GetHoverResult(
                             klProg.Program!,
                             position,
-                            documentState.TextDocument.Text
+                            documentState.TextDocument,
+                            this
                         )
                     )
                     .FirstOrDefault(res => res is not null),
@@ -310,7 +312,7 @@ public sealed class LspServerState(string logFilePath)
                 OpenedTextDocuments[document.Uri] = documentState with
                 {
                     Program = result.WasSuccessful
-                        ? new KlProgram(result.Value, symbolTable)
+                        ? new KlProgram(result.Value with { SymTable = symbolTable })
                         : documentState.Program,
                 };
                 return result;
@@ -388,7 +390,7 @@ public sealed class LspServerState(string logFilePath)
         }
 
         var symTable = KarelSymbolTableBuilder.Build(result.Value);
-        return new KlProgram(result.Value, symTable);
+        return new KlProgram(result.Value with { SymTable = symTable });
     }
 
     private void FindLsFiles()

@@ -1,3 +1,4 @@
+using FanucLsp.Lsp.State;
 using FanucLsp.Lsp.Util;
 using FanucLsp.Util;
 using KarelParser;
@@ -11,10 +12,11 @@ internal sealed class KlBuiltinHoverProvider : IKlHoverProvider
     public HoverResult? GetHoverResult(
         KarelProgram program,
         ContentPosition position,
-        string content
+        TextDocumentItem document,
+        LspServerState state
     ) =>
         (_completionItems ??= BuildHoverDict(position))?.GetValueOrDefault(
-            KarelProgramUtils.GetTokenAt(content, position)
+            KarelProgramUtils.GetTokenAt(document.Text, position).ToLower()
         );
 
     private static Dictionary<string, HoverResult> BuildHoverDict(ContentPosition position)
@@ -25,7 +27,7 @@ internal sealed class KlBuiltinHoverProvider : IKlHoverProvider
         }
 
         return snippets.ToDictionary(
-            kvp => kvp.Value.Prefix,
+            kvp => kvp.Value.Prefix.ToLower(),
             kvp => new HoverResult
             {
                 Range = new ContentRange { Start = position, End = position },

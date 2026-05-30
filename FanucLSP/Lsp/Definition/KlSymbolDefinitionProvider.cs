@@ -1,21 +1,21 @@
 using FanucLsp.Lsp.State;
 using FanucLsp.Lsp.Util;
 using ParserUtils;
-using KarelParser.SymTable;
+using KarelParser;
 
 namespace FanucLsp.Lsp.Definition;
 
-internal class KarelDefinitionProvider : IKarelDefinitionProvider
+internal class KlSymbolDefinitionProvider : IKarelDefinitionProvider
 {
     public TextDocumentLocation? GetDefinitionLocation(
-        KarelSymbolTable symTable,
+        KarelProgram program,
         ContentPosition position,
         TextDocumentItem document,
         LspServerState state
     )
         => KarelProgramUtils.GetTokenAt(document.Text, position) switch
         {
-            { } token => symTable.GetSymbol(token) switch
+            { } token => program.SymTable.GetSymbol(token, new(position.Line + 1, position.Character + 1)) switch
             {
                 { } symbol => new TextDocumentLocation
                 {
@@ -30,7 +30,7 @@ internal class KarelDefinitionProvider : IKarelDefinitionProvider
     private ContentRange GetContentRange(TokenPosition position)
         => new()
         {
-            Start = new ContentPosition { Line = position.Line, Character = position.Column },
-            End = new ContentPosition { Line = position.Line, Character = position.Column }
+            Start = new ContentPosition { Line = position.Line - 1, Character = position.Column - 1 },
+            End = new ContentPosition { Line = position.Line - 1, Character = position.Column - 1 }
         };
 }

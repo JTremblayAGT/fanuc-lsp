@@ -1,4 +1,7 @@
-﻿using Sprache;
+﻿using KarelParser.SymbolTable;
+using Sprache;
+
+using ParserUtils;
 
 namespace KarelParser;
 
@@ -16,11 +19,13 @@ public sealed record KarelProgram(
     List<KarelDeclaration> Declarations,
     List<KarelRoutine> Routines,
     List<KarelStatement> Statements
-) : IKarelParser<KarelProgram>
+) : WithPosition, IKarelParser<KarelProgram>
 {
+    public KarelSymbolTable SymTable { get; init; } = new();
+
     public string HeaderComment = string.Empty;
 
-    public static Parser<KarelProgram> GetParser() =>
+    private static readonly Parser<KarelProgram> InternalParser =
         from name in KarelCommon
             .Keyword("PROGRAM")
             .Then(_ => KarelCommon.Identifier)
@@ -41,6 +46,8 @@ public sealed record KarelProgram(
             routines.ToList(),
             statements.ToList()
         );
+
+    public static Parser<KarelProgram> GetParser() => InternalParser.WithPos();
 
     public static IResult<KarelProgram> ProcessAndParse(string input)
     {

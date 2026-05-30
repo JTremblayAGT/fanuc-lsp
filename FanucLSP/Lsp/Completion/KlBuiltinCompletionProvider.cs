@@ -1,5 +1,5 @@
 using FanucLsp.Lsp.State;
-using FanucLSP.Util;
+using FanucLsp.Util;
 using KarelParser;
 
 namespace FanucLsp.Lsp.Completion;
