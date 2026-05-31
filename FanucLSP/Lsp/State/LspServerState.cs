@@ -76,7 +76,10 @@ public sealed class LspServerState(string logFilePath)
 
     private static readonly List<ITpReferenceProvider> tpReferencesProviders = [];
 
-    private static readonly List<IKlReferenceProvider> klReferencesProviders = [];
+    private static readonly List<IKlReferenceProvider> klReferencesProviders = 
+    [
+        new KlSymbolReferenceProvider()
+    ];
 
     public bool Initialize()
     {
@@ -284,10 +287,10 @@ public sealed class LspServerState(string logFilePath)
             return documentState.Program switch
             {
                 TppProgram tppProgram => tpReferencesProviders
-                    .SelectMany(provider => provider.GetReferences(tppProgram.Program!, position, documentState.TextDocument, this))
+                    .SelectMany(provider => provider.GetReferences(tppProgram.Program!, position, documentState.TextDocument, context, this))
                     .ToArray(),
                 KlProgram klProgram => klReferencesProviders
-                    .SelectMany(provider => provider.GetReferences(klProgram.Program!, position, documentState.TextDocument, this))
+                    .SelectMany(provider => provider.GetReferences(klProgram.Program!, position, documentState.TextDocument, context, this))
                     .ToArray(),
                 _ => []
             };

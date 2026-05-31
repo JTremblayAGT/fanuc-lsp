@@ -37,7 +37,7 @@ public static class KarelSymbolTableBuilder
                     table.AddSymbol(v.Identifier, KarelSymbolKind.Variable, v.Type, v.Start);
                     if (v.Type is KarelTypeName typeName)
                     {
-                        table.AddUsage(typeName.Identifier, typeName.Start);
+                        table.AddReference(typeName.Identifier, typeName.Start);
                     }
                 }
                 break;
@@ -67,7 +67,7 @@ public static class KarelSymbolTableBuilder
                     table.AddSymbol(field.Identifier, KarelSymbolKind.StructField, field.Type, field.Start);
                     if (field.Type is KarelTypeName typeName)
                     {
-                        table.AddUsage(typeName.Identifier, typeName.Start);
+                        table.AddReference(typeName.Identifier, typeName.Start);
                     }
                 }
                 break;
@@ -110,45 +110,85 @@ public static class KarelSymbolTableBuilder
                 TraverseExpression(s.Expr, table);
                 break;
             case KarelCall s:
-                table.AddUsage(s.Identifier, s.Start);
-                foreach (var arg in s.Args) TraverseExpression(arg, table);
+                table.AddReference(s.Identifier, s.Start);
+                foreach (var arg in s.Args)
+                {
+                    TraverseExpression(arg, table);
+                }
                 break;
             case KarelIfThenElse s:
                 TraverseExpression(s.Expr, table);
-                foreach (var s2 in s.Body) TraverseStatement(s2, table);
-                foreach (var s2 in s.Else) TraverseStatement(s2, table);
+                foreach (var s2 in s.Body)
+                {
+                    TraverseStatement(s2, table);
+                }
+
+                foreach (var s2 in s.Else)
+                {
+                    TraverseStatement(s2, table);
+                }
                 break;
             case KarelIfThen s:
                 TraverseExpression(s.Expr, table);
-                foreach (var s2 in s.Body) TraverseStatement(s2, table);
+                foreach (var s2 in s.Body)
+                {
+                    TraverseStatement(s2, table);
+                }
                 break;
             case KarelFor s:
                 TraverseExpression(s.InitialValue, table);
                 TraverseExpression(s.TargetValue, table);
-                foreach (var s2 in s.Body) TraverseStatement(s2, table);
+                foreach (var s2 in s.Body)
+                {
+                    TraverseStatement(s2, table);
+                }
                 break;
             case KarelRepeat s:
-                foreach (var s2 in s.Body) TraverseStatement(s2, table);
+                foreach (var s2 in s.Body)
+                {
+                    TraverseStatement(s2, table);
+                }
                 TraverseExpression(s.Expr, table);
                 break;
             case KarelWhile s:
                 TraverseExpression(s.Expr, table);
-                foreach (var s2 in s.Body) TraverseStatement(s2, table);
+                foreach (var s2 in s.Body)
+                {
+                    TraverseStatement(s2, table);
+                }
                 break;
             case KarelSelect s:
                 TraverseExpression(s.Expr, table);
-                foreach (var c in s.Cases) TraverseCase(c, table);
-                if (s.ElseCase != null) TraverseCase(s.ElseCase, table);
+                foreach (var c in s.Cases)
+                {
+                    TraverseCase(c, table);
+                }
+                if (s.ElseCase != null)
+                {
+                    TraverseCase(s.ElseCase, table);
+                }
                 break;
             case KarelUsing s:
-                foreach (var v in s.Variables) TraverseExpression(v, table);
-                foreach (var s2 in s.Body) TraverseStatement(s2, table);
+                foreach (var v in s.Variables)
+                {
+                    TraverseExpression(v, table);
+                }
+                foreach (var s2 in s.Body)
+                {
+                    TraverseStatement(s2, table);
+                }
                 break;
             case KarelReturn s:
-                if (s.Expr != null) TraverseExpression(s.Expr, table);
+                if (s.Expr != null)
+                {
+                    TraverseExpression(s.Expr, table);
+                }
                 break;
             case KarelPause s:
-                if (s.TaskNumber != null) TraverseExpression(s.TaskNumber, table);
+                if (s.TaskNumber != null)
+                {
+                    TraverseExpression(s.TaskNumber, table);
+                }
                 break;
             case KarelDelay s:
                 TraverseExpression(s.Expr, table);
@@ -164,17 +204,24 @@ public static class KarelSymbolTableBuilder
                 TraverseCondition(s.Condition, table);
                 break;
             case KarelConnectTimer s:
-                table.AddUsage(s.Identifier, s.Start);
+                table.AddReference(s.Identifier, s.Start);
                 break;
             case KarelDisconnectTimer s:
-                table.AddUsage(s.Identifier, s.Start);
+                table.AddReference(s.Identifier, s.Start);
                 break;
             case KarelCondition s:
                 TraverseExpression(s.HandlerNumber, table);
                 if (s.With != null)
+                {
                     foreach (var a in s.With.Assignments)
+                    {
                         TraverseExpression(a.Expr, table);
-                foreach (var w in s.When) TraverseWhen(w, table);
+                    }
+                }
+                foreach (var w in s.When)
+                {
+                    TraverseWhen(w, table);
+                }
                 break;
             case KarelEnable s:
                 TraverseExpression(s.Expr, table);
@@ -186,12 +233,24 @@ public static class KarelSymbolTableBuilder
                 TraverseExpression(s.Expr, table);
                 break;
             case KarelRead s:
-                if (s.Variable != null) TraverseExpression(s.Variable, table);
-                foreach (var item in s.Items) TraverseItem(item, table);
+                if (s.Variable != null)
+                {
+                    TraverseExpression(s.Variable, table);
+                }
+                foreach (var item in s.Items)
+                {
+                    TraverseItem(item, table);
+                }
                 break;
             case KarelWrite s:
-                if (s.Variable != null) TraverseExpression(s.Variable, table);
-                foreach (var item in s.Items) TraverseItem(item, table);
+                if (s.Variable != null)
+                {
+                    TraverseExpression(s.Variable, table);
+                }
+                foreach (var item in s.Items)
+                {
+                    TraverseItem(item, table);
+                }
                 break;
             case KarelOpenFile s:
                 TraverseExpression(s.File, table);
@@ -232,14 +291,17 @@ public static class KarelSymbolTableBuilder
         switch (expr)
         {
             case KarelIdentifier id:
-                table.AddUsage(id.Identifier, id.Start);
+                table.AddReference(id.Identifier, id.Start);
                 break;
             case KarelFieldAccess fa:
                 TraverseExpression(fa.Variable, table);
                 break;
             case KarelArrayAccess aa:
                 TraverseExpression(aa.Variable, table);
-                foreach (var idx in aa.Indices) TraverseExpression(idx, table);
+                foreach (var idx in aa.Indices)
+                {
+                    TraverseExpression(idx, table);
+                }
                 break;
             case KarelPathAccess pa:
                 TraverseExpression(pa.Variable, table);
@@ -247,8 +309,11 @@ public static class KarelSymbolTableBuilder
                 TraverseExpression(pa.EndNode, table);
                 break;
             case KarelFunctionCall f:
-                table.AddUsage(f.Identifier, f.Start);
-                foreach (var arg in f.Args) TraverseExpression(arg, table);
+                table.AddReference(f.Identifier, f.Start);
+                foreach (var arg in f.Args)
+                {
+                    TraverseExpression(arg, table);
+                }
                 break;
             case KarelComparisonExpression c:
                 TraverseExpression(c.Lhs, table);
@@ -291,13 +356,22 @@ public static class KarelSymbolTableBuilder
                 TraverseExpression(c.Number, table);
                 break;
             case KarelAbortCondition c:
-                if (c.ProgramNumber != null) TraverseExpression(c.ProgramNumber, table);
+                if (c.ProgramNumber != null)
+                {
+                    TraverseExpression(c.ProgramNumber, table);
+                }
                 break;
             case KarelPauseCondition c:
-                if (c.ProgramNumber != null) TraverseExpression(c.ProgramNumber, table);
+                if (c.ProgramNumber != null)
+                {
+                    TraverseExpression(c.ProgramNumber, table);
+                }
                 break;
             case KarelContinueCondition c:
-                if (c.ProgramNumber != null) TraverseExpression(c.ProgramNumber, table);
+                if (c.ProgramNumber != null)
+                {
+                    TraverseExpression(c.ProgramNumber, table);
+                }
                 break;
             case KarelPowerUpCondition _:
                 break;
@@ -309,10 +383,16 @@ public static class KarelSymbolTableBuilder
                 TraverseExpression(c.Index, table);
                 break;
             case KarelAndCondition c:
-                foreach (var sub in c.Conditions) TraverseCondition(sub, table);
+                foreach (var sub in c.Conditions)
+                {
+                    TraverseCondition(sub, table);
+                }
                 break;
             case KarelOrCondition c:
-                foreach (var sub in c.Conditions) TraverseCondition(sub, table);
+                foreach (var sub in c.Conditions)
+                {
+                    TraverseCondition(sub, table);
+                }
                 break;
         }
     }
@@ -320,7 +400,10 @@ public static class KarelSymbolTableBuilder
     private static void TraverseWhen(KarelWhen when, KarelSymbolTable table)
     {
         TraverseWhenCondition(when.Condition, table);
-        foreach (var action in when.Actions) TraverseAction(action, table);
+        foreach (var action in when.Actions)
+        {
+            TraverseAction(action, table);
+        }
     }
 
     private static void TraverseWhenCondition(KarelWhenCondition cond, KarelSymbolTable table)
@@ -328,10 +411,16 @@ public static class KarelSymbolTableBuilder
         switch (cond)
         {
             case KarelWhenOr o:
-                foreach (var c in o.Conditions) TraverseCondition(c, table);
+                foreach (var c in o.Conditions)
+                {
+                    TraverseCondition(c, table);
+                }
                 break;
             case KarelWhenAnd a:
-                foreach (var c in a.Conditions) TraverseCondition(c, table);
+                foreach (var c in a.Conditions)
+                {
+                    TraverseCondition(c, table);
+                }
                 break;
         }
     }
@@ -361,13 +450,22 @@ public static class KarelSymbolTableBuilder
                 TraverseExpression(a.Time, table);
                 break;
             case KarelAbortAction a:
-                if (a.ProgramNumber != null) TraverseExpression(a.ProgramNumber, table);
+                if (a.ProgramNumber != null)
+                {
+                    TraverseExpression(a.ProgramNumber, table);
+                }
                 break;
             case KarelPauseAction a:
-                if (a.ProgramNumber != null) TraverseExpression(a.ProgramNumber, table);
+                if (a.ProgramNumber != null)
+                {
+                    TraverseExpression(a.ProgramNumber, table);
+                }
                 break;
             case KarelContinueAction a:
-                if (a.ProgramNumber != null) TraverseExpression(a.ProgramNumber, table);
+                if (a.ProgramNumber != null)
+                {
+                    TraverseExpression(a.ProgramNumber, table);
+                }
                 break;
             case KarelVarAssignmentAction a:
                 TraverseExpression(a.Variable, table);

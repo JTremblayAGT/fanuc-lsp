@@ -12,7 +12,7 @@ public abstract record KarelVariableAccess : KarelValue, IKarelParser<KarelVaria
                 .Select(suffixes =>
                     suffixes.Aggregate(baseVar, (acc, suffix) => suffix(acc))
                 )
-            );
+            ).WithPos();
 
     private static readonly Parser<Func<KarelVariableAccess, KarelVariableAccess>> FieldSuffix =
         from dot in Parse.Char('.')
@@ -41,7 +41,7 @@ public sealed record KarelIdentifier(string Identifier) : KarelVariableAccess
 {
     public new static Parser<KarelVariableAccess> GetParser()
         => KarelCommon.Identifier.Select(ident =>
-            new KarelIdentifier(ident));
+            new KarelIdentifier(ident)).WithPos();
 }
 
 public sealed record KarelFieldAccess(KarelVariableAccess Variable, string Field)

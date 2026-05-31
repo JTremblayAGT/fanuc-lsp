@@ -16,7 +16,7 @@ public class KarelSymbol
     public string Name { get; }
     public KarelSymbolKind Kind { get; }
     public TokenPosition DeclarationPosition { get; }
-    public List<TokenPosition> UsagePositions { get; }
+    public List<TokenPosition> ReferencePositions { get; }
     public KarelUserType? Type { get; }
 
     public KarelSymbol(string name, KarelSymbolKind kind, KarelUserType? type, TokenPosition declarationPosition)
@@ -25,15 +25,17 @@ public class KarelSymbol
         Kind = kind;
         Type = type;
         DeclarationPosition = declarationPosition;
-        UsagePositions = new();
+        ReferencePositions = new();
     }
 }
 
 // KarelSymbolTable needs to be a recursive structure to properly represent lexical scoping
 public class KarelSymbolTable
 {
+    private KarelSymbolTable? Parent { get; set; } = null;
+    //
     // There should never be more than one level of children realistically
-    List<KarelSymbolTable> Routines { get; set;} = [];
+    private List<KarelSymbolTable> Routines { get; set;} = [];
 
     public TokenPosition ScopeStart { get; set; } = new(0,0);
     public TokenPosition ScopeEnd { get; set; } = new(0,0);
@@ -48,6 +50,7 @@ public class KarelSymbolTable
         }
         var childTbl = new KarelSymbolTable
         {
+            Parent = this,
             ScopeStart = start,
             ScopeEnd = end,
         };
@@ -64,7 +67,7 @@ public class KarelSymbolTable
         }
     }
 
-    public void AddSymbol(string name, KarelSymbolKind kind, KarelUserType type, TokenPosition declarationPosition)
+    public void AddSymbol(string name, KarelSymbolKind kind, KarelUserType? type, TokenPosition declarationPosition)
     {
         var symName = name.ToLower();
         if (!_symbols.ContainsKey(symName))
@@ -73,11 +76,16 @@ public class KarelSymbolTable
         }
     }
 
-    public void AddUsage(string name, TokenPosition usagePosition)
+    public void AddReference(string name, TokenPosition refPosition)
     {
         if (_symbols.TryGetValue(name.ToLower(), out var symbol))
         {
-            symbol.UsagePositions.Add(usagePosition);
+            symbol.ReferencePositions.Add(refPosition);
+        }
+
+        if (Parent?.GetSymbol(name, refPosition) is { } parentSym)
+        {
+            parentSym.ReferencePositions.Add(refPosition);
         }
     }
 
@@ -100,6 +108,13 @@ public class KarelSymbolTable
         _symbols.TryGetValue(symName, out var symbol);
         return symbol;
     }
+
+    public List<TokenPosition> GetSymbolReferences(string name, TokenPosition position)
+        => GetSymbol(name, position) switch
+        {
+            { } symbol => symbol.ReferencePositions,
+            _ => []
+        };
 
     public IEnumerable<KarelSymbol> GetAllSymbols() => _symbols.Values;
 

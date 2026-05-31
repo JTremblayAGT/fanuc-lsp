@@ -15,7 +15,7 @@ internal class KlSymbolDefinitionProvider : IKarelDefinitionProvider
     )
         => KarelProgramUtils.GetTokenAt(document.Text, position) switch
         {
-            { } token => program.SymTable.GetSymbol(token, new(position.Line + 1, position.Character + 1)) switch
+            { } token => program.SymTable.GetSymbol(token, GetTokenPosition(position)) switch
             {
                 { } symbol => new TextDocumentLocation
                 {
@@ -26,6 +26,9 @@ internal class KlSymbolDefinitionProvider : IKarelDefinitionProvider
             },
             _ => null
         };
+
+    private TokenPosition GetTokenPosition(ContentPosition position)
+        => new(position.Line + 1, position.Character + 1);
 
     private ContentRange GetContentRange(TokenPosition position)
         => new()
