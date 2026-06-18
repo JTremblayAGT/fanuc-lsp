@@ -515,10 +515,10 @@ public static class TpSymbolTableBuilder
                 TraverseAccess(v.UserFrame.Access, table);
                 break;
             case TpValueSystemVariable v:
-                table.RecordUsage(v.Variable, TpSymbolKind.SysVar, refKind, v.Start, v);
+                table.RecordNamedUsage(TpSymbolKind.SysVar, v.Variable, refKind, v.Start, v);
                 break;
             case TpValueKarelVariable v:
-                table.RecordUsage(KarelVariableName(v), TpSymbolKind.KarelVar, refKind, v.Start, v);
+                table.RecordNamedUsage(TpSymbolKind.KarelVar, KarelVariableName(v), refKind, v.Start, v);
                 break;
             // Constants, IO states, strings, pulses, LPOS/JPOS and ERR_NUM
             // carry no register or IO port usage.
@@ -552,9 +552,10 @@ public static class TpSymbolTableBuilder
         // can't be resolved to a concrete symbol statically, so the outer
         // register is not recorded — only its inner index register (a read) is.
         if ((register is not TpPosition || register is TpPositionRegister)
-            && IsDirectAccess(register.Access))
+            && DirectIndex(register.Access) is { } index)
         {
-            table.RecordUsage(RegisterName(register), RegisterKind(register), refKind, register.Start, register);
+            table.RecordIndexedUsage(RegisterKind(register),
+                new TpSymbolIndex(index.Number, index.Group), refKind, register.Start, register);
         }
 
         TraverseAccess(register.Access, table);
@@ -563,26 +564,31 @@ public static class TpSymbolTableBuilder
     private static void RecordPort(TpIOPort port, TpSymbolRefKind refKind, TpSymbolTable table)
     {
         // As with registers, an indirectly indexed port can't be resolved.
-        if (IsDirectAccess(port.PortNumber))
+        if (DirectIndex(port.PortNumber) is { } index)
         {
-            table.RecordUsage(PortName(port), PortKind(port), refKind, port.Start, port);
+            table.RecordIndexedUsage(PortKind(port),
+                new TpSymbolIndex(index.Number, index.Group, port.Type), refKind, port.Start, port);
         }
 
         TraverseAccess(port.PortNumber, table);
     }
 
-    // A register/port can be recorded as a symbol only when its index is a
-    // literal (R[5], PR[1,2]). Indirect indices (R[R[2]]) point at a target
-    // that isn't known until runtime, so the outer register isn't recorded.
-    private static bool IsDirectAccess(TpAccess access)
+    // The numeric identity of a register/port, or null when it can't be resolved
+    // statically. A symbol is recorded only when its index is a literal (R[5],
+    // PR[1,2]); indirect indices (R[R[2]]) point at a runtime-determined target.
+    // Element accesses (PR[i,j]) are identified by their register number only, so
+    // PR[1] and PR[1,3] group together; the element index is walked separately.
+    // A motion group is only meaningful when explicitly given (GP1..GP5); the
+    // access parsers default an absent group to 0, which means "no group".
+    private static (int Number, int Group)? DirectIndex(TpAccess access)
         => access switch
         {
-            TpAccessDirect => true,
-            TpAccessMultiple a => a.Number is TpValueIntegerConstant,
-            _ => false
+            TpAccessDirect a => (a.Number, a.Group ?? 0),
+            TpAccessMultiple a when a.Number is TpValueIntegerConstant c => (c.Value, a.Group ?? 0),
+            _ => null
         };
 
-    // ---- Naming / classification -------------------------------------------
+    // ---- Classification / naming -------------------------------------------
 
     private static TpSymbolKind RegisterKind(TpGenericRegister register)
         => register switch
@@ -606,62 +612,8 @@ public static class TpSymbolTableBuilder
             _ => TpSymbolKind.DigitalIO
         };
 
-    private static string RegisterName(TpGenericRegister register)
-        => $"{RegisterPrefix(register)}[{AccessName(register.Access)}]";
-
-    private static string RegisterPrefix(TpGenericRegister register)
-        => register switch
-        {
-            TpArgumentRegister => "AR",
-            TpStringRegister => "SR",
-            TpPositionRegister => "PR",
-            TpPosition => "P",
-            _ => "R"
-        };
-
-    private static string PortName(TpIOPort port)
-        => $"{PortPrefix(port)}{(port.Type == TpIOType.Input ? "I" : "O")}[{AccessName(port.PortNumber)}]";
-
-    private static string PortPrefix(TpIOPort port)
-        => port switch
-        {
-            TpDigitalIOPort => "D",
-            TpRobotIOPort => "R",
-            TpSopIOPort => "S",
-            TpUopIOPort => "U",
-            TpAnalogIOPort => "A",
-            TpGroupIOPort => "G",
-            TpWeldingIOPort => "W",
-            _ => "?"
-        };
-
-    // The symbol identity for a register/port. Element accesses (PR[i,j]) are
-    // identified by their register number only, so PR[1] and PR[1,3] group
-    // together; the element index is still walked separately for nested reads.
-    private static string AccessName(TpAccess access)
-        => access switch
-        {
-            TpAccessDirect a => WithGroup(a.Group, a.Number.ToString()),
-            TpAccessIndirect a => WithGroup(a.Group, RegisterName(a.Register)),
-            TpAccessMultiple a => WithGroup(a.Group, ValueName(a.Number)),
-            _ => "?"
-        };
-
-    // A motion group is only meaningful when explicitly given (GP1..GP5). The
-    // access parsers default an absent group to 0, so treat 0 as "no group".
-    private static string WithGroup(int? group, string inner)
-        => group is int g && g > 0 ? $"GP{g}:{inner}" : inner;
-
     // Mirrors the source syntax ($[PROG]var.field) so all references to the
     // same Karel variable group under one symbol.
     private static string KarelVariableName(TpValueKarelVariable variable)
         => $"$[{variable.Program}]{variable.Variable}";
-
-    private static string ValueName(TpValue value)
-        => value switch
-        {
-            TpValueIntegerConstant v => v.Value.ToString(),
-            TpValueRegister v => RegisterName(v.Register),
-            _ => "?"
-        };
 }

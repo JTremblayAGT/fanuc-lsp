@@ -24,8 +24,76 @@ public static class KarelSymbolTableBuilder
         {
             TraverseStatement(stmt, table);
         }
+
+        RegisterQualifiedSymbols(program, table);
         return table;
     }
+
+    // Builds the fully-qualified path index: every program-level variable, plus
+    // each struct field reachable through it, addressed as "Var.Field1.Field2".
+    // These are exactly the names a TP program can reference as
+    // $[PROG]Var.Field1.Field2, so the index lets a Karel symbol find its
+    // references across TP files. Per-TYPE field symbols (in the lexical table)
+    // are left untouched; this is an additional, variable-rooted view.
+    private static void RegisterQualifiedSymbols(KarelProgram program, KarelSymbolTable table)
+    {
+        // Resolve named struct types the same way the TP completion provider
+        // does. First declaration of a given name wins.
+        var structures = program.Declarations
+            .OfType<KarelTypeDeclaration>()
+            .SelectMany(decl => decl.Type)
+            .Where(type => type.Type is KarelStructure)
+            .GroupBy(type => type.Identifier, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => (KarelStructure)group.First().Type, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var variable in program.Declarations
+            .OfType<KarelVariableDeclaration>()
+            .SelectMany(decl => decl.Variable))
+        {
+            // The variable itself is addressable as $[PROG]Var.
+            table.AddQualifiedSymbol(variable.Identifier, variable.Identifier, KarelSymbolKind.Variable, variable.Type, variable.Start);
+            ExpandFields(variable.Identifier, variable.Type, structures, table,
+                new HashSet<string>(StringComparer.OrdinalIgnoreCase));
+        }
+    }
+
+    // Recursively registers the fields of a struct-typed path. `visiting` guards
+    // against self-referential types looping forever along a single path.
+    private static void ExpandFields(
+        string pathPrefix,
+        KarelDataType type,
+        Dictionary<string, KarelStructure> structures,
+        KarelSymbolTable table,
+        HashSet<string> visiting)
+    {
+        var (structure, typeName) = ResolveStructure(type, structures);
+        if (structure is null || !visiting.Add(typeName))
+        {
+            return;
+        }
+
+        foreach (var field in structure.Fields)
+        {
+            var fullName = $"{pathPrefix}.{field.Identifier}";
+            table.AddQualifiedSymbol(fullName, field.Identifier, KarelSymbolKind.StructField, field.Type, field.Start);
+            ExpandFields(fullName, field.Type, structures, table, visiting);
+        }
+
+        visiting.Remove(typeName);
+    }
+
+    // Resolves a data type (unwrapping arrays) to the named structure it refers
+    // to, or null when it isn't a known struct type.
+    private static (KarelStructure? Structure, string TypeName) ResolveStructure(
+        KarelDataType type,
+        Dictionary<string, KarelStructure> structures)
+        => type switch
+        {
+            KarelTypeName name when structures.TryGetValue(name.Identifier, out var structure)
+                => (structure, name.Identifier),
+            KarelTypeArray array => ResolveStructure(array.Type, structures),
+            _ => (null, string.Empty)
+        };
 
     private static void TraverseDeclaration(KarelDeclaration decl, KarelSymbolTable table)
     {
