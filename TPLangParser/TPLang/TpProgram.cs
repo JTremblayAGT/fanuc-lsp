@@ -1,6 +1,8 @@
 ﻿using ParserUtils;
 using Sprache;
 
+using TPLangParser.TPLang.SymbolTable;
+
 namespace TPLangParser.TPLang;
 
 public sealed record TpHeaderAttribute(string Name, string Value) : TpInstruction(0), ITpParser<TpHeaderAttribute>
@@ -214,7 +216,7 @@ public sealed record TpProgramPositions(List<TpProgramPosition> Positions) : ITp
            select new TpProgramPositions(positions.ToList());
 }
 
-public sealed record TpProgram(TpProgramHeader Header, TpProgramMain Main, TpProgramPositions Positions)
+public sealed record TpProgram(TpProgramHeader Header, TpProgramMain Main, TpProgramPositions Positions, TpSymbolTable SymTable)
     : ITpParser<TpProgram>
 {
     public static IResult<TpProgram> ProcessAndParse(string buffer)
@@ -233,7 +235,16 @@ public sealed record TpProgram(TpProgramHeader Header, TpProgramMain Main, TpPro
         }
 
         var processedBuffer = lines.Aggregate((acc, line) => acc + line + '\n');
-        return GetParser().TryParse(processedBuffer);
+        return GetParser().TryParse(processedBuffer) switch
+        {
+            { WasSuccessful: true } result => Result.Success(
+                result.Value with
+                {
+                    SymTable = TpSymbolTableBuilder.Build(result.Value)
+                }, result.Remainder
+            ),
+            { WasSuccessful: false } result => result
+        };
     }
 
     public static Parser<TpProgram> GetParser()
@@ -241,5 +252,5 @@ public sealed record TpProgram(TpProgramHeader Header, TpProgramMain Main, TpPro
            from main in TpProgramMain.GetParser()
            from positions in TpProgramPositions.GetParser().Optional()
            from endTag in TpCommon.Keyword("/END")
-           select new TpProgram(header, main, positions.GetOrElse(new([])));
+           select new TpProgram(header, main, positions.GetOrElse(new([])), new());
 }

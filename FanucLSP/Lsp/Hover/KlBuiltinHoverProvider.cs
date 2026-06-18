@@ -16,7 +16,7 @@ internal sealed class KlBuiltinHoverProvider : IKlHoverProvider
         LspServerState state
     ) =>
         (_completionItems ??= BuildHoverDict(position))?.GetValueOrDefault(
-            KarelProgramUtils.GetTokenAt(document.Text, position).ToLower()
+            ProgramUtils.GetTokenAt(document.Text, position).ToLower()
         );
 
     private static Dictionary<string, HoverResult> BuildHoverDict(ContentPosition position)

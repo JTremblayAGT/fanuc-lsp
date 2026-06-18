@@ -1,12 +1,12 @@
 using FanucLsp.Lsp.State;
-using KarelParser;
+using TPLangParser.TPLang;
 
 namespace FanucLsp.Lsp.Definition;
 
-internal interface IKarelDefinitionProvider
+internal interface ITpDefinitionProvider
 {
     public TextDocumentLocation? GetDefinitionLocation(
-        KarelProgram program,
+        TpProgram program,
         ContentPosition position,
         TextDocumentItem document,
         LspServerState state

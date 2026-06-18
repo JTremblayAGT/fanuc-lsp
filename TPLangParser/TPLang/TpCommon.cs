@@ -584,7 +584,7 @@ public record TpRoundExpression(TpRegister Value) : TpMathExpression, ITpParser<
         => MakeParser("ROUND", reg => new TpRoundExpression(reg));
 }
 
-public record TpValue : ITpParser<TpValue>
+public record TpValue : WithPosition, ITpParser<TpValue>
 {
     public static Parser<TpValue> GetParser()
         => TpValueFloatingPointConstant.GetParser()
@@ -598,21 +598,24 @@ public record TpValue : ITpParser<TpValue>
             .Or(TpValuePulse.GetParser())
             .Or(TpValueMathExpr.GetParser())
             .Or(TpValueTimer.GetParser())
-            .Or(TpValueErrorNum.GetParser());
+            .Or(TpValueErrorNum.GetParser())
+            .WithPos();
 
     public static readonly Parser<TpValue> Assignable
         = TpValueFlag.GetParser()
             .Or(TpValueIOPort.GetParser())
             .Or(TpValueRegister.GetParser())
             .Or(TpValueParameter.GetParser())
-            .Or(TpValueTimer.GetParser());
+            .Or(TpValueTimer.GetParser())
+            .WithPos();
 
     public static readonly Parser<TpValue> Position
         = TpValuePosition.GetParser()
             .Or(TpValueLpos.GetParser())
             .Or(TpValueJpos.GetParser())
             .Or(TpValueUFrame.GetParser())
-            .Or(TpValueUTool.GetParser());
+            .Or(TpValueUTool.GetParser())
+            .WithPos();
 }
 
 public record TpValueErrorNum : TpValue, ITpParser<TpValue>
@@ -788,7 +791,8 @@ public abstract record TpValueParameter : TpValue
 
     public new static Parser<TpValueParameter> GetParser()
         => TpValueKarelVariable.GetParser()
-            .Or(TpValueSystemVariable.GetParser());
+            .Or(TpValueSystemVariable.GetParser())
+            .WithPos();
 }
 
 public sealed record TpValueSystemVariable(string Variable)

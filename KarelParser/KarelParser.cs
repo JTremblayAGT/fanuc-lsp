@@ -1,7 +1,4 @@
-﻿using System.Xml.XPath;
-using ParserUtils;
-
-using Sprache;
+﻿using Sprache;
 
 namespace KarelParser;
 
@@ -25,16 +22,6 @@ internal static class KarelParserExtensions
 
     public static Parser<T> IgnoreComments<T>(this Parser<T> parser)
         => parser.Contained(WhiteSpaceOrComments, WhiteSpaceOrComments);
-
-    public static Parser<TParsedType> WithPos<TParsedType>(this Parser<TParsedType> parser)
-        where TParsedType : WithPosition
-        => parser
-            .WithPosition()
-            .Select(result => result.Value with
-            {
-                Start = result.Start,
-                End = result.End
-            });
 
     public static Parser<T> WithErrorContext<T>(this Parser<T> parser, string contextName)
         => input =>

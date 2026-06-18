@@ -89,6 +89,13 @@ public class KarelSymbolTable
         }
     }
 
+    public KarelSymbol? GetSymbol(string name)
+    {
+        var symName = name.ToLower();
+        _symbols.TryGetValue(symName, out var symbol);
+        return symbol;
+    }
+
     public KarelSymbol? GetSymbol(string name, TokenPosition position)
     {
         var symName = name.ToLower();

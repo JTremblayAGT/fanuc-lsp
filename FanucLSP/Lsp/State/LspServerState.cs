@@ -4,7 +4,6 @@ using FanucLsp.Lsp.Definition;
 using FanucLsp.Lsp.Hover;
 using FanucLsp.Lsp.References;
 using KarelParser;
-using KarelParser.SymbolTable;
 using Sprache;
 using TPLangParser.TPLang;
 
@@ -43,7 +42,7 @@ public sealed class LspServerState(string logFilePath)
         new TpMotionInstructionCompletionProvider(),
         new TpAssignmentCompletionProvider(),
         new TpCallCompletionProvider(),
-        new KlVariableCompletionProvider(),
+        new TpVariableCompletionProvider(),
     ];
 
     private static readonly List<IKlCompletionProvider> KlCompletionProviders =
@@ -51,13 +50,14 @@ public sealed class LspServerState(string logFilePath)
         new KlBuiltinCompletionProvider(),
     ];
 
-    private static readonly List<IDefinitionProvider> TpDefinitionProviders =
+    private static readonly List<ITpDefinitionProvider> TpDefinitionProviders =
     [
         new TpLabelDefinitionProvider(),
         new TpProgramDefinitionProvider(),
+        new TpKarelVarDefinitionProvider()
     ];
 
-    private static readonly List<IKarelDefinitionProvider> KlDefinitionProviders =
+    private static readonly List<IKlDefinitionProvider> KlDefinitionProviders =
     [
         new KlSymbolDefinitionProvider()
     ];
@@ -313,7 +313,7 @@ public sealed class LspServerState(string logFilePath)
         switch (documentState.Type)
         {
             case DocumentType.Tp:
-                var result = await Task.Run(() => TpProgram.GetParser().TryParse(document.Text));
+                var result = await Task.Run(() => TpProgram.ProcessAndParse(document.Text));
                 OpenedTextDocuments[document.Uri] = documentState with
                 {
                     Program = result.WasSuccessful
@@ -450,7 +450,7 @@ public sealed class LspServerState(string logFilePath)
                             },
                             new(),
                             DocumentType.Tp,
-                            TppValueOr(TpProgram.GetParser().TryParse(text))
+                            TppValueOr(TpProgram.ProcessAndParse(text))
                         )
                     );
                 }

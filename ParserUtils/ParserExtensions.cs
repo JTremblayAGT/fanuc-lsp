@@ -76,4 +76,14 @@ public static class ParserExtensions
             .WithStartPosition()
             .WithEndPosition()
             .Select(obj => (obj.Value.Value, obj.Value.Position, obj.Position));
+
+    public static Parser<TParsedType> WithPos<TParsedType>(this Parser<TParsedType> parser)
+        where TParsedType : WithPosition
+        => parser
+            .WithPosition()
+            .Select(result => result.Value with
+            {
+                Start = result.Start,
+                End = result.End
+            });
 }

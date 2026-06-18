@@ -5,7 +5,7 @@ using TPLangParser.TPLang.Instructions;
 
 namespace FanucLsp.Lsp.Definition;
 
-internal sealed class TpLabelDefinitionProvider : IDefinitionProvider
+internal sealed class TpLabelDefinitionProvider : ITpDefinitionProvider
 {
     public TextDocumentLocation? GetDefinitionLocation(TpProgram program, ContentPosition position, TextDocumentItem document, LspServerState state)
     {

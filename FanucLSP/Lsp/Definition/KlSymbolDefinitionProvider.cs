@@ -5,7 +5,7 @@ using KarelParser;
 
 namespace FanucLsp.Lsp.Definition;
 
-internal class KlSymbolDefinitionProvider : IKarelDefinitionProvider
+internal class KlSymbolDefinitionProvider : IKlDefinitionProvider
 {
     public TextDocumentLocation? GetDefinitionLocation(
         KarelProgram program,
@@ -13,7 +13,7 @@ internal class KlSymbolDefinitionProvider : IKarelDefinitionProvider
         TextDocumentItem document,
         LspServerState state
     )
-        => KarelProgramUtils.GetTokenAt(document.Text, position) switch
+        => ProgramUtils.GetTokenAt(document.Text, position) switch
         {
             { } token => program.SymTable.GetSymbol(token, GetTokenPosition(position)) switch
             {

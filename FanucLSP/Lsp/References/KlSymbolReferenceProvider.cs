@@ -7,9 +7,15 @@ namespace FanucLsp.Lsp.References;
 
 internal sealed class KlSymbolReferenceProvider : IKlReferenceProvider
 {
-    public TextDocumentLocation[] GetReferences(KarelProgram program, ContentPosition position, TextDocumentItem document, ReferenceContext context, LspServerState state)
+    public TextDocumentLocation[] GetReferences(
+        KarelProgram program,
+        ContentPosition position,
+        TextDocumentItem document,
+        ReferenceContext context,
+        LspServerState state
+    )
     {
-        var token = KarelProgramUtils.GetTokenAt(document.Text, position);
+        var token = ProgramUtils.GetTokenAt(document.Text, position);
         if (string.IsNullOrWhiteSpace(token))
         {
             return [];

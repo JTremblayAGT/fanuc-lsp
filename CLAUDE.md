@@ -11,8 +11,6 @@ dotnet test --filter "FullyQualifiedName~KarelParser"   # single test project
 dotnet run --project FanucLSP                           # run the LSP server
 ```
 
-The `UnderAutomation.Fanuc` NuGet package requires a paid license and is not included in the repo — the build will fail if that package reference is active and unlicensed.
-
 ## Project Layout
 
 | Project | Role |

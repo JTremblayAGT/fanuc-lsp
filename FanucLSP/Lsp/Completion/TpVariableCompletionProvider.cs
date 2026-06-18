@@ -1,12 +1,13 @@
+using System.Text.RegularExpressions;
+
 using KarelParser;
 using TPLangParser.TPLang;
 
-using System.Text.RegularExpressions;
 using FanucLsp.Lsp.State;
 
 namespace FanucLsp.Lsp.Completion;
 
-internal sealed partial class KlVariableCompletionProvider : ICompletionProvider
+internal sealed partial class TpVariableCompletionProvider : ICompletionProvider
 {
 
     [GeneratedRegex(@"\$\[[^\]]*")]
