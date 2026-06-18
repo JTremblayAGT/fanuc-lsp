@@ -1,4 +1,5 @@
-﻿using Sprache;
+﻿using ParserUtils;
+using Sprache;
 
 namespace TPLangParser.TPLang;
 
@@ -10,12 +11,12 @@ internal readonly struct TpMixedLogicExpressionParser
         = Parse.Ref(() => Expression);
 
     private static readonly Parser<TpMixedLogicExpression> Value
-        = TpValue.GetParser().Select(val => new TpMixedLogicValue(val));
+        = TpValue.GetParser().Select(val => new TpMixedLogicValue(val)).WithPos();
 
     private static readonly Parser<TpMixedLogicExpression> UnaryNot
-        = from keyword in Parse.Char('!').Token()
+        = (from keyword in Parse.Char('!').Token()
           from term in Term
-          select new TpMixedLogicUnaryNot(term);
+          select new TpMixedLogicUnaryNot(term)).WithPos();
 
     private static readonly Parser<TpMixedLogicExpression> Term
         = Value
@@ -26,22 +27,22 @@ internal readonly struct TpMixedLogicExpressionParser
                 select expr);
 
     private static readonly Parser<TpMixedLogicBinary> BinaryLogical
-        = from lhs in Term // Use Term instead of Expression for left side
+        = (from lhs in Term // Use Term instead of Expression for left side
           from op in TpLogicalOperatorParser.Parser.Token()
           from rhs in ExpressionRef // Use the forward reference for right side
-          select new TpMixedLogicBinaryLogical(op, lhs, rhs);
+          select new TpMixedLogicBinaryLogical(op, lhs, rhs)).WithPos();
 
     private static readonly Parser<TpMixedLogicBinary> BinaryComparison
-        = from lhs in Term // Use Term instead of Expression for left side
+        = (from lhs in Term // Use Term instead of Expression for left side
           from op in TpComparisonOperatorParser.Parser.Token()
           from rhs in ExpressionRef // Use the forward reference for right side
-          select new TpMixedLogicBinaryComparison(op, lhs, rhs);
+          select new TpMixedLogicBinaryComparison(op, lhs, rhs)).WithPos();
 
     private static readonly Parser<TpMixedLogicBinary> BinaryArithmetic
-        = from lhs in Term // Use Term instead of Expression for left side
+        = (from lhs in Term // Use Term instead of Expression for left side
           from op in TpArithmeticOperatorParser.Parser.Token()
           from rhs in ExpressionRef // Use the forward reference for right side
-          select new TpMixedLogicBinaryArithmetic(op, lhs, rhs);
+          select new TpMixedLogicBinaryArithmetic(op, lhs, rhs)).WithPos();
 
     private static readonly Parser<TpMixedLogicExpression> Binary
         = BinaryLogical
@@ -51,7 +52,7 @@ internal readonly struct TpMixedLogicExpressionParser
     public static readonly Parser<TpMixedLogicExpression> Expression = Binary.Or(Term);
 }
 
-public record TpMixedLogicExpression : ITpParser<TpMixedLogicExpression>
+public record TpMixedLogicExpression : WithPosition, ITpParser<TpMixedLogicExpression>
 {
     public static Parser<TpMixedLogicExpression> GetParser() 
         => TpMixedLogicExpressionParser.Expression;

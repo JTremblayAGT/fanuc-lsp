@@ -2,7 +2,7 @@
 
 namespace TPLangParser.TPLang.Instructions;
 
-public record TpMathInstruction(TpValue Variable, TpMathExpression Expression) : TpInstruction(0), ITpParser<TpMathInstruction>
+public record TpMathInstruction(TpValue Variable, TpMathExpression Expression) : TpInstruction, ITpParser<TpMathInstruction>
 {
     public new static Parser<TpMathInstruction> GetParser() 
         => from variable in TpValue.Assignable

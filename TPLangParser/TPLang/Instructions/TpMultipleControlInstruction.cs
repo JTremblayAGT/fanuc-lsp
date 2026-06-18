@@ -4,7 +4,7 @@ using ParserUtils;
 
 namespace TPLangParser.TPLang.Instructions;
 
-public abstract record TpMultipleControlInstruction() : TpInstruction(0), ITpParser<TpMultipleControlInstruction>
+public abstract record TpMultipleControlInstruction() : TpInstruction, ITpParser<TpMultipleControlInstruction>
 {
     public new static Parser<TpMultipleControlInstruction> GetParser()
         => TpRunInstruction.GetParser();

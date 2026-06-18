@@ -50,7 +50,7 @@ internal struct TpArcWeldingOptionTypeParser
             .Or(TpCommon.Keyword("End").Return(TpArcWeldingOptionType.End));
 }
 
-public abstract record TpAccess : ITpParser<TpAccess>
+public abstract record TpAccess : WithPosition, ITpParser<TpAccess>
 {
     protected static readonly Parser<string> CommentParser =
         from leading in TpCommon.Keyword(":")
@@ -108,7 +108,7 @@ public sealed record TpAccessDirect(int Number, string? Comment, int? Group)
             from registerNumber in Parse.Number.Select(int.Parse)
             from comment in CommentParser.Optional()
             select new TpAccessDirect(registerNumber, comment.GetOrDefault(), grp.GetOrDefault())
-            ).BetweenBrackets();
+            ).BetweenBrackets().WithPos();
 }
 
 public sealed record TpAccessIndirect(TpRegister Register, int? Group)
@@ -122,7 +122,7 @@ public sealed record TpAccessIndirect(TpRegister Register, int? Group)
                      select num).Optional()
             from register in TpRegister.GetParser().Or(TpArgumentRegister.GetParser())
             select new TpAccessIndirect(register, grp.GetOrDefault())
-            ).BetweenBrackets();
+            ).BetweenBrackets().WithPos();
 }
 
 public sealed record TpAccessMultiple(TpValue Number, TpValue Item, string? Comment, int? Group)
@@ -139,7 +139,7 @@ public sealed record TpAccessMultiple(TpValue Number, TpValue Item, string? Comm
             from item in TpValueIntegerConstant.GetParser().Or(TpValueRegister.GetParser())
             from comment in CommentParser.Optional()
             select new TpAccessMultiple(num, item, comment.GetOrDefault(), grp.GetOrDefault())
-            ).BetweenBrackets();
+            ).BetweenBrackets().WithPos();
 }
 
 public abstract record TpGenericRegister(TpAccess Access) : WithPosition, ITpParser<TpGenericRegister>
@@ -361,7 +361,7 @@ public sealed record TpLabel(TpAccess LabelNumber) : WithPosition, ITpParser<TpL
            select new TpLabel(labelNumber.Value) with { Start = keyword.Position, End = labelNumber.Position };
 
 }
-public abstract record TpWeldInstructionArgs : ITpParser<TpWeldInstructionArgs>
+public abstract record TpWeldInstructionArgs : WithPosition, ITpParser<TpWeldInstructionArgs>
 {
     public static Parser<TpWeldInstructionArgs> GetParser()
         => TpWeldInstructionWeldSchedule.GetParser()
@@ -375,25 +375,25 @@ public sealed record TpWeldInstructionWeldSchedule(TpAccessDirect Access)
 {
     public new static Parser<TpWeldInstructionArgs> GetParser()
         => TpAccessDirect.GetParser()
-            .Select(access => new TpWeldInstructionWeldSchedule((access as TpAccessDirect)!));
+            .Select(access => new TpWeldInstructionWeldSchedule((access as TpAccessDirect)!)).WithPos();
 }
 
 public record TpWeldInstructionRegister(TpRegister Register)
     : TpWeldInstructionArgs, ITpParser<TpWeldInstructionArgs>
 {
     public new static Parser<TpWeldInstructionArgs> GetParser()
-        => from register in TpArgumentRegister.GetParser().Or(TpRegister.GetParser()).BetweenBrackets()
-           select new TpWeldInstructionRegister(register);
+        => (from register in TpArgumentRegister.GetParser().Or(TpRegister.GetParser()).BetweenBrackets()
+           select new TpWeldInstructionRegister(register)).WithPos();
 }
 
 public record TpWeldInstructionParameters(List<string> Parameters)
     : TpWeldInstructionArgs, ITpParser<TpWeldInstructionArgs>
 {
     public new static Parser<TpWeldInstructionArgs> GetParser()
-        => from arguments in
+        => (from arguments in
                Parse.LetterOrDigit.Or(Parse.Char('.')).AtLeastOnce().Text()
                    .DelimitedBy(Parse.Char(',')).BetweenBrackets()
-           select new TpWeldInstructionParameters(arguments.ToList());
+           select new TpWeldInstructionParameters(arguments.ToList())).WithPos();
 
 }
 
@@ -470,7 +470,7 @@ public struct TpArithmeticOperatorParser
 
 }
 
-public record TpMathExpression : ITpParser<TpMathExpression>
+public record TpMathExpression : WithPosition, ITpParser<TpMathExpression>
 {
     protected static readonly Parser<TpRegister> Argument
         = TpRegister.GetParser().Or(TpArgumentRegister.GetParser());
@@ -479,9 +479,9 @@ public record TpMathExpression : ITpParser<TpMathExpression>
         string keyword,
         Func<TpRegister, TpMathExpression> builder
     )
-        => from kw in TpCommon.Keyword(keyword)
+        => (from kw in TpCommon.Keyword(keyword)
            from value in Argument.BetweenBrackets()
-           select builder(value);
+           select builder(value)).WithPos();
 
     public static Parser<TpMathExpression> GetParser()
         => TpSqrtExpression.GetParser()
@@ -545,13 +545,13 @@ public record TpAtan2Expression(TpRegister Value1, TpRegister Value2) : TpMathEx
 {
     // Special case with two arguments
     public new static Parser<TpMathExpression> GetParser()
-        => from kw in TpCommon.Keyword("ATAN2")
+        => (from kw in TpCommon.Keyword("ATAN2")
            from kvp in
                (from value1 in Argument
                 from sep in Parse.Char(',')
                 from value2 in Argument
                 select (value1, value2)).BetweenBrackets()
-           select new TpAtan2Expression(kvp.value1, kvp.value2);
+           select new TpAtan2Expression(kvp.value1, kvp.value2)).WithPos();
 }
 
 public record TpLnExpression(TpRegister Value) : TpMathExpression, ITpParser<TpMathExpression>
@@ -621,13 +621,13 @@ public record TpValue : WithPosition, ITpParser<TpValue>
 public record TpValueErrorNum : TpValue, ITpParser<TpValue>
 {
     public new static Parser<TpValue> GetParser()
-        => TpCommon.Keyword("ERR_NUM").Return(new TpValueErrorNum());
+        => TpCommon.Keyword("ERR_NUM").Return(new TpValueErrorNum()).WithPos();
 }
 
 public record TpValuePosition(TpPosition Pos) : TpValue, ITpParser<TpValue>
 {
     public new static Parser<TpValue> GetParser()
-        => TpPosition.GetParser().Select(pos => new TpValuePosition(pos));
+        => TpPosition.GetParser().Select(pos => new TpValuePosition(pos)).WithPos();
 }
 
 public record TpValueLpos : TpValue, ITpParser<TpValue>
@@ -635,7 +635,7 @@ public record TpValueLpos : TpValue, ITpParser<TpValue>
     public const string Keyword = "LPOS";
 
     public new static Parser<TpValue> GetParser()
-        => TpCommon.Keyword(Keyword).Return(new TpValueLpos());
+        => TpCommon.Keyword(Keyword).Return(new TpValueLpos()).WithPos();
 }
 
 public record TpValueJpos : TpValue, ITpParser<TpValue>
@@ -643,40 +643,40 @@ public record TpValueJpos : TpValue, ITpParser<TpValue>
     public const string Keyword = "JPOS";
 
     public new static Parser<TpValue> GetParser()
-        => TpCommon.Keyword(Keyword).Return(new TpValueJpos());
+        => TpCommon.Keyword(Keyword).Return(new TpValueJpos()).WithPos();
 }
 
 public record TpValueUFrame(TpUserFrame UserFrame) : TpValue, ITpParser<TpValue>
 {
     public new static Parser<TpValue> GetParser()
-        => TpUserFrame.GetParser().Select(frm => new TpValueUFrame(frm));
+        => TpUserFrame.GetParser().Select(frm => new TpValueUFrame(frm)).WithPos();
 }
 
 public record TpValueUTool(TpUserTool UserFrame) : TpValue, ITpParser<TpValue>
 {
     public new static Parser<TpValue> GetParser()
-        => TpUserTool.GetParser().Select(frm => new TpValueUTool(frm));
+        => TpUserTool.GetParser().Select(frm => new TpValueUTool(frm)).WithPos();
 }
 
 public record TpValueTimer(TpAccess Access) : TpValue, ITpParser<TpValue>
 {
     public new static Parser<TpValue> GetParser()
-        => from keyword in TpCommon.Keyword("TIMER")
+        => (from keyword in TpCommon.Keyword("TIMER")
            from access in TpAccess.GetParser()
-           select new TpValueTimer(access);
+           select new TpValueTimer(access)).WithPos();
 }
 
 public record TpValuePulse(double Width) : TpValue, ITpParser<TpValue>
 {
     public new static Parser<TpValue> GetParser()
-        => from keyword in TpCommon.Keyword("PULSE")
+        => (from keyword in TpCommon.Keyword("PULSE")
            from width in (
                from sep in TpCommon.Keyword(",")
                from width in Parse.DecimalInvariant.Select(double.Parse)
                from tok in TpCommon.Keyword("sec")
                select width
            ).Optional()
-           select new TpValuePulse(width.GetOrDefault());
+           select new TpValuePulse(width.GetOrDefault())).WithPos();
 }
 
 public record TpValueIntegerConstant(int Value) : TpValue, ITpParser<TpValue>
@@ -689,7 +689,7 @@ public record TpValueIntegerConstant(int Value) : TpValue, ITpParser<TpValue>
             .Select(intConst => intConst with { Value = -intConst.Value }).BetweenParen();
 
     public new static Parser<TpValue> GetParser()
-        => PositiveConstant.Or(NegativeConstant).Token();
+        => PositiveConstant.Or(NegativeConstant).Token().WithPos();
 }
 
 public record TpValueFloatingPointConstant(double Value) : TpValue, ITpParser<TpValue>
@@ -705,53 +705,53 @@ public record TpValueFloatingPointConstant(double Value) : TpValue, ITpParser<Tp
             .Select(floatConst => floatConst with { Value = -floatConst.Value }).BetweenParen();
 
     public new static Parser<TpValue> GetParser()
-        => PositiveConstant.Or(NegativeConstant).Token();
+        => PositiveConstant.Or(NegativeConstant).Token().WithPos();
 }
 
 public record TpValueRegister(TpGenericRegister Register) : TpValue, ITpParser<TpValue>
 {
     public new static Parser<TpValue> GetParser()
-        => TpGenericRegister.GetParser().Select(reg => new TpValueRegister(reg));
+        => TpGenericRegister.GetParser().Select(reg => new TpValueRegister(reg)).WithPos();
 
     public static readonly Parser<TpValueRegister> NumericRegister
-        = TpRegister.GetParser().Select(reg => new TpValueRegister(reg));
+        = TpRegister.GetParser().Select(reg => new TpValueRegister(reg)).WithPos();
 
     public static readonly Parser<TpValueRegister> ArgumentRegister
-        = TpArgumentRegister.GetParser().Select(reg => new TpValueRegister(reg));
+        = TpArgumentRegister.GetParser().Select(reg => new TpValueRegister(reg)).WithPos();
 
     public static readonly Parser<TpValueRegister> PositionRegister
-        = TpPositionRegister.GetParser().Select(reg => new TpValueRegister(reg));
+        = TpPositionRegister.GetParser().Select(reg => new TpValueRegister(reg)).WithPos();
 
     public static readonly Parser<TpValueRegister> StringRegister
-        = TpStringRegister.GetParser().Select(reg => new TpValueRegister(reg));
+        = TpStringRegister.GetParser().Select(reg => new TpValueRegister(reg)).WithPos();
 }
 
 public record TpValueIOPort(TpIOPort IOPort) : TpValue, ITpParser<TpValue>
 {
     public static Parser<TpValueIOPort> MakeParser<TIOType>(char symbol, TpIOType type) where TIOType : TpIOPort, new()
         => TpIOPort.MakeParser(symbol, type, (idx, start, end) => new TIOType { Type = type, PortNumber = idx, Start = start, End = end })
-            .Select(ioPort => new TpValueIOPort(ioPort));
+            .Select(ioPort => new TpValueIOPort(ioPort)).WithPos();
 
     public new static Parser<TpValue> GetParser()
-        => TpIOPort.GetParser().Select(ioPort => new TpValueIOPort(ioPort));
+        => TpIOPort.GetParser().Select(ioPort => new TpValueIOPort(ioPort)).WithPos();
 }
 
 public record TpValueOnOffIOPort(TpOnOffIOPort IOPort) : TpValue, ITpParser<TpValueOnOffIOPort>
 {
     public new static Parser<TpValueOnOffIOPort> GetParser()
-        => TpOnOffIOPort.GetParser().Select(ioPort => new TpValueOnOffIOPort((TpOnOffIOPort)ioPort));
+        => TpOnOffIOPort.GetParser().Select(ioPort => new TpValueOnOffIOPort((TpOnOffIOPort)ioPort)).WithPos();
 }
 
 public record TpValueNumericalIOPort(TpNumericalIOPort IOPort) : TpValue, ITpParser<TpValueNumericalIOPort>
 {
     public new static Parser<TpValueNumericalIOPort> GetParser()
-        => TpNumericalIOPort.GetParser().Select(ioPort => new TpValueNumericalIOPort((TpNumericalIOPort)ioPort));
+        => TpNumericalIOPort.GetParser().Select(ioPort => new TpValueNumericalIOPort((TpNumericalIOPort)ioPort)).WithPos();
 }
 
 public record TpValueFlag(TpFlag Flag) : TpValue, ITpParser<TpValue>
 {
     public new static Parser<TpValue> GetParser()
-        => TpFlag.GetParser().Select(flag => new TpValueFlag(flag));
+        => TpFlag.GetParser().Select(flag => new TpValueFlag(flag)).WithPos();
 }
 
 // TODO: implement markers
@@ -772,7 +772,7 @@ public struct TpOnOffStateParser
 public record TpValueIOState(TpOnOffState State) : TpValue, ITpParser<TpValue>
 {
     public new static Parser<TpValue> GetParser()
-        => TpOnOffStateParser.Parser.Select(state => new TpValueIOState(state));
+        => TpOnOffStateParser.Parser.Select(state => new TpValueIOState(state)).WithPos();
 }
 
 public abstract record TpValueParameter : TpValue
@@ -804,8 +804,8 @@ public sealed record TpValueSystemVariable(string Variable)
         select $"${tag}";
 
     public new static Parser<TpValueParameter> GetParser()
-        => from variable in AccumulateTag(VariableTag)
-           select new TpValueSystemVariable(variable);
+        => (from variable in AccumulateTag(VariableTag)
+           select new TpValueSystemVariable(variable)).WithPos();
 }
 
 public sealed record TpValueKarelVariable(string Program, string Variable)
@@ -815,40 +815,40 @@ public sealed record TpValueKarelVariable(string Program, string Variable)
         Identifier.BetweenBrackets();
 
     public new static Parser<TpValueParameter> GetParser()
-        => from prefix in Parse.Char('$')
+        => (from prefix in Parse.Char('$')
            from progName in ProgramName
            from sep in TpCommon.Keyword(".").Optional()
            from var in AccumulateTag(Tag)
-           select new TpValueKarelVariable(progName, var);
+           select new TpValueKarelVariable(progName, var)).WithPos();
 }
 
 public record TpValueString(string Value) : TpValue, ITpParser<TpValue>
 {
     public new static Parser<TpValue> GetParser()
-        => from start in Parse.Char('\'')
+        => (from start in Parse.Char('\'')
            from value in Parse.AnyChar.Until(Parse.Char('\'')).Text()
-           select new TpValueString(value);
+           select new TpValueString(value)).WithPos();
 }
 
 public record TpValueMathExpr(TpMathExpression Expression) : TpValue, ITpParser<TpValue>
 {
     public new static Parser<TpValue> GetParser()
-        => TpMathExpression.GetParser().Select(expr => new TpValueMathExpr(expr));
+        => TpMathExpression.GetParser().Select(expr => new TpValueMathExpr(expr)).WithPos();
 }
 
-public record TpUserFrame(TpAccess Access) : ITpParser<TpUserFrame>
+public record TpUserFrame(TpAccess Access) : WithPosition, ITpParser<TpUserFrame>
 {
     public static Parser<TpUserFrame> GetParser()
-        => from keyword in TpCommon.Keyword("UFRAME")
+        => (from keyword in TpCommon.Keyword("UFRAME")
            from access in TpAccess.GetParser()
-           select new TpUserFrame(access);
+           select new TpUserFrame(access)).WithPos();
 }
 
-public record TpUserTool(TpAccess Access) : ITpParser<TpUserTool>
+public record TpUserTool(TpAccess Access) : WithPosition, ITpParser<TpUserTool>
 {
     public static Parser<TpUserTool> GetParser()
-        => from keyword in TpCommon.Keyword("UTOOL")
+        => (from keyword in TpCommon.Keyword("UTOOL")
            from access in TpAccess.GetParser()
-           select new TpUserTool(access);
+           select new TpUserTool(access)).WithPos();
 }
 

@@ -3,7 +3,7 @@ using ParserUtils;
 
 namespace TPLangParser.TPLang.Instructions;
 
-public abstract record TpBranchingInstruction() : TpInstruction(0), ITpParser<TpInstruction>
+public abstract record TpBranchingInstruction() : TpInstruction, ITpParser<TpInstruction>
 {
     public new static Parser<TpInstruction> GetParser()
         => TpLabelDefinitionInstruction.GetParser()
@@ -22,10 +22,15 @@ public abstract record TpBranchingAction
     : TpBranchingInstruction, ITpParser<TpBranchingAction>
 {
     public new static Parser<TpBranchingAction> GetParser()
+        // Branching actions are TpInstruction subtypes, but here they are parsed
+        // as nested actions (inside IF/SELECT) rather than as standalone program
+        // lines, so they miss the top-level instruction parser's .WithPos() and
+        // must be positioned here.
         => TpJumpLabelInstruction.GetParser()
             .Or(TpCallInstruction.GetParser())
             .Or(TpMixedLogicAssignmentBranchingAction.GetParser())
-            .Or(TpPulseBranchingAction.GetParser());
+            .Or(TpPulseBranchingAction.GetParser())
+            .WithPos();
 }
 
 public sealed record TpLabelDefinitionInstruction(TpLabel Label)
@@ -104,7 +109,7 @@ public sealed record TpPulseBranchingAction(TpValueOnOffIOPort IoPort, TpValuePu
            select new TpPulseBranchingAction(ioPort, (TpValuePulse)pulse);
 }
 
-public abstract record TpIfExpression : ITpParser<TpIfExpression>
+public abstract record TpIfExpression : WithPosition, ITpParser<TpIfExpression>
 {
     public static Parser<TpIfExpression> GetParser()
         => TpIfExpressionLogic.GetParser()
@@ -114,7 +119,7 @@ public abstract record TpIfExpression : ITpParser<TpIfExpression>
 public sealed record TpIfExpressionLogic(TpLogicExpression Expression) : TpIfExpression, ITpParser<TpIfExpression>
 {
     public new static Parser<TpIfExpression> GetParser()
-        => TpLogicExpression.GetParser().Select(expr => new TpIfExpressionLogic(expr));
+        => TpLogicExpression.GetParser().Select(expr => new TpIfExpressionLogic(expr)).WithPos();
 }
 
 
@@ -123,7 +128,7 @@ public sealed record TpIfExpressionMixedLogic(TpMixedLogicExpression Expression)
 {
     public new static Parser<TpIfExpression> GetParser()
         => TpMixedLogicExpression.GetParser().BetweenParen()
-            .Select(expr => new TpIfExpressionMixedLogic(expr));
+            .Select(expr => new TpIfExpressionMixedLogic(expr)).WithPos();
 }
 
 public sealed record TpIfInstruction(
@@ -138,7 +143,7 @@ public sealed record TpIfInstruction(
            select new TpIfInstruction(expression, action);
 }
 
-public record TpSelectCase(TpValue Value, TpBranchingAction Action) : ITpParser<TpSelectCase>
+public record TpSelectCase(TpValue Value, TpBranchingAction Action) : WithPosition, ITpParser<TpSelectCase>
 {
     private static readonly Parser<TpValue> AllowedValues =
         TpValueIntegerConstant.GetParser()
@@ -146,11 +151,11 @@ public record TpSelectCase(TpValue Value, TpBranchingAction Action) : ITpParser<
             .Or(TpValueRegister.GetParser());
 
     private static readonly Parser<TpSelectCase> InternalParser =
-        from kw in TpCommon.Keyword("=")
+        (from kw in TpCommon.Keyword("=")
         from value in AllowedValues
         from sep in TpCommon.Keyword(",")
         from action in TpBranchingAction.GetParser()
-        select new TpSelectCase(value, action);
+        select new TpSelectCase(value, action)).WithPos();
 
     public static Parser<TpSelectCase> GetParser()
         => InternalParser.Or(TpSelectElseCase.GetParser());
@@ -159,10 +164,10 @@ public record TpSelectCase(TpValue Value, TpBranchingAction Action) : ITpParser<
 public sealed record TpSelectElseCase(TpBranchingAction Action) : TpSelectCase(null!, Action), ITpParser<TpSelectCase>
 {
     public new static Parser<TpSelectCase> GetParser()
-        => from keyword in TpCommon.Keyword("ELSE")
+        => (from keyword in TpCommon.Keyword("ELSE")
            from sep in TpCommon.Keyword(",")
            from action in TpBranchingAction.GetParser()
-           select new TpSelectElseCase(action);
+           select new TpSelectElseCase(action)).WithPos();
 }
 public sealed record TpSelectCaseInstruction(TpSelectCase Case)
     : TpBranchingInstruction, ITpParser<TpBranchingInstruction>

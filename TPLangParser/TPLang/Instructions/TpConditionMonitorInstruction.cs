@@ -1,8 +1,9 @@
-﻿using Sprache;
+﻿using ParserUtils;
+using Sprache;
 
 namespace TPLangParser.TPLang.Instructions;
 
-public record TpConditionMonitorInstruction() : TpInstruction(0), ITpParser<TpConditionMonitorInstruction>
+public record TpConditionMonitorInstruction() : TpInstruction, ITpParser<TpConditionMonitorInstruction>
 {
     public new static Parser<TpConditionMonitorInstruction> GetParser()
         => TpMonitorEndInstruction.GetParser()
@@ -30,7 +31,7 @@ public sealed record TpMonitorEndInstruction(string ProgramName)
 }
 
 // TODO: those don't belong in our programs anyway
-public sealed record TpWhenCondition;
+public sealed record TpWhenCondition : WithPosition;
 
 public sealed record TpWhenInstruction(TpWhenCondition Condition, string ProgramName)
     : TpConditionMonitorInstruction, ITpParser<TpConditionMonitorInstruction>

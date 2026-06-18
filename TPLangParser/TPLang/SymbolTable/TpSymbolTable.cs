@@ -31,6 +31,7 @@ public record struct TpSymbolReference
     public required TpSymbolRefKind Kind { get; init; }
 }
 
+// TODO: Would probably be more efficient to store registers and IO in dictionaries with indices
 public sealed class TpSymbol
 {
     public string Name { get; }

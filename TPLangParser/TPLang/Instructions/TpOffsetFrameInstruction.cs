@@ -3,7 +3,7 @@ using Sprache;
 
 namespace TPLangParser.TPLang.Instructions;
 
-public record TpOffsetFrameInstruction() : TpInstruction(0), ITpParser<TpOffsetFrameInstruction>
+public record TpOffsetFrameInstruction() : TpInstruction, ITpParser<TpOffsetFrameInstruction>
 {
     public new static Parser<TpOffsetFrameInstruction> GetParser() 
         => TpOffsetConditionInstruction.GetParser()

@@ -2,7 +2,7 @@
 
 namespace TPLangParser.TPLang.Instructions;
 
-public record TpIOInstruction() : TpInstruction(0), ITpParser<TpIOInstruction>
+public record TpIOInstruction() : TpInstruction, ITpParser<TpIOInstruction>
 {
     public new static Parser<TpIOInstruction> GetParser()
         => TpDigitalIOInstruction.GetParser()

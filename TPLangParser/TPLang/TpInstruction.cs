@@ -1,4 +1,6 @@
-﻿using TPLangParser.TPLang.Instructions;
+﻿using ParserUtils;
+
+using TPLangParser.TPLang.Instructions;
 using Sprache;
 
 namespace TPLangParser.TPLang;
@@ -33,7 +35,7 @@ public static class InstructionParsingExtensions
         };
 }
 
-public abstract record TpInstruction(int LineNumber) : ITpParser<TpInstruction>
+public abstract record TpInstruction : WithPosition, ITpParser<TpInstruction>
 {
     private static readonly Parser<TpInstruction> InternalParser
         /*
@@ -70,20 +72,20 @@ public abstract record TpInstruction(int LineNumber) : ITpParser<TpInstruction>
             .Or(TpEmptyInstruction.GetParser().EnsureLineConsumed());
 
     public static Parser<TpInstruction> GetParser()
-        => from lineNumber in TpCommon.LineNumber.Or(TpCommon.Fail<int>("Failed to parse start of line."))
-           from kvp in InternalParser.WithLineNumber()
+        => (from lineNumber in TpCommon.LineNumber.Or(TpCommon.Fail<int>("Failed to parse start of line."))
+           from instr in InternalParser
            from lineEnd in TpCommon.LineEnd
-           select kvp.Value with { LineNumber = kvp.LineNumber };
+           select instr).WithPos();
 }
 
-public sealed record TpEmptyInstruction() : TpInstruction(0), ITpParser<TpEmptyInstruction>
+public sealed record TpEmptyInstruction() : TpInstruction, ITpParser<TpEmptyInstruction>
 {
     public new static Parser<TpEmptyInstruction> GetParser()
         => from whitespace in Parse.WhiteSpace.AtLeastOnce()
            select new TpEmptyInstruction();
 }
 
-public sealed record TpInstructionComment(string Comment) : TpInstruction(0), ITpParser<TpInstructionComment>
+public sealed record TpInstructionComment(string Comment) : TpInstruction, ITpParser<TpInstructionComment>
 {
     private static readonly Parser<string> CommentParser =
         TpCommon.Keyword("!")

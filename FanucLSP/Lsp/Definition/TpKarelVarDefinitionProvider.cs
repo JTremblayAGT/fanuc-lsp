@@ -11,9 +11,6 @@ namespace FanucLsp.Lsp.Definition;
 
 internal sealed partial class TpKarelVarDefinitionProvider : ITpDefinitionProvider
 {
-    [GeneratedRegex(@"\$\[([a-zA-Z_]+)\]([a-zA-Z_]*(\[[1-9]+\])?\.)*")]
-    private static partial Regex Variable();
-
     public TextDocumentLocation? GetDefinitionLocation(TpProgram program, ContentPosition position, TextDocumentItem document, LspServerState state)
     {
         if (program.SymTable.GetSymbol(ProgramUtils.GetKlVariableAt(document.Text, position))

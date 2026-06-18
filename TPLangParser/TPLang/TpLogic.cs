@@ -1,8 +1,9 @@
-﻿using Sprache;
+﻿using ParserUtils;
+using Sprache;
 
 namespace TPLangParser.TPLang;
 public abstract record TpComparisonExpression(TpComparisonOperator Operator, TpValue Lhs, TpValue Rhs)
-    : ITpParser<TpComparisonExpression>
+    : WithPosition, ITpParser<TpComparisonExpression>
 {
     public static Parser<TpComparisonExpression> GetParser()
         => TpRegisterComparisonExpression.GetParser()
@@ -20,10 +21,10 @@ public sealed record TpRegisterComparisonExpression(TpComparisonOperator Operato
             .Or(TpValueRegister.GetParser());
 
     public new static Parser<TpComparisonExpression> GetParser()
-        => from register in TpValueRegister.GetParser()
+        => (from register in TpValueRegister.GetParser()
             from op in TpComparisonOperatorParser.Parser
             from value in AllowedValues
-            select new TpRegisterComparisonExpression(op, register, value);
+            select new TpRegisterComparisonExpression(op, register, value)).WithPos();
 }
 
 public sealed record TpDigitalIOComparisonExpression(TpComparisonOperator Operator, TpValue Lhs, TpValue Rhs)
@@ -35,10 +36,10 @@ public sealed record TpDigitalIOComparisonExpression(TpComparisonOperator Operat
             .Or(TpValueRegister.GetParser());
 
     public new static Parser<TpComparisonExpression> GetParser()
-        => from port in TpOnOffIOPort.GetParser().Select(port => new TpValueIOPort(port))
+        => (from port in TpOnOffIOPort.GetParser().Select(port => new TpValueIOPort(port))
             from op in TpComparisonOperatorParser.Parser
             from value in AllowedValues
-            select new TpDigitalIOComparisonExpression(op, port, value);
+            select new TpDigitalIOComparisonExpression(op, port, value)).WithPos();
 }
 
 public sealed record TpAnalogIOComparisonExpression(TpComparisonOperator Operator, TpValue Lhs, TpValue Rhs)
@@ -50,10 +51,10 @@ public sealed record TpAnalogIOComparisonExpression(TpComparisonOperator Operato
             .Or(TpValueRegister.GetParser());
 
     public new static Parser<TpComparisonExpression> GetParser()
-        => from port in TpNumericalIOPort.GetParser().Select(port => new TpValueIOPort(port))
+        => (from port in TpNumericalIOPort.GetParser().Select(port => new TpValueIOPort(port))
             from op in TpComparisonOperatorParser.Parser
             from value in AllowedValues
-            select new TpAnalogIOComparisonExpression(op, port, value);
+            select new TpAnalogIOComparisonExpression(op, port, value)).WithPos();
 }
 
 public sealed record TpParameterComparisonExpression(TpComparisonOperator Operator, TpValue Lhs, TpValue Rhs)
@@ -65,13 +66,13 @@ public sealed record TpParameterComparisonExpression(TpComparisonOperator Operat
             .Or(TpValueRegister.GetParser());
 
     public new static Parser<TpComparisonExpression> GetParser()
-        => from port in TpValueParameter.GetParser()
+        => (from port in TpValueParameter.GetParser()
             from op in TpComparisonOperatorParser.Parser
             from value in AllowedValues
-            select new TpParameterComparisonExpression(op, port, value);
+            select new TpParameterComparisonExpression(op, port, value)).WithPos();
 }
 
-public abstract record TpLogicExpression : ITpParser<TpLogicExpression>
+public abstract record TpLogicExpression : WithPosition, ITpParser<TpLogicExpression>
 {
     public static Parser<TpLogicExpression> GetParser()
         => TpLogicExpressionOr.GetParser()
@@ -84,7 +85,7 @@ public sealed record TpLogicExpressionSingle(TpComparisonExpression Expression)
 {
     public new static Parser<TpLogicExpression> GetParser() 
         => TpComparisonExpression.GetParser()
-            .Select(comp => new TpLogicExpressionSingle(comp));
+            .Select(comp => new TpLogicExpressionSingle(comp)).WithPos();
 }
 public sealed record TpLogicExpressionAnd(List<TpComparisonExpression> Expression) 
     : TpLogicExpression, ITpParser<TpLogicExpression>
@@ -92,7 +93,7 @@ public sealed record TpLogicExpressionAnd(List<TpComparisonExpression> Expressio
     public new static Parser<TpLogicExpression> GetParser()
         => TpComparisonExpression.GetParser()
             .DelimitedBy(TpCommon.Keyword("AND"), 2, 5)
-            .Select(exprs => new TpLogicExpressionAnd(exprs.ToList()));
+            .Select(exprs => new TpLogicExpressionAnd(exprs.ToList())).WithPos();
 }
 public sealed record TpLogicExpressionOr(List<TpComparisonExpression> Expression) 
     : TpLogicExpression, ITpParser<TpLogicExpression>
@@ -100,5 +101,5 @@ public sealed record TpLogicExpressionOr(List<TpComparisonExpression> Expression
     public new static Parser<TpLogicExpression> GetParser()
         => TpComparisonExpression.GetParser()
             .DelimitedBy(TpCommon.Keyword("OR"), 2, 5)
-            .Select(exprs => new TpLogicExpressionOr(exprs.ToList()));
+            .Select(exprs => new TpLogicExpressionOr(exprs.ToList())).WithPos();
 }

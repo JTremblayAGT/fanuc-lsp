@@ -3,7 +3,7 @@ using Sprache;
 
 namespace TPLangParser.TPLang.Instructions;
 
-public record TpMixedLogicInstruction() : TpInstruction(0), ITpParser<TpMixedLogicInstruction>
+public record TpMixedLogicInstruction() : TpInstruction, ITpParser<TpMixedLogicInstruction>
 {
     public new static Parser<TpMixedLogicInstruction> GetParser() 
         => TpMixedLogicAssignment.GetParser()

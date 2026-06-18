@@ -1,4 +1,5 @@
-﻿using Sprache;
+﻿using ParserUtils;
+using Sprache;
 
 namespace TPLangParser.TPLang.Instructions;
 public enum TpMotionType
@@ -30,7 +31,7 @@ public enum TpSpeedUnit
     CmPerMin,
 }
 
-public abstract record TpMotionSpeed : ITpParser<TpMotionSpeed>
+public abstract record TpMotionSpeed : WithPosition, ITpParser<TpMotionSpeed>
 {
     public static readonly Parser<TpSpeedUnit> SpeedUnitParser =
         TpCommon.Keyword("%").Return(TpSpeedUnit.Percentage)
@@ -48,24 +49,24 @@ public abstract record TpMotionSpeed : ITpParser<TpMotionSpeed>
 public sealed record TpMotionSpeedLiteral(TpSpeedUnit Unit, double Value) : TpMotionSpeed, ITpParser<TpMotionSpeed>
 {
     public new static Parser<TpMotionSpeed> GetParser()
-        => from value in Parse.Decimal.Select(double.Parse)
+        => (from value in Parse.Decimal.Select(double.Parse)
            from type in SpeedUnitParser
-           select new TpMotionSpeedLiteral(type, value);
+           select new TpMotionSpeedLiteral(type, value)).WithPos();
 
 }
 
 public sealed record TpMotionSpeedIndirect(TpRegister Register, TpSpeedUnit Unit) : TpMotionSpeed, ITpParser<TpMotionSpeed>
 {
     public new static Parser<TpMotionSpeed> GetParser()
-        => from register in TpRegister.GetParser().Or(TpArgumentRegister.GetParser())
+        => (from register in TpRegister.GetParser().Or(TpArgumentRegister.GetParser())
            from unit in SpeedUnitParser.Optional()
-           select new TpMotionSpeedIndirect(register, unit.GetOrElse(TpSpeedUnit.Percentage));
+           select new TpMotionSpeedIndirect(register, unit.GetOrElse(TpSpeedUnit.Percentage))).WithPos();
 }
 
 public sealed record TpMotionSpeedWeld : TpMotionSpeed, ITpParser<TpMotionSpeed>
 {
     public new static Parser<TpMotionSpeed> GetParser()
-        => TpCommon.Keyword("WELD_SPEED").Return(new TpMotionSpeedWeld());
+        => TpCommon.Keyword("WELD_SPEED").Return(new TpMotionSpeedWeld()).WithPos();
 }
 
 public enum TpTerminationType
@@ -75,17 +76,18 @@ public enum TpTerminationType
     Cd
 }
 
-public sealed record TpMotionTermination(TpTerminationType Type, int? Value) : ITpParser<TpMotionTermination>
+public sealed record TpMotionTermination(TpTerminationType Type, int? Value) : WithPosition, ITpParser<TpMotionTermination>
 {
     public static Parser<TpMotionTermination> GetParser()
         => TpCommon.Keyword("FINE").Return(new TpMotionTermination(TpTerminationType.Fine, null))
             .Or(TpCommon.Keyword("CNT").Then(_ => Parse.Number.Select(int.Parse))
                 .Select(val => new TpMotionTermination(TpTerminationType.Cnt, val)))
             .Or(TpCommon.Keyword("CD").Then(_ => Parse.Number.Select(int.Parse))
-                .Select(val => new TpMotionTermination(TpTerminationType.Cd, val)));
+                .Select(val => new TpMotionTermination(TpTerminationType.Cd, val)))
+            .WithPos();
 }
 
-public abstract record TpMotionOption : ITpParser<TpMotionOption>
+public abstract record TpMotionOption : WithPosition, ITpParser<TpMotionOption>
 {
     public static Parser<TpMotionOption> GetParser()
         => TpWristJointOption.GetParser()
@@ -115,7 +117,7 @@ public sealed record TpWristJointOption : TpMotionOption, ITpParser<TpMotionOpti
     public const string Keyword = "Wjnt";
 
     public new static Parser<TpMotionOption> GetParser()
-        => TpCommon.Keyword(Keyword).Return(new TpWristJointOption());
+        => TpCommon.Keyword(Keyword).Return(new TpWristJointOption()).WithPos();
 }
 
 public sealed record TpAccOption(int Value) : TpMotionOption, ITpParser<TpMotionOption>
@@ -123,9 +125,9 @@ public sealed record TpAccOption(int Value) : TpMotionOption, ITpParser<TpMotion
     public const string Keyword = "ACC";
 
     public new static Parser<TpMotionOption> GetParser()
-        => from keyword in TpCommon.Keyword("ACC")
+        => (from keyword in TpCommon.Keyword("ACC")
            from value in Parse.Number.Select(int.Parse)
-           select new TpAccOption(value);
+           select new TpAccOption(value)).WithPos();
 }
 
 public abstract record TpAlimOption(int GroupNumber) : TpMotionOption, ITpParser<TpMotionOption>
@@ -141,24 +143,24 @@ public sealed record TpAlimOptionLiteral(int Accel, int GroupNumber)
     : TpAlimOption(GroupNumber), ITpParser<TpAlimOption>
 {
     public new static Parser<TpAlimOption> GetParser()
-        => from keyword in TpCommon.Keyword(Keyword)
+        => (from keyword in TpCommon.Keyword(Keyword)
            from lparen in Parse.Char('(')
            from value in Parse.Number.Select(int.Parse)
            from groupNumber in Parse.Char(',').Then(_ => Parse.Number.Select(int.Parse)).Optional()
            from rparen in Parse.Char('(')
-           select new TpAlimOptionLiteral(value, groupNumber.GetOrElse(1));
+           select new TpAlimOptionLiteral(value, groupNumber.GetOrElse(1))).WithPos();
 }
 
 public sealed record TpAlimOptionRegister(TpRegister Register, int GroupNumber)
     : TpAlimOption(GroupNumber), ITpParser<TpAlimOption>
 {
     public new static Parser<TpAlimOption> GetParser()
-        => from keyword in TpCommon.Keyword(Keyword)
+        => (from keyword in TpCommon.Keyword(Keyword)
            from lparen in Parse.Char('(')
            from register in TpRegister.GetParser()
            from groupNumber in Parse.Char(',').Then(_ => Parse.Number.Select(int.Parse)).Optional()
            from rparen in Parse.Char('(')
-           select new TpAlimOptionRegister(register, groupNumber.GetOrElse(1));
+           select new TpAlimOptionRegister(register, groupNumber.GetOrElse(1))).WithPos();
 }
 
 public sealed record TpPathOption : TpMotionOption, ITpParser<TpMotionOption>
@@ -166,7 +168,7 @@ public sealed record TpPathOption : TpMotionOption, ITpParser<TpMotionOption>
     public const string Keyword = "PTH";
 
     public new static Parser<TpMotionOption> GetParser()
-        => TpCommon.Keyword(Keyword).Return(new TpPathOption());
+        => TpCommon.Keyword(Keyword).Return(new TpPathOption()).WithPos();
 }
 
 public enum TpLinearDistanceType
@@ -198,18 +200,18 @@ public sealed record TpLinearDistanceOptionLiteral(TpLinearDistanceType Type, in
     : TpLinearDistanceOption(Type), ITpParser<TpLinearDistanceOption>
 {
     public new static Parser<TpLinearDistanceOption> GetParser()
-        => from type in TpLinearDistanceTypeParser.Parser
+        => (from type in TpLinearDistanceTypeParser.Parser
            from distance in Parse.Number.Select(int.Parse)
-           select new TpLinearDistanceOptionLiteral(type, distance);
+           select new TpLinearDistanceOptionLiteral(type, distance)).WithPos();
 }
 
 public sealed record TpLinearDistanceOptionRegister(TpLinearDistanceType Type, TpRegister Register)
     : TpLinearDistanceOption(Type), ITpParser<TpLinearDistanceOption>
 {
     public new static Parser<TpLinearDistanceOption> GetParser()
-        => from type in TpLinearDistanceTypeParser.Parser
+        => (from type in TpLinearDistanceTypeParser.Parser
            from register in TpRegister.GetParser()
-           select new TpLinearDistanceOptionRegister(type, register);
+           select new TpLinearDistanceOptionRegister(type, register)).WithPos();
 }
 
 public sealed record TpBreakOption : TpMotionOption, ITpParser<TpMotionOption>
@@ -217,7 +219,7 @@ public sealed record TpBreakOption : TpMotionOption, ITpParser<TpMotionOption>
     public const string Keyword = "BREAK";
 
     public new static Parser<TpMotionOption> GetParser()
-        => TpCommon.Keyword(Keyword).Return(new TpBreakOption());
+        => TpCommon.Keyword(Keyword).Return(new TpBreakOption()).WithPos();
 }
 
 public sealed record TpOffsetOption(TpPositionRegister? PositionRegister) : TpMotionOption, ITpParser<TpMotionOption>
@@ -225,11 +227,11 @@ public sealed record TpOffsetOption(TpPositionRegister? PositionRegister) : TpMo
     public const string Keyword = "Offset";
 
     public new static Parser<TpMotionOption> GetParser()
-        => from keyword in TpCommon.Keyword(Keyword)
+        => (from keyword in TpCommon.Keyword(Keyword)
            from posReg in Parse.Char(',')
                .Then(_ => Parse.WhiteSpace.Many())
                .Then(_ => TpPositionRegister.GetParser()).Optional()
-           select new TpOffsetOption(posReg.GetOrElse(null));
+           select new TpOffsetOption(posReg.GetOrElse(null))).WithPos();
 }
 
 public sealed record TpToolOffsetOption(TpPositionRegister? PositionRegister) : TpMotionOption, ITpParser<TpMotionOption>
@@ -237,11 +239,11 @@ public sealed record TpToolOffsetOption(TpPositionRegister? PositionRegister) : 
     public const string Keyword = "Tool_Offset";
 
     public new static Parser<TpMotionOption> GetParser()
-        => from keyword in TpCommon.Keyword(Keyword)
+        => (from keyword in TpCommon.Keyword(Keyword)
            from posReg in Parse.Char(',')
                .Then(_ => Parse.WhiteSpace.Many())
                .Then(_ => TpPositionRegister.GetParser()).Optional()
-           select new TpToolOffsetOption(posReg.GetOrElse(null));
+           select new TpToolOffsetOption(posReg.GetOrElse(null))).WithPos();
 }
 
 public enum TpOrntBaseRefFrame
@@ -263,7 +265,7 @@ public sealed record TpOrntBaseOption(TpOrntBaseRefFrame ReferenceFrame, int Fra
     public const string Keyword = "ORNT_BASE";
 
     public new static Parser<TpMotionOption> GetParser()
-        => from keyword in TpCommon.Keyword(Keyword)
+        => (from keyword in TpCommon.Keyword(Keyword)
            from option in (
                from refFrame in TpOrntBaseRefFrameParser.Parser
                from lbracket in Parse.Char('[')
@@ -273,7 +275,7 @@ public sealed record TpOrntBaseOption(TpOrntBaseRefFrame ReferenceFrame, int Fra
                from rbracket in Parse.Char(']')
                select new TpOrntBaseOption(refFrame, frameIndex, dirIndex)
            ).Optional()
-           select option.GetOrElse(new(TpOrntBaseRefFrame.WorldFrame, 0, 'z'));
+           select option.GetOrElse(new(TpOrntBaseRefFrame.WorldFrame, 0, 'z'))).WithPos();
 }
 
 public sealed record TpRemoteTcpOption : TpMotionOption, ITpParser<TpMotionOption>
@@ -281,7 +283,7 @@ public sealed record TpRemoteTcpOption : TpMotionOption, ITpParser<TpMotionOptio
     public const string Keyword = "RTCP";
 
     public new static Parser<TpMotionOption> GetParser()
-        => TpCommon.Keyword(Keyword).Return(new TpRemoteTcpOption());
+        => TpCommon.Keyword(Keyword).Return(new TpRemoteTcpOption()).WithPos();
 }
 
 public sealed record TpSkipJumpOption(TpLabel Label) : TpMotionOption, ITpParser<TpMotionOption>
@@ -289,10 +291,10 @@ public sealed record TpSkipJumpOption(TpLabel Label) : TpMotionOption, ITpParser
     public const string Keyword = "SkipJump";
 
     public new static Parser<TpMotionOption> GetParser()
-        => from keyword in TpCommon.Keyword(Keyword)
+        => (from keyword in TpCommon.Keyword(Keyword)
            from sep in TpCommon.Keyword(",")
            from label in TpLabel.GetParser()
-           select new TpSkipJumpOption(label);
+           select new TpSkipJumpOption(label)).WithPos();
 }
 
 public sealed record TpTimeBeforeOption(double Time, string Program) : TpMotionOption, ITpParser<TpMotionOption>
@@ -300,12 +302,12 @@ public sealed record TpTimeBeforeOption(double Time, string Program) : TpMotionO
     public const string Keyword = "TIME BEFORE";
 
     public new static Parser<TpMotionOption> GetParser()
-        => from keyword in TpCommon.Keyword(Keyword)
+        => (from keyword in TpCommon.Keyword(Keyword)
            from time in Parse.Decimal.Select(double.Parse)
            from sec in TpCommon.Keyword("sec,")
            from callToken in TpCommon.Keyword("CALL")
            from program in TpCommon.ProgramName
-           select new TpTimeBeforeOption(time, program);
+           select new TpTimeBeforeOption(time, program)).WithPos();
 }
 
 public sealed record TpTimeAfterOption(double Time, string Program) : TpMotionOption, ITpParser<TpMotionOption>
@@ -313,12 +315,12 @@ public sealed record TpTimeAfterOption(double Time, string Program) : TpMotionOp
     public const string Keyword = "TIME AFTER";
 
     public new static Parser<TpMotionOption> GetParser()
-        => from keyword in TpCommon.Keyword(Keyword)
+        => (from keyword in TpCommon.Keyword(Keyword)
            from time in Parse.Decimal.Select(double.Parse)
            from sec in TpCommon.Keyword("sec,")
            from callToken in TpCommon.Keyword("CALL")
            from program in Parse.LetterOrDigit.Or(Parse.Char('_')).AtLeastOnce().Text()
-           select new TpTimeAfterOption(time, program);
+           select new TpTimeAfterOption(time, program)).WithPos();
 }
 
 public sealed record TpDistanceBeforeOption(double Distance, string Program) : TpMotionOption, ITpParser<TpMotionOption>
@@ -326,22 +328,22 @@ public sealed record TpDistanceBeforeOption(double Distance, string Program) : T
     public const string Keyword = "DISTANCE BEFORE";
 
     public new static Parser<TpMotionOption> GetParser()
-        => from keyword in TpCommon.Keyword(Keyword)
+        => (from keyword in TpCommon.Keyword(Keyword)
            from time in Parse.Decimal.Select(double.Parse)
            from sec in TpCommon.Keyword("mm")
            from callToken in TpCommon.Keyword("CALL")
            from program in Parse.LetterOrDigit.Or(Parse.Char('_')).AtLeastOnce().Text()
-           select new TpDistanceBeforeOption(time, program);
+           select new TpDistanceBeforeOption(time, program)).WithPos();
 }
 
 
-public abstract record TpWeldOptionArguments : ITpParser<TpWeldOptionArguments>
+public abstract record TpWeldOptionArguments : WithPosition, ITpParser<TpWeldOptionArguments>
 {
     public static Parser<TpWeldOptionArguments> GetParser()
         => TpWeldOptionProcedures.GetParser()
             .Or(TpWeldOptionParameters.GetParser());
 }
-public abstract record TpWeldOptionArg : ITpParser<TpWeldOptionArg>
+public abstract record TpWeldOptionArg : WithPosition, ITpParser<TpWeldOptionArg>
 {
     public static Parser<TpWeldOptionArg> GetParser()
         => TpWeldOptionScheduleArg.GetParser()
@@ -352,36 +354,36 @@ public abstract record TpWeldOptionArg : ITpParser<TpWeldOptionArg>
 public sealed record TpWeldOptionScheduleArg(int ScheduleNumber) : TpWeldOptionArg, ITpParser<TpWeldOptionArg>
 {
     public new static Parser<TpWeldOptionArg> GetParser()
-        => Parse.Number.Select(num => new TpWeldOptionScheduleArg(int.Parse(num)));
+        => Parse.Number.Select(num => new TpWeldOptionScheduleArg(int.Parse(num))).WithPos();
 }
 
 public sealed record TpWeldOptionRegisterArg(TpRegister Register) : TpWeldOptionArg, ITpParser<TpWeldOptionArg>
 {
     public new static Parser<TpWeldOptionArg> GetParser()
-        => TpRegister.GetParser().Select(reg => new TpWeldOptionRegisterArg(reg));
+        => TpRegister.GetParser().Select(reg => new TpWeldOptionRegisterArg(reg)).WithPos();
 }
 
 public sealed record TpWeldOptionProcedures(TpWeldOptionArg Procedure, TpWeldOptionArg Schedule) : TpWeldOptionArguments, ITpParser<TpWeldOptionProcedures>
 {
     public new static Parser<TpWeldOptionProcedures> GetParser()
-        => from lbracket in Parse.Char('[')
+        => (from lbracket in Parse.Char('[')
            from procedure in TpWeldOptionArg.GetParser()
            from sep in Parse.Char(',')
            from schedule in TpWeldOptionArg.GetParser()
            from rbracket in Parse.Char(']')
-           select new TpWeldOptionProcedures(procedure, schedule);
+           select new TpWeldOptionProcedures(procedure, schedule)).WithPos();
 }
 
 public sealed record TpWeldOptionParameters(List<string> Parameters)
     : TpWeldOptionArguments, ITpParser<TpWeldOptionArguments>
 {
     public new static Parser<TpWeldOptionArguments> GetParser()
-        => from lbracket in Parse.Char('[')
+        => (from lbracket in Parse.Char('[')
            from arguments in
                Parse.LetterOrDigit.Or(Parse.Char('.')).AtLeastOnce().Text()
                    .DelimitedBy(Parse.Char(','))
            from rbracket in Parse.Char(']')
-           select new TpWeldOptionParameters(arguments.ToList());
+           select new TpWeldOptionParameters(arguments.ToList())).WithPos();
 
 }
 
@@ -391,11 +393,11 @@ public sealed record TpWeldOption(TpArcWeldingOptionType Type, TpWeldOptionArgum
     public const string Keyword = "Arc";
 
     public new static Parser<TpMotionOption> GetParser()
-        => from keyword in TpCommon.Keyword(Keyword)
+        => (from keyword in TpCommon.Keyword(Keyword)
            from type in TpArcWeldingOptionTypeParser.Parser
            from weldEquipment in Parse.Char('E').Then(_ => Parse.Number.Select(int.Parse)).Optional()
            from args in TpWeldOptionArguments.GetParser()
-           select new TpWeldOption(type, args, weldEquipment.GetOrElse(1));
+           select new TpWeldOption(type, args, weldEquipment.GetOrElse(1))).WithPos();
 }
 
 
@@ -404,9 +406,9 @@ public sealed record TpTorchAngleOption(TpPositionRegister? PositionRegister) : 
     public const string Keyword = "TA_REF";
 
     public new static Parser<TpMotionOption> GetParser()
-        => from keyword in TpCommon.Keyword(Keyword)
+        => (from keyword in TpCommon.Keyword(Keyword)
            from posReg in TpPositionRegister.GetParser().Optional()
-           select new TpTorchAngleOption(posReg.GetOrElse(null));
+           select new TpTorchAngleOption(posReg.GetOrElse(null))).WithPos();
 }
 
 public sealed record TpCoordMotionOption() : TpMotionOption, ITpParser<TpMotionOption>
@@ -414,19 +416,19 @@ public sealed record TpCoordMotionOption() : TpMotionOption, ITpParser<TpMotionO
     public const string Keyword = "COORD";
 
     public new static Parser<TpMotionOption> GetParser()
-        => TpCommon.Keyword(Keyword).Return(new TpCoordMotionOption());
+        => TpCommon.Keyword(Keyword).Return(new TpCoordMotionOption()).WithPos();
 }
 
 public sealed record TpExtendedVelocityOption(int Value, bool IsIndependent) : TpMotionOption, ITpParser<TpMotionOption>
 {
     public new static Parser<TpMotionOption> GetParser()
-        => from whitespace in Parse.WhiteSpace.Many()
+        => (from whitespace in Parse.WhiteSpace.Many()
            from isIndependent in TpCommon.Keyword("Ind.").Optional()
                .Select(opt => opt.IsDefined)
            from keyword in TpCommon.Keyword("EV")
            from value in Parse.Number.Select(int.Parse)
            from tail in Parse.Char('%')
-           select new TpExtendedVelocityOption(value, isIndependent);
+           select new TpExtendedVelocityOption(value, isIndependent)).WithPos();
 }
 
 public sealed record TpFaceplateLinearOption : TpMotionOption, ITpParser<TpMotionOption>
@@ -434,7 +436,7 @@ public sealed record TpFaceplateLinearOption : TpMotionOption, ITpParser<TpMotio
     public const string Keyword = "FPLIN";
 
     public new static Parser<TpMotionOption> GetParser()
-        => TpCommon.Keyword(Keyword).Return(new TpFaceplateLinearOption());
+        => TpCommon.Keyword(Keyword).Return(new TpFaceplateLinearOption()).WithPos();
 }
 
 
@@ -443,7 +445,7 @@ public sealed record TpIncrementalOption() : TpMotionOption, ITpParser<TpMotionO
     public const string Keyword = "INC";
 
     public new static Parser<TpMotionOption> GetParser()
-        => TpCommon.Keyword(Keyword).Return(new TpIncrementalOption());
+        => TpCommon.Keyword(Keyword).Return(new TpIncrementalOption()).WithPos();
 }
 
 public sealed record TpSkipOption(TpLabel Label, TpPosRegAssignmentInstruction? Assignment) : TpMotionOption, ITpParser<TpMotionOption>
@@ -451,13 +453,13 @@ public sealed record TpSkipOption(TpLabel Label, TpPosRegAssignmentInstruction? 
     public const string Keyword = "Skip";
 
     public new static Parser<TpMotionOption> GetParser()
-        => from keyword in TpCommon.Keyword(Keyword)
+        => (from keyword in TpCommon.Keyword(Keyword)
            from sep in TpCommon.Keyword(",")
            from label in TpLabel.GetParser()
            from assn in (from sep in TpCommon.Keyword(",")
                          from assign in TpPosRegAssignmentInstruction.GetParser()
                          select assign as TpPosRegAssignmentInstruction).Optional()
-           select new TpSkipOption(label, assn.GetOrElse(null));
+           select new TpSkipOption(label, assn.GetOrElse(null))).WithPos();
 }
 
 public sealed record TpMotionInstruction(
@@ -466,7 +468,7 @@ public sealed record TpMotionInstruction(
     TpMotionSpeed Speed,
     TpMotionTermination Termination,
     List<TpMotionOption> Options)
-: TpInstruction(0), ITpParser<TpMotionInstruction>
+: TpInstruction, ITpParser<TpMotionInstruction>
 {
     public new static Parser<TpMotionInstruction> GetParser()
         => from motionType in TpMotionTypeParser.Parser

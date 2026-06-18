@@ -2,7 +2,7 @@
 
 namespace TPLangParser.TPLang.Instructions;
 
-public abstract record TpAutoBackwardExitInstruction() : TpInstruction(0), ITpParser<TpAutoBackwardExitInstruction>
+public abstract record TpAutoBackwardExitInstruction() : TpInstruction, ITpParser<TpAutoBackwardExitInstruction>
 {
     protected static readonly Parser<string> LeadingKeyword
         = TpCommon.Keyword("Rec Path");

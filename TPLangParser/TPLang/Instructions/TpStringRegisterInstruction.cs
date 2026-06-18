@@ -2,7 +2,7 @@
 
 namespace TPLangParser.TPLang.Instructions;
 
-public record TpStringRegisterInstruction() : TpInstruction(0), ITpParser<TpStringRegisterInstruction>
+public record TpStringRegisterInstruction() : TpInstruction, ITpParser<TpStringRegisterInstruction>
 {
     protected static readonly Parser<TpValueRegister> StringRegisterArg
         = TpValueRegister.StringRegister

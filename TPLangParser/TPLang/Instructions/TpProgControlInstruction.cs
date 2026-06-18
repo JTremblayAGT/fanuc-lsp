@@ -2,7 +2,7 @@
 
 namespace TPLangParser.TPLang.Instructions;
 
-public record TpProgramControlInstruction() : TpInstruction(0), ITpParser<TpProgramControlInstruction>
+public record TpProgramControlInstruction() : TpInstruction, ITpParser<TpProgramControlInstruction>
 {
     public new static Parser<TpProgramControlInstruction> GetParser()
         => TpPauseInstruction.GetParser()

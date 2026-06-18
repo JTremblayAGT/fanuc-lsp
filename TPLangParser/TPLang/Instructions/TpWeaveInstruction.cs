@@ -42,7 +42,7 @@ public sealed record TpWeaveEndInstruction(TpWeldInstructionWeldSchedule? Schedu
                 schedule.IsDefined ? schedule.Get() as TpWeldInstructionWeldSchedule : null);
 }
 
-public record TpWeaveInstruction() : TpInstruction(0), ITpParser<TpInstruction>
+public record TpWeaveInstruction() : TpInstruction, ITpParser<TpInstruction>
 {
     public new static Parser<TpInstruction> GetParser()
         => TpWeaveStartInstruction.GetParser()

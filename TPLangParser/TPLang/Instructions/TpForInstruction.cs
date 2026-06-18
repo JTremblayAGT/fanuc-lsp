@@ -15,7 +15,7 @@ public struct TpForCountDirectionParser
             .Or(TpCommon.Keyword("DOWNTO").Return(TpForCountDirection.Down));
 }
 
-public record TpForInstruction() : TpInstruction(0), ITpParser<TpForInstruction>
+public record TpForInstruction() : TpInstruction, ITpParser<TpForInstruction>
 {
     public new static Parser<TpForInstruction> GetParser() 
         => TpBeginForInstruction.GetParser()

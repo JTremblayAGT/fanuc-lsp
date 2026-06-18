@@ -3,7 +3,7 @@ using Sprache;
 
 namespace TPLangParser.TPLang.Instructions;
 
-public record TpMiscInstruction() : TpInstruction(0), ITpParser<TpMiscInstruction>
+public record TpMiscInstruction() : TpInstruction, ITpParser<TpMiscInstruction>
 {
     public new static Parser<TpMiscInstruction> GetParser()
         => TpRsrInstruction.GetParser()

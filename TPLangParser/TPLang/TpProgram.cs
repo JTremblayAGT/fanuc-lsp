@@ -5,7 +5,7 @@ using TPLangParser.TPLang.SymbolTable;
 
 namespace TPLangParser.TPLang;
 
-public sealed record TpHeaderAttribute(string Name, string Value) : TpInstruction(0), ITpParser<TpHeaderAttribute>
+public sealed record TpHeaderAttribute(string Name, string Value) : TpInstruction, ITpParser<TpHeaderAttribute>
 {
     private static readonly Parser<TpHeaderAttribute> Inner =
         from key in TpCommon.Identifier
@@ -14,8 +14,7 @@ public sealed record TpHeaderAttribute(string Name, string Value) : TpInstructio
         select new TpHeaderAttribute(key, value);
 
     public new static Parser<TpHeaderAttribute> GetParser()
-        => from kvp in Inner.WithLineNumber()
-           select kvp.Value with { LineNumber = kvp.LineNumber };
+        => Inner.WithPos();
 }
 
 public sealed record TpProgramAttributes(Dictionary<string, TpHeaderAttribute> Attributes)
@@ -253,4 +252,24 @@ public sealed record TpProgram(TpProgramHeader Header, TpProgramMain Main, TpPro
            from positions in TpProgramPositions.GetParser().Optional()
            from endTag in TpCommon.Keyword("/END")
            select new TpProgram(header, main, positions.GetOrElse(new([])), new());
+
+    // Walks the program's positioned AST nodes and returns the innermost one
+    // whose [Start, End] range contains the position, or null if none do.
+    // Each node performs the recursive descent via WithPosition.GetNodeAt.
+    public WithPosition? GetNodeAt(TokenPosition position)
+    {
+        var roots = Header.Attributes.Attributes.Values
+            .Cast<WithPosition>()
+            .Concat(Main.Instructions);
+
+        foreach (var node in roots)
+        {
+            if (node.GetNodeAt(position) is { } match)
+            {
+                return match;
+            }
+        }
+
+        return null;
+    }
 }

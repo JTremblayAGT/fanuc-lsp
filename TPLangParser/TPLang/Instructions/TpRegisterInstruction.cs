@@ -2,7 +2,7 @@
 
 namespace TPLangParser.TPLang.Instructions;
 
-public record TpRegisterInstruction() : TpInstruction(0), ITpParser<TpRegisterInstruction>
+public record TpRegisterInstruction() : TpInstruction, ITpParser<TpRegisterInstruction>
 {
     public new static Parser<TpRegisterInstruction> GetParser() 
         => TpRegisterAssignment.GetParser();

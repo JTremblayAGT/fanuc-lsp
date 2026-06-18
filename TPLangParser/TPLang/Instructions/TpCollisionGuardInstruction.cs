@@ -2,7 +2,7 @@
 
 namespace TPLangParser.TPLang.Instructions;
 
-public abstract record TpCollisionGuardInstruction() : TpInstruction(0), ITpParser<TpCollisionGuardInstruction>
+public abstract record TpCollisionGuardInstruction() : TpInstruction, ITpParser<TpCollisionGuardInstruction>
 {
     public new static Parser<TpCollisionGuardInstruction> GetParser() 
         => TpCollisionDetectInstruction.GetParser();

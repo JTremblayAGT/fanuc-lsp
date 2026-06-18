@@ -2,7 +2,7 @@
 
 namespace TPLangParser.TPLang.Instructions;
 
-public record TpWaitInstruction() : TpInstruction(0), ITpParser<TpWaitInstruction>
+public record TpWaitInstruction() : TpInstruction, ITpParser<TpWaitInstruction>
 {
     // Mixed logic wait is implemented in the mixed logic instructions
     public new static Parser<TpWaitInstruction> GetParser() 

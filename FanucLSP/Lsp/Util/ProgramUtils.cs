@@ -41,6 +41,43 @@ internal static partial class ProgramUtils
         return string.Empty;
     }
 
+    public static string GetRegisterAt(string content, ContentPosition position)
+    {
+        var lines = content.Split('\n');
+        if (position.Line < 0 || position.Line >= lines.Length)
+        {
+            return string.Empty;
+        }
+
+        var line = lines[position.Line];
+        if (position.Character < 0 || position.Character >= line.Length)
+        {
+            return string.Empty;
+        }
+
+        // Find the start of the identifier
+        var start = position.Character;
+        while (start > 0 && IsRegisterChar(line[start - 1]))
+        {
+            start--;
+        }
+
+        // Find the end of the identifier
+        var end = position.Character;
+        while (end < line.Length && IsRegisterChar(line[end]))
+        {
+            end++;
+        }
+
+        // Extract the identifier
+        if (start < end && IsRegisterStart(line[start]))
+        {
+            return line.Substring(start, end - start);
+        }
+
+        return string.Empty;
+    }
+
     // Matches a Karel variable reference as written in a TP program:
     //   $[PROG]var            $[PROG].var          $[PROG]var.field
     //   $[PROG]arr[2].field   $[PROG]a.b[1].c
@@ -82,6 +119,9 @@ internal static partial class ProgramUtils
     private static bool IsIdentifierStart(char c) => char.IsLetter(c) || c == '_';
 
     private static bool IsIdentifierChar(char c) => char.IsLetterOrDigit(c) || c == '_';
+
+    private static bool IsRegisterStart(char c) => char.IsLetter(c);
+    private static bool IsRegisterChar(char c) => char.IsLetterOrDigit(c) || c == '[' || c == ']';
 
 }
 

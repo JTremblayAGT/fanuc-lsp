@@ -1,8 +1,9 @@
 ﻿using Sprache;
+using ParserUtils;
 
 namespace TPLangParser.TPLang.Instructions;
 
-public record TpPosRegInstruction() : TpInstruction(0), ITpParser<TpPosRegInstruction>
+public record TpPosRegInstruction() : TpInstruction, ITpParser<TpPosRegInstruction>
 {
     public new static Parser<TpPosRegInstruction> GetParser()
         => TpPosRegAssignmentInstruction.GetParser()
@@ -13,24 +14,24 @@ public record TpPosRegInstruction() : TpInstruction(0), ITpParser<TpPosRegInstru
 
 // Recursive grammar similar to mixed logic expressions
 public record TpPosRegExpression
-    : ITpParser<TpPosRegExpression>
+    : WithPosition, ITpParser<TpPosRegExpression>
 {
     private static readonly Parser<TpPosRegExpression> ExpressionRef = Parse.Ref(() => Expression);
 
-    private static readonly Parser<TpPosRegExpression> Value = 
-        TpValue.Position.Select(value => new TpPosRegValue(value));
+    private static readonly Parser<TpPosRegExpression> Value =
+        TpValue.Position.Select(value => new TpPosRegValue(value)).WithPos();
 
     private static readonly Parser<TpPosRegBinary> Addition =
-        from value in Value
+        (from value in Value
         from op in TpCommon.Keyword("+")
         from expr in ExpressionRef
-        select new TpPosRegAddition((TpPosRegValue)value, expr);
+        select new TpPosRegAddition((TpPosRegValue)value, expr)).WithPos();
 
     private static readonly Parser<TpPosRegBinary> Subtraction =
-        from value in Value
+        (from value in Value
         from op in TpCommon.Keyword("-")
         from expr in ExpressionRef
-        select new TpPosRegSubtraction((TpPosRegValue)value, expr);
+        select new TpPosRegSubtraction((TpPosRegValue)value, expr)).WithPos();
 
 
     private static readonly Parser<TpPosRegBinary> Binary =
@@ -57,10 +58,12 @@ public sealed record TpPosRegAssignmentInstruction(TpPositionRegister PosReg, Tp
     : TpPosRegInstruction, ITpParser<TpPosRegInstruction>
 {
     public new static Parser<TpPosRegInstruction> GetParser()
-        => from posReg in TpPositionRegister.GetParser()
+        // Also parsed nested inside a motion Skip option, where it bypasses the
+        // top-level instruction parser's .WithPos(), so position it here.
+        => (from posReg in TpPositionRegister.GetParser()
             from sep in TpCommon.Keyword("=")
             from expr in TpPosRegExpression.GetParser()
-            select new TpPosRegAssignmentInstruction(posReg, expr);
+            select new TpPosRegAssignmentInstruction(posReg, expr)).WithPos();
 }
 
 

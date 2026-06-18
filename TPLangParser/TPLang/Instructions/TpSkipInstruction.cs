@@ -2,7 +2,7 @@
 
 namespace TPLangParser.TPLang.Instructions;
 
-public record TpSkipInstruction() : TpInstruction(0), ITpParser<TpSkipInstruction>
+public record TpSkipInstruction() : TpInstruction, ITpParser<TpSkipInstruction>
 {
     public new static Parser<TpSkipInstruction> GetParser() 
         => TpSkipCondition.GetParser();

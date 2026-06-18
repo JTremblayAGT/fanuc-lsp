@@ -14,6 +14,7 @@ public enum KarelSymbolKind
 public class KarelSymbol
 {
     public string Name { get; }
+    // TODO: should perhaps also record the fully qualified name of the variable (without program name)
     public KarelSymbolKind Kind { get; }
     public TokenPosition DeclarationPosition { get; }
     public List<TokenPosition> ReferencePositions { get; }

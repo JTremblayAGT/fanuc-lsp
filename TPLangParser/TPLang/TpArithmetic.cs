@@ -1,48 +1,49 @@
-﻿using Sprache;
+﻿using ParserUtils;
+using Sprache;
 
 namespace TPLangParser.TPLang;
 // Recursive grammar similar to mixed logic expressions
 public record TpArithmeticExpression
-    : ITpParser<TpArithmeticExpression>
+    : WithPosition, ITpParser<TpArithmeticExpression>
 {
     private static readonly Parser<TpArithmeticExpression> Value
-        = TpValue.GetParser().Select(value => new TpArithmeticValue(value));
+        = TpValue.GetParser().Select(value => new TpArithmeticValue(value)).WithPos();
 
     private static readonly Parser<TpArithmeticBinary> Addition
-        = from value in Value
+        = (from value in Value
         from op in TpArithmeticOperatorParser.Plus
         from expr in Value.Or(Parse.Ref(() => BinaryAdd))
-        select new TpArithmeticAddition((TpArithmeticValue)value, expr);
+        select new TpArithmeticAddition((TpArithmeticValue)value, expr)).WithPos();
 
     private static readonly Parser<TpArithmeticBinary> Subtraction
-        = from value in Value
+        = (from value in Value
         from op in TpArithmeticOperatorParser.Minus
         from expr in Value.Or(Parse.Ref(() => BinaryAdd))
-        select new TpArithmeticSubtraction((TpArithmeticValue)value, expr);
+        select new TpArithmeticSubtraction((TpArithmeticValue)value, expr)).WithPos();
 
     private static readonly Parser<TpArithmeticBinary> Mult
-        = from value in Value
+        = (from value in Value
         from op in TpArithmeticOperatorParser.Times
         from expr in Value.Or(Parse.Ref(() => BinaryMult))
-        select new TpArithmeticMult((TpArithmeticValue)value, expr);
+        select new TpArithmeticMult((TpArithmeticValue)value, expr)).WithPos();
 
     private static readonly Parser<TpArithmeticBinary> Div
-        = from value in Value
+        = (from value in Value
         from op in TpArithmeticOperatorParser.Div
         from expr in Value.Or(Parse.Ref(() => BinaryMult))
-        select new TpArithmeticDiv((TpArithmeticValue)value, expr);
+        select new TpArithmeticDiv((TpArithmeticValue)value, expr)).WithPos();
 
     private static readonly Parser<TpArithmeticBinary> IntDiv
-        = from value in Value
+        = (from value in Value
         from op in TpArithmeticOperatorParser.IntDiv
         from expr in Value.Or(Parse.Ref(() => BinaryInt))
-        select new TpArithmeticIntDiv((TpArithmeticValue)value, expr);
+        select new TpArithmeticIntDiv((TpArithmeticValue)value, expr)).WithPos();
 
     private static readonly Parser<TpArithmeticBinary> Mod
-        = from value in Value
+        = (from value in Value
         from op in TpArithmeticOperatorParser.Mod
         from expr in Value.Or(Parse.Ref(() => BinaryInt))
-        select new TpArithmeticMod((TpArithmeticValue)value, expr);
+        select new TpArithmeticMod((TpArithmeticValue)value, expr)).WithPos();
 
 
     private static readonly Parser<TpArithmeticBinary> BinaryAdd
