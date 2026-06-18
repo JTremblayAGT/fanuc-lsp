@@ -9,7 +9,7 @@ internal sealed class TpLabelHoverProvider : IHoverProvider
 {
     public HoverResult? GetHoverResult(TpProgram program, ContentPosition position, LspServerState lspServerState)
     {
-        var instruction = program.Main.Instructions.Find(instr => instr.Start.Line - 1 == position.Line);
+        var instruction = program.Main.Instructions.Find(instr => instr.Start.Line == position.Line);
         if (instruction == null)
         {
             return null;

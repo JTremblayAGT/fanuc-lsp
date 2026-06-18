@@ -65,7 +65,7 @@ public sealed class LspServerState(string logFilePath)
     private static readonly List<IHoverProvider> TpHoverProviders =
     [
         new TpLabelHoverProvider(),
-        new CallHoverProvider(),
+        new TpCallHoverProvider(),
     ];
 
     private static readonly List<IKlHoverProvider> KlHoverProviders =
@@ -333,7 +333,7 @@ public sealed class LspServerState(string logFilePath)
         switch (documentState.Type)
         {
             case DocumentType.Karel:
-                var result = await Task.Run(() => KarelProgram.ProcessAndParse(document.Text));
+                var result = KarelProgram.ProcessAndParse(document.Text);
                 OpenedTextDocuments[document.Uri] = documentState with
                 {
                     Program = result.WasSuccessful

@@ -87,7 +87,7 @@ public class KarelSymbolTable
                 symbol.ReferencePositions.Add(refPosition);
             }
 
-            if (Parent?.GetSymbol(name, refPosition) is { } parentSym)
+            if (Parent?.GetSymbol(name) is { } parentSym)
             {
                 parentSym.ReferencePositions.Add(refPosition);
             }

@@ -9,7 +9,7 @@ internal sealed class TpLabelDefinitionProvider : ITpDefinitionProvider
 {
     public TextDocumentLocation? GetDefinitionLocation(TpProgram program, ContentPosition position, TextDocumentItem document, LspServerState state)
     {
-        var instruction = program.Main.Instructions.Find(instr => instr.Start.Line - 1 == position.Line);
+        var instruction = program.Main.Instructions.Find(instr => instr.Start.Line == position.Line);
         if (instruction == null)
         {
             return null;
@@ -21,9 +21,9 @@ internal sealed class TpLabelDefinitionProvider : ITpDefinitionProvider
         }
 
         // Neovim lines are 0-based
-        if (position.Line != lbl.Start.Line - 1
-            || !(lbl.Start.Column - 1 <= position.Character)
-            || !(lbl.End.Column - 1 >= position.Character))
+        if (position.Line != lbl.Start.Line
+            || !(lbl.Start.Column <= position.Character)
+            || !(lbl.End.Column >= position.Character))
         {
             return null;
         }
@@ -41,8 +41,8 @@ internal sealed class TpLabelDefinitionProvider : ITpDefinitionProvider
                 Uri = document.Uri,
                 Range = new()
                 {
-                    Start = new() { Line = target.Start.Line - 1, Character = target.Start.Column - 1 },
-                    End = new() { Line = target.End.Line - 1, Character = target.End.Column - 1 },
+                    Start = new() { Line = target.Start.Line, Character = target.Start.Column },
+                    End = new() { Line = target.End.Line, Character = target.End.Column },
                 }
             },
             _ => null

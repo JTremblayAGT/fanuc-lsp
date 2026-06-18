@@ -13,7 +13,7 @@ internal class TpProgramDefinitionProvider : ITpDefinitionProvider
         LspServerState state
     )
     {
-        var instr = program.Main.Instructions.Find(instr => instr.Start.Line - 1 == position.Line);
+        var instr = program.Main.Instructions.Find(instr => instr.Start.Line == position.Line);
         if (instr == null)
         {
             return null;

@@ -5,10 +5,10 @@ using TPLangParser.TPLang.Instructions;
 
 namespace FanucLsp.Lsp.Hover;
 
-internal sealed class CallHoverProvider : IHoverProvider
+internal sealed class TpCallHoverProvider : IHoverProvider
 {
     public HoverResult? GetHoverResult(TpProgram program, ContentPosition position, LspServerState serverState)
-        => program.Main.Instructions.FirstOrDefault(instr => instr.Start.Line == position.Line + 1) switch
+        => program.Main.Instructions.FirstOrDefault(instr => instr.Start.Line == position.Line) switch
         {
             TpCallInstruction callInstruction => callInstruction.CallMethod switch
             {
