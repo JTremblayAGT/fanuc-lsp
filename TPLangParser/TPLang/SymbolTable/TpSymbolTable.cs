@@ -59,27 +59,30 @@ public sealed class TpSymbol
 
 public sealed class TpSymbolTable
 {
+    private ReaderWriterLockSlim Lock { get; } = new();
+
     private readonly Dictionary<string, TpSymbol> _symbols = new();
 
     // Symbols are never declared in a TP program — they spring into existence
     // the first time they're read or written. Record the usage and create the
     // symbol on first sight.
     public void RecordUsage(string name, TpSymbolKind kind, TpSymbolRefKind refKind, TokenPosition position, object node)
-    {
-        var key = name.ToLowerInvariant();
-        if (!_symbols.TryGetValue(key, out var symbol))
-        {
-            symbol = new TpSymbol(name, kind, node);
-            _symbols[key] = symbol;
-        }
+        => LockedWrite(() => {
+            var key = name.ToLowerInvariant();
+            if (!_symbols.TryGetValue(key, out var symbol))
+            {
+                symbol = new TpSymbol(name, kind, node);
+                _symbols[key] = symbol;
+            }
 
-        symbol.Usages.Add(new TpSymbolReference { Position = position, Kind = refKind });
-    }
+            symbol.Usages.Add(new TpSymbolReference { Position = position, Kind = refKind });
+        });
 
     public TpSymbol? GetSymbol(string name)
-        => _symbols.GetValueOrDefault(name.ToLowerInvariant());
+        => LockedRead(() => _symbols.GetValueOrDefault(name.ToLowerInvariant()));
 
-    public IEnumerable<TpSymbol> GetAllSymbols() => _symbols.Values;
+    public IEnumerable<TpSymbol> GetAllSymbols()
+        => LockedRead(() => _symbols.Values);
 
     public List<TokenPosition> GetSymbolReferences(string name)
         => GetSymbol(name) switch
@@ -87,4 +90,40 @@ public sealed class TpSymbolTable
             { } symbol => symbol.Usages.Select(usage => usage.Position).ToList(),
             _ => []
         };
+
+    private void LockedWrite(Action func)
+    {
+        try
+        {
+            Lock.EnterWriteLock();
+            func();
+        }
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            Lock.ExitWriteLock();
+        }
+
+    }
+
+    private T LockedRead<T>(Func<T> func)
+    {
+        try
+        {
+            Lock.EnterReadLock();
+            return func();
+        }
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            Lock.ExitReadLock();
+        }
+    }
+
 }
