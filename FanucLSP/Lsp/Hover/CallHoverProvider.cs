@@ -8,7 +8,7 @@ namespace FanucLsp.Lsp.Hover;
 internal sealed class CallHoverProvider : IHoverProvider
 {
     public HoverResult? GetHoverResult(TpProgram program, ContentPosition position, LspServerState serverState)
-        => program.Main.Instructions.FirstOrDefault(instr => instr.LineNumber == position.Line + 1) switch
+        => program.Main.Instructions.FirstOrDefault(instr => instr.Start.Line == position.Line + 1) switch
         {
             TpCallInstruction callInstruction => callInstruction.CallMethod switch
             {

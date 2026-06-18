@@ -9,7 +9,7 @@ internal sealed class TpLabelDefinitionProvider : ITpDefinitionProvider
 {
     public TextDocumentLocation? GetDefinitionLocation(TpProgram program, ContentPosition position, TextDocumentItem document, LspServerState state)
     {
-        var instruction = program.Main.Instructions.Find(instr => instr.LineNumber - 1 == position.Line);
+        var instruction = program.Main.Instructions.Find(instr => instr.Start.Line - 1 == position.Line);
         if (instruction == null)
         {
             return null;
