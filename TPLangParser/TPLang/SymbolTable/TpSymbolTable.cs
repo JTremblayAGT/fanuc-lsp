@@ -16,7 +16,8 @@ public enum TpSymbolKind
     GroupIO,
     WeldIO,
     SysVar,
-    KarelVar
+    KarelVar,
+    Flag
 }
 
 public enum TpSymbolRefKind
@@ -75,7 +76,7 @@ public sealed class TpSymbolTable
     [
         TpSymbolKind.NumReg, TpSymbolKind.PosReg, TpSymbolKind.StrReg, TpSymbolKind.ArgReg,
         TpSymbolKind.DigitalIO, TpSymbolKind.RobotIO, TpSymbolKind.SopIO, TpSymbolKind.UopIO,
-        TpSymbolKind.AnalogIO, TpSymbolKind.GroupIO, TpSymbolKind.WeldIO
+        TpSymbolKind.AnalogIO, TpSymbolKind.GroupIO, TpSymbolKind.WeldIO, TpSymbolKind.Flag
     ];
 
     private static readonly TpSymbolKind[] NamedKinds =
@@ -139,6 +140,26 @@ public sealed class TpSymbolTable
             _ => null
         };
 
+    // Resolve a symbol directly from the AST node that references it, reusing the
+    // same classification the builder used when recording. The node must be one
+    // of the symbol-bearing kinds; an indirectly indexed register/port (R[R[2]])
+    // has no static identity and resolves to null. Pair with
+    // TpProgram.GetNodeAt<T> to go from a clicked position straight to its symbol.
+    public TpSymbol? GetSymbol(TpGenericRegister register)
+        => TryResolveKey(register, out var kind, out var index) ? GetIndexedSymbol(kind, index) : null;
+
+    public TpSymbol? GetSymbol(TpIOPort port)
+        => TryResolveKey(port, out var kind, out var index) ? GetIndexedSymbol(kind, index) : null;
+
+    public TpSymbol? GetSymbol(TpFlag flag)
+        => TryResolveKey(flag, out var index) ? GetIndexedSymbol(TpSymbolKind.Flag, index) : null;
+
+    public TpSymbol? GetSymbol(TpValueSystemVariable variable)
+        => GetNamedSymbol(TpSymbolKind.SysVar, variable.Variable);
+
+    public TpSymbol? GetSymbol(TpValueKarelVariable variable)
+        => GetNamedSymbol(TpSymbolKind.KarelVar, KarelVariableName(variable));
+
     public IEnumerable<TpSymbol> GetAllSymbols()
         => LockedRead(() => _indexed.Values.SelectMany(map => map.Values)
             .Concat(_named.Values.SelectMany(map => map.Values))
@@ -197,6 +218,96 @@ public sealed class TpSymbolTable
         return true;
     }
 
+    // Resolves a register node to its storage key. Returns false when the
+    // register has no static identity: a plain program position (P[n]) is not a
+    // register, and an indirectly indexed register (R[R[2]], PR[R[3]]) names a
+    // runtime-determined target. `kind` is always set; `index` only on success.
+    public static bool TryResolveKey(TpGenericRegister register, out TpSymbolKind kind, out TpSymbolIndex index)
+    {
+        kind = RegisterKind(register);
+        index = default;
+        if ((register is TpPosition && register is not TpPositionRegister)
+            || DirectIndex(register.Access) is not { } direct)
+        {
+            return false;
+        }
+
+        index = new TpSymbolIndex(direct.Number, direct.Group);
+        return true;
+    }
+
+    // Resolves an IO port node to its storage key. Returns false for an
+    // indirectly indexed port, which can't be resolved statically.
+    public static bool TryResolveKey(TpIOPort port, out TpSymbolKind kind, out TpSymbolIndex index)
+    {
+        kind = PortKind(port);
+        index = default;
+        if (DirectIndex(port.PortNumber) is not { } direct)
+        {
+            return false;
+        }
+
+        index = new TpSymbolIndex(direct.Number, direct.Group, port.Type);
+        return true;
+    }
+
+    // Resolves a flag node to its storage key. Flags have no motion group or
+    // direction, so only the literal index matters. Returns false for an
+    // indirectly indexed flag (F[R[2]]), which can't be resolved statically.
+    public static bool TryResolveKey(TpFlag flag, out TpSymbolIndex index)
+    {
+        index = default;
+        if (DirectIndex(flag.Access) is not { } direct)
+        {
+            return false;
+        }
+
+        index = new TpSymbolIndex(direct.Number, direct.Group);
+        return true;
+    }
+
+    private static TpSymbolKind RegisterKind(TpGenericRegister register)
+        => register switch
+        {
+            TpArgumentRegister => TpSymbolKind.ArgReg,
+            TpStringRegister => TpSymbolKind.StrReg,
+            TpPositionRegister => TpSymbolKind.PosReg,
+            _ => TpSymbolKind.NumReg
+        };
+
+    private static TpSymbolKind PortKind(TpIOPort port)
+        => port switch
+        {
+            TpDigitalIOPort => TpSymbolKind.DigitalIO,
+            TpRobotIOPort => TpSymbolKind.RobotIO,
+            TpSopIOPort => TpSymbolKind.SopIO,
+            TpUopIOPort => TpSymbolKind.UopIO,
+            TpAnalogIOPort => TpSymbolKind.AnalogIO,
+            TpGroupIOPort => TpSymbolKind.GroupIO,
+            TpWeldingIOPort => TpSymbolKind.WeldIO,
+            _ => TpSymbolKind.DigitalIO
+        };
+
+    // The numeric identity of a register/port, or null when it can't be resolved
+    // statically. A symbol is recorded only when its index is a literal (R[5],
+    // PR[1,2]); indirect indices (R[R[2]]) point at a runtime-determined target.
+    // Element accesses (PR[i,j]) are identified by their register number only, so
+    // PR[1] and PR[1,3] group together; the element index is walked separately.
+    // A motion group is only meaningful when explicitly given (GP1..GP5); the
+    // access parsers default an absent group to 0, which means "no group".
+    private static (int Number, int Group)? DirectIndex(TpAccess access)
+        => access switch
+        {
+            TpAccessDirect a => (a.Number, a.Group ?? 0),
+            TpAccessMultiple a when a.Number is TpValueIntegerConstant c => (c.Value, a.Group ?? 0),
+            _ => null
+        };
+
+    // Mirrors the source syntax ($[PROG]var.field) so all references to the
+    // same Karel variable group under one symbol.
+    public static string KarelVariableName(TpValueKarelVariable variable)
+        => $"$[{variable.Program}]{variable.Variable}";
+
     private static bool IsIoKind(TpSymbolKind kind)
         => kind is >= TpSymbolKind.DigitalIO and <= TpSymbolKind.WeldIO;
 
@@ -214,6 +325,7 @@ public sealed class TpSymbolTable
             TpSymbolKind.ArgReg => "AR",
             TpSymbolKind.StrReg => "SR",
             TpSymbolKind.PosReg => "PR",
+            TpSymbolKind.Flag => "F",
             _ => "R"
         };
 
@@ -239,6 +351,7 @@ public sealed class TpSymbolTable
             "AR" => (TpSymbolKind.ArgReg, direction),
             "SR" => (TpSymbolKind.StrReg, direction),
             "PR" => (TpSymbolKind.PosReg, direction),
+            "F" => (TpSymbolKind.Flag, direction),
             "DI" => (TpSymbolKind.DigitalIO, TpIOType.Input),
             "DO" => (TpSymbolKind.DigitalIO, TpIOType.Output),
             "RI" => (TpSymbolKind.RobotIO, TpIOType.Input),

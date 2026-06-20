@@ -121,7 +121,7 @@ internal static partial class ProgramUtils
     private static bool IsIdentifierChar(char c) => char.IsLetterOrDigit(c) || c == '_';
 
     private static bool IsRegisterStart(char c) => char.IsLetter(c);
-    private static bool IsRegisterChar(char c) => char.IsLetterOrDigit(c) || c == '[' || c == ']';
+    private static bool IsRegisterChar(char c) => IsIdentifierChar(c) || c == '[' || c == ']' || c == ':';
 
 }
 

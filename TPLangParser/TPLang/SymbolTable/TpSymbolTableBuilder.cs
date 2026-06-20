@@ -500,11 +500,11 @@ public static class TpSymbolTableBuilder
             case TpValueMathExpr v:
                 TraverseMathExpression(v.Expression, table);
                 break;
-            // Flags, timers and frames are not tracked symbols, but their
-            // (possibly indirect) index still references registers.
             case TpValueFlag v:
-                TraverseAccess(v.Flag.Access, table);
+                RecordFlag(v.Flag, refKind, table);
                 break;
+            // Timers and frames are not tracked symbols, but their (possibly
+            // indirect) index still references registers.
             case TpValueTimer v:
                 TraverseAccess(v.Access, table);
                 break;
@@ -518,7 +518,7 @@ public static class TpSymbolTableBuilder
                 table.RecordNamedUsage(TpSymbolKind.SysVar, v.Variable, refKind, v.Start, v);
                 break;
             case TpValueKarelVariable v:
-                table.RecordNamedUsage(TpSymbolKind.KarelVar, KarelVariableName(v), refKind, v.Start, v);
+                table.RecordNamedUsage(TpSymbolKind.KarelVar, TpSymbolTable.KarelVariableName(v), refKind, v.Start, v);
                 break;
             // Constants, IO states, strings, pulses, LPOS/JPOS and ERR_NUM
             // carry no register or IO port usage.
@@ -551,11 +551,9 @@ public static class TpSymbolTableBuilder
         // register (PR) is. An indirectly indexed register (R[R[2]], PR[R[3]])
         // can't be resolved to a concrete symbol statically, so the outer
         // register is not recorded — only its inner index register (a read) is.
-        if ((register is not TpPosition || register is TpPositionRegister)
-            && DirectIndex(register.Access) is { } index)
+        if (TpSymbolTable.TryResolveKey(register, out var kind, out var index))
         {
-            table.RecordIndexedUsage(RegisterKind(register),
-                new TpSymbolIndex(index.Number, index.Group), refKind, register.Start, register);
+            table.RecordIndexedUsage(kind, index, refKind, register.Start, register);
         }
 
         TraverseAccess(register.Access, table);
@@ -564,56 +562,23 @@ public static class TpSymbolTableBuilder
     private static void RecordPort(TpIOPort port, TpSymbolRefKind refKind, TpSymbolTable table)
     {
         // As with registers, an indirectly indexed port can't be resolved.
-        if (DirectIndex(port.PortNumber) is { } index)
+        if (TpSymbolTable.TryResolveKey(port, out var kind, out var index))
         {
-            table.RecordIndexedUsage(PortKind(port),
-                new TpSymbolIndex(index.Number, index.Group, port.Type), refKind, port.Start, port);
+            table.RecordIndexedUsage(kind, index, refKind, port.Start, port);
         }
 
         TraverseAccess(port.PortNumber, table);
     }
 
-    // The numeric identity of a register/port, or null when it can't be resolved
-    // statically. A symbol is recorded only when its index is a literal (R[5],
-    // PR[1,2]); indirect indices (R[R[2]]) point at a runtime-determined target.
-    // Element accesses (PR[i,j]) are identified by their register number only, so
-    // PR[1] and PR[1,3] group together; the element index is walked separately.
-    // A motion group is only meaningful when explicitly given (GP1..GP5); the
-    // access parsers default an absent group to 0, which means "no group".
-    private static (int Number, int Group)? DirectIndex(TpAccess access)
-        => access switch
+    private static void RecordFlag(TpFlag flag, TpSymbolRefKind refKind, TpSymbolTable table)
+    {
+        // As with registers, an indirectly indexed flag (F[R[2]]) can't be
+        // resolved to a concrete symbol — only its inner index register (a read).
+        if (TpSymbolTable.TryResolveKey(flag, out var index))
         {
-            TpAccessDirect a => (a.Number, a.Group ?? 0),
-            TpAccessMultiple a when a.Number is TpValueIntegerConstant c => (c.Value, a.Group ?? 0),
-            _ => null
-        };
+            table.RecordIndexedUsage(TpSymbolKind.Flag, index, refKind, flag.Start, flag);
+        }
 
-    // ---- Classification / naming -------------------------------------------
-
-    private static TpSymbolKind RegisterKind(TpGenericRegister register)
-        => register switch
-        {
-            TpArgumentRegister => TpSymbolKind.ArgReg,
-            TpStringRegister => TpSymbolKind.StrReg,
-            TpPositionRegister => TpSymbolKind.PosReg,
-            _ => TpSymbolKind.NumReg
-        };
-
-    private static TpSymbolKind PortKind(TpIOPort port)
-        => port switch
-        {
-            TpDigitalIOPort => TpSymbolKind.DigitalIO,
-            TpRobotIOPort => TpSymbolKind.RobotIO,
-            TpSopIOPort => TpSymbolKind.SopIO,
-            TpUopIOPort => TpSymbolKind.UopIO,
-            TpAnalogIOPort => TpSymbolKind.AnalogIO,
-            TpGroupIOPort => TpSymbolKind.GroupIO,
-            TpWeldingIOPort => TpSymbolKind.WeldIO,
-            _ => TpSymbolKind.DigitalIO
-        };
-
-    // Mirrors the source syntax ($[PROG]var.field) so all references to the
-    // same Karel variable group under one symbol.
-    private static string KarelVariableName(TpValueKarelVariable variable)
-        => $"$[{variable.Program}]{variable.Variable}";
+        TraverseAccess(flag.Access, table);
+    }
 }

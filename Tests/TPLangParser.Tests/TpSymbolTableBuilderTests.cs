@@ -121,6 +121,36 @@ public class TpSymbolTableBuilderTests
     }
 
     [Fact]
+    public void Flag_RecordsWriteTargetAndReadSource()
+    {
+        var table = BuildTable("F[1]=(F[2])");
+
+        Assert.Equal(TpSymbolRefKind.Write, SingleUsage(table, "F[1]").Kind);
+        Assert.Equal(TpSymbolKind.Flag, table.GetSymbol("F[1]")!.Kind);
+        Assert.Equal(TpSymbolRefKind.Read, SingleUsage(table, "F[2]").Kind);
+    }
+
+    [Fact]
+    public void Flag_ReadIntoRegister_IsRecorded()
+    {
+        var table = BuildTable("R[1]=F[3]");
+
+        Assert.Equal(TpSymbolKind.Flag, table.GetSymbol("F[3]")!.Kind);
+        Assert.Equal(TpSymbolRefKind.Read, SingleUsage(table, "F[3]").Kind);
+    }
+
+    [Fact]
+    public void IndirectFlag_RecordsOnlyTheInnerIndexRegister()
+    {
+        var table = BuildTable("R[1]=F[R[2]]");
+
+        // An indirectly indexed flag can't be resolved statically, so only its
+        // inner index register (always a read) is recorded.
+        Assert.Null(table.GetSymbol("F[R[2]]"));
+        Assert.Equal(TpSymbolRefKind.Read, SingleUsage(table, "R[2]").Kind);
+    }
+
+    [Fact]
     public void SystemVariable_ReadIntoRegister_IsRecorded()
     {
         var table = BuildTable("R[1]=$GROUP[1].$CURRENT_ANG[2]");

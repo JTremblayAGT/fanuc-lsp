@@ -256,7 +256,7 @@ public sealed record TpProgram(TpProgramHeader Header, TpProgramMain Main, TpPro
     // Walks the program's positioned AST nodes and returns the innermost one
     // whose [Start, End] range contains the position, or null if none do.
     // Each node performs the recursive descent via WithPosition.GetNodeAt.
-    public WithPosition? GetNodeAt(TokenPosition position)
+    public TNodeType? GetNodeAt<TNodeType>(TokenPosition position) where TNodeType : class
     {
         var roots = Header.Attributes.Attributes.Values
             .Cast<WithPosition>()
@@ -264,7 +264,7 @@ public sealed record TpProgram(TpProgramHeader Header, TpProgramMain Main, TpPro
 
         foreach (var node in roots)
         {
-            if (node.GetNodeAt(position) is { } match)
+            if (node.GetNodeAt<TNodeType>(position) is TNodeType match)
             {
                 return match;
             }

@@ -46,7 +46,7 @@ public abstract record WithPosition
     // Nodes the parser never assigned a position to (HasPosition == false) are
     // traversed transparently: they neither gate descent nor claim a match, so
     // their positioned children remain reachable.
-    public virtual WithPosition? GetNodeAt(TokenPosition position)
+    public virtual TNodeType? GetNodeAt<TNodeType>(TokenPosition position) where TNodeType : class
     {
         if (HasPosition && !Contains(position))
         {
@@ -55,13 +55,13 @@ public abstract record WithPosition
 
         foreach (var child in ChildNodes())
         {
-            if (child.GetNodeAt(position) is { } match)
+            if (child.GetNodeAt<TNodeType>(position) is TNodeType match)
             {
                 return match;
             }
         }
 
-        return HasPosition ? this : null;
+        return HasPosition && this is TNodeType node ? node : null;
     }
 
     // The immediate positioned children of this node, found by walking the
