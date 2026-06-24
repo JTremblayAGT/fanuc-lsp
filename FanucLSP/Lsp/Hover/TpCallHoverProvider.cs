@@ -62,8 +62,8 @@ internal sealed class TpCallHoverProvider : IHoverProvider
             },
             Range = new()
             {
-                Start = new() { Line = start.Line - 1, Character = start.Column - 1 },
-                End = new() { Line = end.Line - 1, Character = end.Column - 1 },
+                Start = new() { Line = start.Line, Character = start.Column },
+                End = new() { Line = end.Line, Character = end.Column },
             }
         };
     }

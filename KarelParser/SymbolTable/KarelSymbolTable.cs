@@ -100,7 +100,7 @@ public class KarelSymbolTable
                 symbol.ReferencePositions.Add(refPosition);
             }
 
-            if (Parent?.GetSymbol(name) is { } parentSym)
+            if (Parent?.GetTopLevelSymbol(name) is { } parentSym)
             {
                 parentSym.ReferencePositions.Add(refPosition);
             }
@@ -122,7 +122,7 @@ public class KarelSymbolTable
             }
         });
 
-    public KarelSymbol? GetSymbol(string name)
+    public KarelSymbol? GetTopLevelSymbol(string name)
         => LockedRead(() => _symbols.GetValueOrDefault(name.ToLower()));
 
     public KarelSymbol? GetSymbol(string name, TokenPosition position)
@@ -145,7 +145,7 @@ public class KarelSymbolTable
         });
 
     public List<TokenPosition> GetSymbolReferences(string name)
-        => GetSymbol(name) switch
+        => GetTopLevelSymbol(name) switch
         {
             { } symbol => symbol.ReferencePositions,
             _ => []

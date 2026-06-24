@@ -10,20 +10,20 @@ public sealed record TokenPosition(int Line, int Column)
 {
     public override string ToString()
         => $"L.{Line}:{Column}";
+
+    public static TokenPosition NullPos = new(-1,-1);
 }
 
 public abstract record WithPosition
 {
-    public TokenPosition Start = new(0, 0);
-    public TokenPosition End = new(0, 0);
+    public TokenPosition Start = TokenPosition.NullPos;
+    public TokenPosition End = TokenPosition.NullPos;
 
     private static readonly ConcurrentDictionary<Type, PropertyInfo[]> PropertyCache = new();
 
     // False when Start/End were never populated by the parser. A genuinely
-    // parsed node always has 1-based line numbers, so a (0,0)->(0,0) range
-    // means "no position info" rather than "spans the file origin".
     public bool HasPosition
-        => !(Start == new TokenPosition(0, 0) && End == new TokenPosition(0, 0));
+        => !(Start == TokenPosition.NullPos && End == TokenPosition.NullPos);
 
     // True when position falls within [Start, End] inclusive.
     public bool Contains(TokenPosition position)
@@ -177,7 +177,7 @@ public static class ParserExtensions
             {
                 return Result.Success<(TParsedType Value, TokenPosition Position)>
                 (
-                    (result.Value, new(input.Line, input.Column)),
+                    (result.Value, new(input.Line - 1, input.Column - 1)),
                     result.Remainder
                 );
             }
@@ -198,7 +198,7 @@ public static class ParserExtensions
             {
                 return Result.Success<(TParsedType Value, TokenPosition Position)>
                 (
-                    (result.Value, new(result.Remainder.Line, result.Remainder.Column)),
+                    (result.Value, new(result.Remainder.Line - 1, result.Remainder.Column - 1)),
                     result.Remainder
                 );
             }

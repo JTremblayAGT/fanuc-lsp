@@ -41,8 +41,8 @@ internal class TpProgramDefinitionProvider : ITpDefinitionProvider
         }
 
         if (
-            callByName.Start.Column - 1 > position.Character
-            || callByName.End.Column - 1 < position.Character
+            callByName.Start.Column > position.Character
+            || callByName.End.Column < position.Character
         )
         {
             return null;

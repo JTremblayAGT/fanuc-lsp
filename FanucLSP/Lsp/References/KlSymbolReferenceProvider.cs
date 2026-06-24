@@ -38,12 +38,12 @@ internal sealed class KlSymbolReferenceProvider : IKlReferenceProvider
     }
 
     private TokenPosition GetTokenPosition(ContentPosition position)
-        => new(position.Line + 1, position.Character + 1);
+        => new(position.Line, position.Character);
 
     private ContentRange GetContentRange(TokenPosition position)
         => new()
         {
-            Start = new ContentPosition { Line = position.Line - 1, Character = position.Column - 1 },
-            End = new ContentPosition { Line = position.Line - 1, Character = position.Column - 1 }
+            Start = new ContentPosition { Line = position.Line, Character = position.Column },
+            End = new ContentPosition { Line = position.Line, Character = position.Column }
         };
 }

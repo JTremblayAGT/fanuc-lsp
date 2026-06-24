@@ -35,7 +35,7 @@ internal sealed partial class TpKarelVarDefinitionProvider : ITpDefinitionProvid
             return null;
         }
 
-        return klProg.Program.SymTable.GetSymbol(ProgramUtils.GetTokenAt(document.Text, position))
+        return klProg.Program.SymTable.GetTopLevelSymbol(ProgramUtils.GetTokenAt(document.Text, position))
             ?.DeclarationPosition switch
         {
             { } declPos => new TextDocumentLocation
@@ -50,7 +50,7 @@ internal sealed partial class TpKarelVarDefinitionProvider : ITpDefinitionProvid
     private ContentRange GetContentRange(TokenPosition position)
         => new()
         {
-            Start = new ContentPosition { Line = position.Line - 1, Character = position.Column - 1 },
-            End = new ContentPosition { Line = position.Line - 1, Character = position.Column - 1 }
+            Start = new ContentPosition { Line = position.Line, Character = position.Column },
+            End = new ContentPosition { Line = position.Line, Character = position.Column }
         };
 }

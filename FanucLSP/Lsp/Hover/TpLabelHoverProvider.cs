@@ -33,12 +33,12 @@ internal sealed class TpLabelHoverProvider : IHoverProvider
                 Contents = new()
                 {
                     Kind = "plaintext",
-                    Value = $"{(target.LabelNumber as TpAccessDirect)!.Comment} (line {target.Start.Line})"
+                    Value = $"{(target.LabelNumber as TpAccessDirect)!.Comment} (line {target.Start.Line + 1})"
                 },
                 Range = new()
                 {
-                    Start = new() { Line = target.Start.Line - 1, Character = target.Start.Column - 1 },
-                    End = new() { Line = target.End.Line - 1, Character = target.End.Column - 1 },
+                    Start = new() { Line = target.Start.Line, Character = target.Start.Column },
+                    End = new() { Line = target.End.Line, Character = target.End.Column },
                 }
             },
             _ => null

@@ -22,7 +22,7 @@ internal sealed class KlExternalReferenceProvider : IKlReferenceProvider
         }
 
         // Don't check in routine scopes, only top-level variables can be referenced outside the program
-        if (program.SymTable.GetSymbol(token) is not { } symbol)
+        if (program.SymTable.GetTopLevelSymbol(token) is not { } symbol)
         {
             return [];
         }
@@ -35,7 +35,6 @@ internal sealed class KlExternalReferenceProvider : IKlReferenceProvider
             .ToArray();
     }
 
-    // TPP Program use same indexing as Nvim for some reason
     private ContentRange GetContentRange(TokenPosition position)
         => new()
         {

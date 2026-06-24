@@ -233,7 +233,10 @@ public sealed record TpProgram(TpProgramHeader Header, TpProgramMain Main, TpPro
             lines[i] = "  1:  ;"; // replace with noop -> semantically identical
         }
 
-        var processedBuffer = lines.Aggregate((acc, line) => acc + line + '\n');
+        // Join with '\n' so every source line keeps its original line number.
+        // (A seedless Aggregate would drop the newline before the second line,
+        // shifting every subsequent line up by one.)
+        var processedBuffer = string.Join('\n', lines);
         return GetParser().TryParse(processedBuffer) switch
         {
             { WasSuccessful: true } result => Result.Success(

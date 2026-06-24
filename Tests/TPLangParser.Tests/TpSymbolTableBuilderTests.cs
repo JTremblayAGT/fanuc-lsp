@@ -189,8 +189,8 @@ public class TpSymbolTableBuilderTests
         var table = BuildTable("R[1]=$ERROR");
 
         var usage = Assert.Single(table.GetSymbol("$ERROR")!.Usages);
-        // Line 1 is the program header; the single instruction is on line 4.
-        Assert.NotEqual(0, usage.Position.Line);
-        Assert.NotEqual(0, usage.Position.Column);
+        // Source lines: /PROG (0), /ATTR (1), /MN (2), instruction (3). The
+        // reported line must be the 0-based source line, i.e. 3.
+        Assert.Equal(3, usage.Position.Line);
     }
 }
