@@ -402,6 +402,9 @@ public static class KarelSymbolTableBuilder
             case KarelNotExpression n:
                 TraverseExpression(n.Expr, table);
                 break;
+            case KarelUnaryMinus m:
+                TraverseExpression(m.Expr, table);
+                break;
             case KarelInteger _:
             case KarelReal _:
             case KarelString _:

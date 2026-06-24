@@ -107,7 +107,8 @@ public class KarelCommon
                 ? input => Result.Failure<string>(input,
                     $"'{ident}' is a reserved keyword and cannot be used as an identifier.",
                     ["identifier"])
-                : Parse.Return(ident));
+                : Parse.Return(ident)).WithErrorContext("Identifier");
+
     public static Parser<string> Intrinsic
         => Parse.Identifier(Parse.Letter, Parse.LetterOrDigit.Or(Parse.Char('_')))
             .Token()
@@ -115,8 +116,7 @@ public class KarelCommon
                 ? Parse.Return(ident)
                 : input => Result.Failure<string>(input,
                     $"'{ident}' is not an intrinsic function",
-                    ["keyword"])
-                    );
+                    ["keyword"]));
 
     public static Parser<string> Reserved
         => Parse.Identifier(Parse.Letter, Parse.LetterOrDigit.Or(Parse.Char('_')))
@@ -125,14 +125,23 @@ public class KarelCommon
                 ? Parse.Return(ident)
                 : input => Result.Failure<string>(input,
                     $"'{ident}' is not a reserved keyword",
-                    ["keyword"])
-                    );
+                    ["keyword"]));
 
     public static Parser<string> LineBreak
         => Parse.LineEnd.Or(Keyword(";"));
 
     public static Parser<string> Keyword(string kw)
         => ParserUtils.ParserExtensions.Keyword(kw);
+
+    // A single '-' token (unary or binary minus), skipping surrounding
+    // whitespace like Keyword does, but refusing to match the '--' that starts a
+    // line comment. Without the lookahead the whitespace-skipping minus operator
+    // would reach across a line break and consume the leading '-' of a following
+    // '--' comment, parsing the comment text as an expression.
+    public static Parser<string> Minus
+        => (from dash in Parse.Char('-')
+            from _ in Parse.Not(Parse.Char('-'))
+            select "-").Token();
 }
 
 public enum KarelComparisonOperator
@@ -209,7 +218,7 @@ public struct KarelSumOperatorParser
 {
     public static Parser<KarelSumOperator> Parser()
         => KarelCommon.Keyword("+").Return(KarelSumOperator.Plus)
-            .Or(KarelCommon.Keyword("-").Return(KarelSumOperator.Minus))
+            .Or(KarelCommon.Minus.Return(KarelSumOperator.Minus))
             .Or(KarelCommon.Keyword("OR").Return(KarelSumOperator.Or));
 }
 

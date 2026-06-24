@@ -10,6 +10,6 @@ public sealed record KarelAssignment(KarelVariableAccess Variable, KarelExpressi
     public new static Parser<KarelStatement> GetParser()
         => from variable in KarelVariableAccess.GetParser().WithPos()
            from sep in KarelCommon.Keyword("=")
-           from expr in KarelExpression.GetParser()
+           from expr in KarelExpression.GetParser().WithPos()
            select new KarelAssignment(variable, expr);
 }

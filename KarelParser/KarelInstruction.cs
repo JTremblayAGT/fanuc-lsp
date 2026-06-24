@@ -9,45 +9,45 @@ namespace KarelParser;
 public abstract record KarelStatement : WithPosition, IKarelParser<KarelStatement>
 {
     public static Parser<KarelStatement> GetParser()
-        => KarelAssignment.GetParser()
-            .Or(KarelLabel.GetParser())
-            .Or(KarelCall.GetParser())
-            .Or(KarelAttach.GetParser())
-            .Or(KarelAbort.GetParser())
-            .Or(KarelCancel.GetParser())
-            .Or(KarelCancelFile.GetParser())
-            .Or(KarelCloseFile.GetParser())
-            .Or(KarelCloseHand.GetParser())
-            .Or(KarelCondition.GetParser())
-            .Or(KarelConnectTimer.GetParser())
-            .Or(KarelDelay.GetParser())
-            .Or(KarelDisable.GetParser())
-            .Or(KarelDisconnectTimer.GetParser())
-            .Or(KarelEnable.GetParser())
-            .Or(KarelFor.GetParser())
-            .Or(KarelGoto.GetParser())
-            .Or(KarelHold.GetParser())
-            .Or(KarelIfThenElse.GetParser())
-            .Or(KarelIfThen.GetParser())
-            .Or(KarelOpenFile.GetParser())
-            .Or(KarelOpenHand.GetParser())
-            .Or(KarelPause.GetParser())
-            .Or(KarelPulse.GetParser())
-            .Or(KarelPurge.GetParser())
-            .Or(KarelRead.GetParser())
-            .Or(KarelRelaxHand.GetParser())
-            .Or(KarelRelease.GetParser())
-            .Or(KarelRepeat.GetParser())
-            .Or(KarelResume.GetParser())
-            .Or(KarelReturn.GetParser())
-            .Or(KarelSelect.GetParser())
-            .Or(KarelSignal.GetParser())
-            .Or(KarelStop.GetParser())
-            .Or(KarelUnhold.GetParser())
-            .Or(KarelUsing.GetParser())
-            .Or(KarelWait.GetParser())
-            .Or(KarelWhile.GetParser())
-            .Or(KarelWrite.GetParser())
+        => KarelAssignment.GetParser().WithErrorContext("Assignment")
+            .Or(KarelLabel.GetParser().WithErrorContext("Label"))
+            .Or(KarelCall.GetParser().WithErrorContext("Call"))
+            .Or(KarelAttach.GetParser().WithErrorContext("Attach"))
+            .Or(KarelAbort.GetParser().WithErrorContext("Abort"))
+            .Or(KarelCancel.GetParser().WithErrorContext("Cancel"))
+            .Or(KarelCancelFile.GetParser().WithErrorContext("CancelFile"))
+            .Or(KarelCloseFile.GetParser().WithErrorContext("CloseFile"))
+            .Or(KarelCloseHand.GetParser().WithErrorContext("CloseHand"))
+            .Or(KarelCondition.GetParser().WithErrorContext("Condition"))
+            .Or(KarelConnectTimer.GetParser().WithErrorContext("ConnectTimer"))
+            .Or(KarelDelay.GetParser().WithErrorContext("Delay"))
+            .Or(KarelDisable.GetParser().WithErrorContext("Disable"))
+            .Or(KarelDisconnectTimer.GetParser().WithErrorContext("DisconnectTimer"))
+            .Or(KarelEnable.GetParser().WithErrorContext("Enable"))
+            .Or(KarelFor.GetParser().WithErrorContext("For"))
+            .Or(KarelGoto.GetParser().WithErrorContext("Goto"))
+            .Or(KarelHold.GetParser().WithErrorContext("Hold"))
+            .Or(KarelIfThenElse.GetParser().WithErrorContext("IfThenElse"))
+            .Or(KarelIfThen.GetParser().WithErrorContext("IfThen"))
+            .Or(KarelOpenFile.GetParser().WithErrorContext("OpenFile"))
+            .Or(KarelOpenHand.GetParser().WithErrorContext("OpenHand"))
+            .Or(KarelPause.GetParser().WithErrorContext("Pause"))
+            .Or(KarelPulse.GetParser().WithErrorContext("Pulse"))
+            .Or(KarelPurge.GetParser().WithErrorContext("Purge"))
+            .Or(KarelRead.GetParser().WithErrorContext("Read"))
+            .Or(KarelRelaxHand.GetParser().WithErrorContext("RelaxHand"))
+            .Or(KarelRelease.GetParser().WithErrorContext("Release"))
+            .Or(KarelRepeat.GetParser().WithErrorContext("Repeat"))
+            .Or(KarelResume.GetParser().WithErrorContext("Resume"))
+            .Or(KarelReturn.GetParser().WithErrorContext("Return"))
+            .Or(KarelSelect.GetParser().WithErrorContext("Select"))
+            .Or(KarelSignal.GetParser().WithErrorContext("Signal"))
+            .Or(KarelStop.GetParser().WithErrorContext("Stop"))
+            .Or(KarelUnhold.GetParser().WithErrorContext("Unhold"))
+            .Or(KarelUsing.GetParser().WithErrorContext("Using"))
+            .Or(KarelWait.GetParser().WithErrorContext("Wait"))
+            .Or(KarelWhile.GetParser().WithErrorContext("While"))
+            .Or(KarelWrite.GetParser().WithErrorContext("Write"))
             .IgnoreComments()
             .WithPos();
 
@@ -58,8 +58,8 @@ public abstract record KarelExpression : WithPosition, IKarelParser<KarelExpress
     public static readonly Parser<KarelExpression> ExprRef = Parse.Ref(() => Expression);
 
     private static readonly Parser<KarelExpression> Primary
-        = KarelFunctionCall.GetParser()
-            .Or(KarelValue.GetParser())
+        = KarelFunctionCall.GetParser().WithErrorContext("Call Expression")
+            .Or(KarelValue.GetParser().WithErrorContext("Value Expression"))
             .Or(ExprRef.BetweenParen());
 
     private static readonly Parser<KarelFactorExpression> Not
@@ -67,9 +67,18 @@ public abstract record KarelExpression : WithPosition, IKarelParser<KarelExpress
           from expr in Primary
           select new KarelNotExpression(expr);
 
+    // Unary minus on any primary (variable, call, parenthesised expression).
+    // Negative numeric literals are already handled inside KarelInteger/KarelReal,
+    // so this is tried after Primary to leave those AST shapes unchanged and only
+    // pick up the cases the literal parsers reject (e.g. -axis_pos).
+    private static readonly Parser<KarelFactorExpression> Negate
+        = from op in KarelCommon.Minus
+          from expr in Primary
+          select new KarelUnaryMinus(expr);
+
     private static readonly Parser<KarelExpression> FactorExpr =
         Parse.ChainOperator(KarelPositionOperatorParser.Parser(),
-            Not.Or(Primary),
+            Not.Or(Primary).Or(Negate),
             (op, left, right) => new KarelPositionBinary(
                 left, op, right));
 
@@ -124,6 +133,9 @@ public sealed record KarelProductBinary(
 public abstract record KarelFactorExpression : KarelExpression;
 
 public sealed record KarelNotExpression(KarelExpression Expr)
+    : KarelFactorExpression;
+
+public sealed record KarelUnaryMinus(KarelExpression Expr)
     : KarelFactorExpression;
 
 public sealed record KarelPositionBinary(

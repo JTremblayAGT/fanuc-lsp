@@ -8,12 +8,12 @@ public abstract record KarelVariableAccess : KarelValue, IKarelParser<KarelVaria
     public new static Parser<KarelVariableAccess> GetParser()
         => KarelIdentifier.GetParser()
             .Then(baseVar =>
-                Parse.Ref(() => FieldSuffix.Or(ArraySuffix).Or(PathSuffix))
+                Parse.Ref(() => FieldSuffix.WithErrorContext("FieldAccess")
+                    .Or(ArraySuffix.WithErrorContext("ArrayAccess"))
+                    .Or(PathSuffix.WithErrorContext("PathAccess")))
                 .Many()
-                .Select(suffixes =>
-                    suffixes.Aggregate(baseVar, (acc, suffix) => suffix(acc))
-                )
-            ).WithPos();
+                .Select(suffixes => suffixes.Aggregate(baseVar, (acc, suffix) => suffix(acc)))
+            ).WithPos().WithErrorContext("VariableAccess");
 
     private static readonly Parser<Func<KarelVariableAccess, KarelVariableAccess>> FieldSuffix =
         from dot in Parse.Char('.')
@@ -42,7 +42,7 @@ public sealed record KarelIdentifier(string Identifier) : KarelVariableAccess
 {
     public new static Parser<KarelVariableAccess> GetParser()
         => KarelCommon.Identifier.Select(ident =>
-            new KarelIdentifier(ident)).WithPos();
+            new KarelIdentifier(ident)).WithPos().WithErrorContext("KarelIdentifier");
 }
 
 public sealed record KarelFieldAccess(KarelVariableAccess Variable, string Field)
