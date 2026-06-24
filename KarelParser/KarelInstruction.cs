@@ -1,4 +1,6 @@
-﻿using ParserUtils;
+﻿using System.Globalization;
+
+using ParserUtils;
 using Sprache;
 using KarelParser.Instructions;
 
@@ -194,14 +196,24 @@ public sealed record KarelReal(float Value) : KarelValue, IKarelParser<KarelValu
     public override string ToString()
         => Value.ToString();
 
+    private static readonly Parser<string> Exponential =
+        from leading in Parse.Chars('-', '+').Optional()
+        from num in Parse.Decimal
+        from exp in Parse.Chars('e', 'E')
+        from expSign in Parse.Chars('-', '+').Optional()
+        from exponent in Parse.Number
+        select (leading.GetOrDefault() + num + exp + expSign.GetOrDefault() + exponent).Replace("\0", "");
+
+    private static readonly Parser<string> Decimal =
+        from leading in Parse.Chars('-', '+').Optional()
+        from num in Parse.Number
+        from dot in Parse.Char('.')
+        from frac in Parse.Number.Optional()
+        select (leading.GetOrDefault() + num + dot + frac.GetOrElse(string.Empty)).Replace("\0", "");
+
     public new static Parser<KarelValue> GetParser()
-        => from negated in KarelCommon.Keyword("-").Optional()
-           from num in Parse.Decimal.Select(float.Parse)
-           select new KarelReal(negated switch
-           {
-               { IsDefined: true } => -num,
-               _ => num
-           });
+        => from num in Exponential.Or(Decimal)
+           select new KarelReal(float.Parse(num, NumberStyles.Float));
 }
 
 public sealed record KarelBool(bool Value) : KarelValue, IKarelParser<KarelValue>
