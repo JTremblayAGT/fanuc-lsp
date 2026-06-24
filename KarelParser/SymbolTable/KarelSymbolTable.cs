@@ -11,9 +11,9 @@ public enum KarelSymbolKind
     Constant,
 }
 
-public class KarelSymbol
+public record KarelSymbol
 {
-    public string Name { get; }
+    public string Name { get; init; }
 
     // The dotted path that addresses this symbol from a program-level variable
     // (without the program name), e.g. "Var.Field1.Field2". This mirrors the way
@@ -21,11 +21,11 @@ public class KarelSymbol
     // key used to find a Karel symbol's references in TP files. For symbols that
     // aren't reached through a variable (types, routines, per-TYPE fields), it is
     // simply the symbol name.
-    public string FullName { get; }
-    public KarelSymbolKind Kind { get; }
-    public TokenPosition DeclarationPosition { get; }
-    public List<TokenPosition> ReferencePositions { get; }
-    public KarelUserType? Type { get; }
+    public string FullName { get; init; }
+    public KarelSymbolKind Kind { get; init; }
+    public TokenPosition DeclarationPosition { get; init; }
+    public List<TokenPosition> ReferencePositions { get; init; }
+    public KarelUserType? Type { get; init; }
 
     public KarelSymbol(string name, KarelSymbolKind kind, KarelUserType? type, TokenPosition declarationPosition)
         : this(name, name, kind, type, declarationPosition)
@@ -57,12 +57,6 @@ public class KarelSymbolTable
     public TokenPosition ScopeEnd { get; set; } = new(0,0);
 
     private readonly Dictionary<string, KarelSymbol> _symbols = new();
-
-    // Variables and their reachable struct fields, keyed by fully-qualified path
-    // ("var", "var.field1", "var.field1.field2"). This lives alongside the
-    // lexical _symbols table — it isn't scoped, because the paths it holds are
-    // exactly those addressable from another (TP) program as $[PROG]<path>.
-    private readonly Dictionary<string, KarelSymbol> _qualifiedSymbols = new();
 
     public KarelSymbolTable CreateRoutine(TokenPosition start, TokenPosition end)
     {
@@ -117,32 +111,22 @@ public class KarelSymbolTable
     public void AddQualifiedSymbol(string fullName, string name, KarelSymbolKind kind, KarelUserType? type, TokenPosition declarationPosition)
         => LockedWrite(() =>
         {
-            var key = fullName.ToLower();
-            if (!_qualifiedSymbols.ContainsKey(key))
+            var key = name.ToLower();
+            if (!_symbols.ContainsKey(key))
             {
-                _qualifiedSymbols[key] = new KarelSymbol(name, fullName, kind, type, declarationPosition);
+                _symbols[key] = new(name, fullName, kind, type, declarationPosition);
             }
-        });
-
-    public void AddReferenceByFullName(string fullName, TokenPosition refPosition)
-        => LockedWrite(() =>
-        {
-            if (_qualifiedSymbols.TryGetValue(fullName.ToLower(), out var symbol))
+            else
             {
-                symbol.ReferencePositions.Add(refPosition);
+                _symbols[key] = _symbols[key] with { FullName = fullName };
             }
         });
 
     public KarelSymbol? GetSymbol(string name)
         => LockedRead(() => _symbols.GetValueOrDefault(name.ToLower()));
 
-    // Resolves a symbol by its fully-qualified path ("Var.Field1.Field2"), used
-    // to match TP references of the form $[PROG]Var.Field1.Field2.
-    public KarelSymbol? GetSymbolByFullName(string fullName)
-        => LockedRead(() => _qualifiedSymbols.GetValueOrDefault(fullName.ToLower()));
-
     public KarelSymbol? GetSymbol(string name, TokenPosition position)
-        => LockedRead(() => {
+        => LockedRead<KarelSymbol?>(() => {
             var symName = name.ToLower();
             if (!IsPositionInScope(position))
             {
@@ -176,9 +160,6 @@ public class KarelSymbolTable
 
     public IEnumerable<KarelSymbol> GetAllSymbols()
         => LockedRead(() => _symbols.Values);
-
-    public IEnumerable<KarelSymbol> GetAllQualifiedSymbols()
-        => LockedRead(() => _qualifiedSymbols.Values);
 
     private bool IsPositionInScope(TokenPosition position)
         => position.Line >= ScopeStart.Line

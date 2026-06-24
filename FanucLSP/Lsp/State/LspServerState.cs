@@ -74,14 +74,15 @@ public sealed class LspServerState(string logFilePath)
         new KlSymbolHoverProvider()
     ];
 
-    private static readonly List<ITpReferenceProvider> tpReferencesProviders = 
+    private static readonly List<ITpReferenceProvider> tpReferencesProviders =
     [
         new TpSymbolReferenceProvider()
     ];
 
-    private static readonly List<IKlReferenceProvider> klReferencesProviders = 
+    private static readonly List<IKlReferenceProvider> klReferencesProviders =
     [
-        new KlSymbolReferenceProvider()
+        new KlSymbolReferenceProvider(),
+        new KlExternalReferenceProvider(),
     ];
 
     public bool Initialize()

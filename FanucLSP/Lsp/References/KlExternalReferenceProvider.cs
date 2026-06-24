@@ -35,10 +35,11 @@ internal sealed class KlExternalReferenceProvider : IKlReferenceProvider
             .ToArray();
     }
 
+    // TPP Program use same indexing as Nvim for some reason
     private ContentRange GetContentRange(TokenPosition position)
         => new()
         {
-            Start = new ContentPosition { Line = position.Line - 1, Character = position.Column - 1 },
-            End = new ContentPosition { Line = position.Line - 1, Character = position.Column - 1 }
+            Start = new ContentPosition { Line = position.Line, Character = position.Column },
+            End = new ContentPosition { Line = position.Line, Character = position.Column }
         };
 }
