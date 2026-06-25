@@ -122,7 +122,7 @@ public sealed record KarelIncludeDirective(string FileName)
 {
     public new static Parser<KarelTranslatorDirective> GetParser()
         => from kv in Directive("INCLUDE")
-           from fileName in KarelCommon.Identifier
+           from fileName in Parse.Identifier(Parse.Letter, Parse.LetterOrDigit.Or(Parse.Chars('.', '_')))
            select new KarelIncludeDirective(fileName);
 }
 

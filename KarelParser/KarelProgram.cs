@@ -32,7 +32,9 @@ public sealed record KarelProgram(
             .IgnoreComments()
         from translatorDirectives in KarelTranslatorDirective.GetParser().IgnoreComments().XMany()
         from declarations in KarelDeclaration.GetParser().IgnoreComments().XMany()
+        from translatorDirectives2 in KarelTranslatorDirective.GetParser().IgnoreComments().XMany()
         from routines in KarelRoutine.GetParser().IgnoreComments().XMany()
+        from translatorDirectives3 in KarelTranslatorDirective.GetParser().IgnoreComments().XMany()
         from begin in KarelCommon.Keyword("BEGIN").IgnoreComments()
         from statements in KarelCommon.ParseStatements(["END"]).WithErrorContext("BEGIN")
         from endName in KarelCommon
@@ -41,7 +43,7 @@ public sealed record KarelProgram(
             .IgnoreComments()
         select new KarelProgram(
             name,
-            translatorDirectives.ToList(),
+            translatorDirectives.Concat(translatorDirectives2).Concat(translatorDirectives3).ToList(),
             declarations.ToList(),
             routines.ToList(),
             statements.ToList()

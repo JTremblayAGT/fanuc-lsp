@@ -13,6 +13,9 @@ public enum KarelSymbolKind
 
 public record KarelSymbol
 {
+    // TODO: References to struct fields when through an array index access don't seem to be recorded
+    // TODO: Need to add textual inclusions or something for %include directives
+
     public string Name { get; init; }
 
     // The dotted path that addresses this symbol from a program-level variable
