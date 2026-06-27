@@ -43,8 +43,8 @@ public sealed record KarelProgram(
             statements.ToList()
         );
 
-    private static string ExpandIncludeDirectives(string source, string directory)
-        => string.Join("\n", source.Split(new string[] {"\r\n", "\r", "\n"}, StringSplitOptions.None).Select(ln => ln.Trim().Split(['\t', ' ']) switch
+    private static string ExpandIncludeDirectives(string[] lines, string directory)
+        => string.Join("\n", lines.Select(ln => ln.Trim().Split(['\t', ' '], StringSplitOptions.RemoveEmptyEntries) switch
         {
             ["%INCLUDE" or "%include", var file] => $"%INCLUDE {Path.Join(directory, file)}.kl",
             _ => ln
@@ -62,15 +62,14 @@ public sealed record KarelProgram(
         }
 
         var input = File.ReadAllText(path);
-        var lines = input.Split(['\n', '\r']).Select(line => line.Trim()).ToList();
+        var lines = input.Split(new[] {"\r\n", "\r", "\n"}, StringSplitOptions.None).Select(line => line.Trim()).ToArray();
         var headerCommentLines = lines
             .Where(line => !line.StartsWith("%") && !line.StartsWith("PROGRAM"))
             .TakeWhile(line => line.StartsWith("--") || string.IsNullOrWhiteSpace(line))
             .Where(line => !string.IsNullOrWhiteSpace(line))
             .ToList();
 
-        // TODO: clean up this bit a little
-        return GetParser().WithErrorContext("PROGRAM").TryParse(ExpandIncludeDirectives(input, directory)) switch
+        return GetParser().WithErrorContext("PROGRAM").TryParse(ExpandIncludeDirectives(lines, directory)) switch
         {
             { WasSuccessful: true } result => Result.Success(
                 result.Value with
@@ -78,7 +77,7 @@ public sealed record KarelProgram(
                     Uri = uri,
                     LocalPath = path,
                     HeaderComment = headerCommentLines.Any()
-                        ? headerCommentLines.Aggregate((acc, line) => acc + "\r\n" + line)
+                        ? string.Join("\n", headerCommentLines)
                         : string.Empty,
                     SymTable = KarelSymbolTableBuilder.Build(result.Value with { Uri = uri })
                 },
