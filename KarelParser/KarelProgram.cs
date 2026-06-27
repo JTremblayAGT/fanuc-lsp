@@ -5,14 +5,6 @@ using ParserUtils;
 
 namespace KarelParser;
 
-/*
- * TODO:
- * Translator directives:
- *
- * The translator directives should probably be parsed (and then removed or ignored)
- * In a first pass to avoid conflicting with the rest of the program for parsing
- */
-
 public sealed record KarelProgram(
     string Name,
     List<KarelTranslatorDirective> TranslatorDirectives,
@@ -23,7 +15,9 @@ public sealed record KarelProgram(
 {
     public KarelSymbolTable SymTable { get; init; } = new();
 
-    public string HeaderComment = string.Empty;
+    public string Uri { get; init; } = string.Empty;
+    public string LocalPath { get; init; } = string.Empty;
+    public string HeaderComment { get; init; } = string.Empty;
 
     private static readonly Parser<KarelProgram> InternalParser =
         from name in KarelCommon
@@ -49,23 +43,38 @@ public sealed record KarelProgram(
             statements.ToList()
         );
 
+    private static string ExpandIncludeDirectives(string source, string directory)
+        => string.Join("\n", source.Split(new string[] {"\r\n", "\r", "\n"}, StringSplitOptions.None).Select(ln => ln.Trim().Split(['\t', ' ']) switch
+        {
+            ["%INCLUDE" or "%include", var file] => $"%INCLUDE {Path.Join(directory, file)}.kl",
+            _ => ln
+        }));
+
     public static Parser<KarelProgram> GetParser() => InternalParser.WithPos();
 
-    public static IResult<KarelProgram> ProcessAndParse(string input)
+    public static IResult<KarelProgram> ProcessAndParse(string uri)
     {
-        var lines = input.Split(['\n', '\r']).Select(line => line.Trim()).ToList();
+        var path = new Uri(uri).LocalPath;
+        if (Path.GetDirectoryName(path) is not {} directory)
+        {
+            return Result.Failure<KarelProgram>(null, $"Could not extract directory from {path}", []);
+        }
 
+        var input = File.ReadAllText(path);
+        var lines = input.Split(['\n', '\r']).Select(line => line.Trim()).ToList();
         var headerCommentLines = lines
             .Where(line => !line.StartsWith("%") && !line.StartsWith("PROGRAM"))
             .TakeWhile(line => line.StartsWith("--") || string.IsNullOrWhiteSpace(line))
             .Where(line => !string.IsNullOrWhiteSpace(line))
             .ToList();
 
-        return GetParser().WithErrorContext("PROGRAM").TryParse(input) switch
+        return GetParser().WithErrorContext("PROGRAM").TryParse(ExpandIncludeDirectives(input, directory)) switch
         {
             { WasSuccessful: true } result => Result.Success(
                 result.Value with
                 {
+                    Uri = uri,
+                    LocalPath = path,
                     HeaderComment = headerCommentLines.Any()
                         ? headerCommentLines.Aggregate((acc, line) => acc + "\r\n" + line)
                         : string.Empty,

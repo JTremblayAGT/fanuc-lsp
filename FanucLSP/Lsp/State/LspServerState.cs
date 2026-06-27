@@ -331,13 +331,14 @@ public sealed class LspServerState(string logFilePath)
     }
 
     private async Task<IResult<KarelProgram>> UpdateParsedKlProgram(TextDocumentState documentState)
-    {
-        var document = documentState.TextDocument;
-
-        switch (documentState.Type)
+        => await Task.Run(() =>
         {
+            var document = documentState.TextDocument;
+
+            switch (documentState.Type)
+            {
             case DocumentType.Karel:
-                var result = KarelProgram.ProcessAndParse(document.Text);
+                var result = KarelProgram.ProcessAndParse(document.Uri);
                 OpenedTextDocuments[document.Uri] = documentState with
                 {
                     Program = result.WasSuccessful
@@ -345,10 +346,11 @@ public sealed class LspServerState(string logFilePath)
                         : documentState.Program,
                 };
                 return result;
+            case DocumentType.Tp:
             default:
                 throw new InvalidOperationException($"Not a Karel program");
-        }
-    }
+            }
+        }).ConfigureAwait(false);
 
     /// <summary>
     /// Converts a line and character position to an offset in the text
@@ -499,7 +501,7 @@ public sealed class LspServerState(string logFilePath)
                             },
                             new(),
                             DocumentType.Karel,
-                            KarelValueOr(KarelProgram.ProcessAndParse(text))
+                            KarelValueOr(KarelProgram.ProcessAndParse(path))
                         )
                     );
                 }

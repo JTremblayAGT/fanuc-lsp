@@ -9,7 +9,7 @@ public class KarelParserIntegrationTests
     public void Parse_AllValidPrograms_ShouldSucceed(string filePath)
     {
         var buffer = File.ReadAllText(filePath, Encoding.ASCII);
-        var result = KarelProgram.ProcessAndParse(buffer);
+        var result = KarelProgram.ProcessAndParse(filePath);
         if (result.WasSuccessful)
         {
             return;

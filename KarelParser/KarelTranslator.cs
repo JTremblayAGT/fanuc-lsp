@@ -117,13 +117,40 @@ public sealed record KarelEnvironmentDirective(string FileName)
            select new KarelEnvironmentDirective(fileName);
 }
 
-public sealed record KarelIncludeDirective(string FileName)
+public sealed record KarelIncludeDirective(string FileName, string Uri, List<KarelDeclaration> Declarations, List<KarelRoutine> Routines)
     : KarelTranslatorDirective, IKarelParser<KarelTranslatorDirective>
 {
+    // TODO: Include directives bring over declarations from another file
+    // TODO: When parsing an include directive, parse declarations and store in the directive's AST node
+    // TODO: Will also need other metadata on the included file such as its URI
+    // TODO: We currently don't have any context of the current file's URI, dir, etc. to locate the other one though
+    // TODO: We will also have to treat positions with respect to the original file, not the current file, though starting a new parser with new input would do it
+    // TODO: This also means the symbol table will have to store URIs with the symbols to properly determine source
+
+    private static Parser<(List<KarelDeclaration>, List<KarelRoutine>)> IncludedFileParser(string programUri)
+    {
+        if (!File.Exists(programUri))
+        {
+            return input => Result.Failure<(List<KarelDeclaration>, List<KarelRoutine>)>(input, $"File {programUri} does not exist.", []);
+        }
+
+        var includedSource = File.ReadAllText(programUri);
+        var parser = from declarations in KarelDeclaration.GetParser().IgnoreComments().Many()
+                    from routines in KarelRoutine.GetParser().IgnoreComments().Many()
+                    select (declarations.ToList(), routines.ToList());
+        return input => parser.TryParse(includedSource) switch
+        {
+            { WasSuccessful: true } res => Result.Success(res.Value, input),
+            { WasSuccessful: false }  res => Result.Failure<(List<KarelDeclaration>, List<KarelRoutine>)>(input, res.Message, res.Expectations)
+        };
+    }
+
     public new static Parser<KarelTranslatorDirective> GetParser()
         => from kv in Directive("INCLUDE")
-           from fileName in Parse.Identifier(Parse.Letter, Parse.LetterOrDigit.Or(Parse.Chars('.', '_')))
-           select new KarelIncludeDirective(fileName);
+           from fileUri in Parse.CharExcept(['\r', '\n', ';']).Until(KarelCommon.LineBreak).Text()
+           from inner in IncludedFileParser(fileUri).WithErrorContext("INCLUDE")
+           select new KarelIncludeDirective(Path.GetFileNameWithoutExtension(fileUri), fileUri, inner.Item1, inner.Item2);
+
 }
 
 public sealed record KarelLockGroupDirective(List<KarelInteger> LockedGroups)
