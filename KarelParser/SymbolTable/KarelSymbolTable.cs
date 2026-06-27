@@ -11,6 +11,8 @@ public enum KarelSymbolKind
     Constant,
 }
 
+public record ProgramPosition(TokenPosition Position, Uri ProgramUri);
+
 public record KarelSymbol
 {
     // TODO: References to struct fields when through an array index access don't seem to be recorded
@@ -26,22 +28,22 @@ public record KarelSymbol
     // simply the symbol name.
     public string FullName { get; init; }
     public KarelSymbolKind Kind { get; init; }
-    public TokenPosition DeclarationPosition { get; init; }
-    public List<TokenPosition> ReferencePositions { get; init; }
+    public ProgramPosition DeclarationPosition { get; init; }
+    public List<ProgramPosition> ReferencePositions { get; init; }
     public KarelUserType? Type { get; init; }
 
-    public KarelSymbol(string name, KarelSymbolKind kind, KarelUserType? type, TokenPosition declarationPosition)
-        : this(name, name, kind, type, declarationPosition)
+    public KarelSymbol(string name, Uri uri, KarelSymbolKind kind, KarelUserType? type, TokenPosition declarationPosition)
+        : this(name, name, uri, kind, type, declarationPosition)
     {
     }
 
-    public KarelSymbol(string name, string fullName, KarelSymbolKind kind, KarelUserType? type, TokenPosition declarationPosition)
+    public KarelSymbol(string name, string fullName, Uri uri, KarelSymbolKind kind, KarelUserType? type, TokenPosition declarationPosition)
     {
         Name = name;
         FullName = fullName;
         Kind = kind;
         Type = type;
-        DeclarationPosition = declarationPosition;
+        DeclarationPosition = new ProgramPosition(declarationPosition, uri);
         ReferencePositions = new();
     }
 }
@@ -52,16 +54,16 @@ public class KarelSymbolTable
     private ReaderWriterLockSlim Lock { get; } = new();
 
     private KarelSymbolTable? Parent { get; set; } = null;
-    //
     // There should never be more than one level of children realistically
     private List<KarelSymbolTable> Routines { get; set;} = [];
 
+    public Uri? ProgramUri { get; init; }
     public TokenPosition ScopeStart { get; set; } = new(0,0);
     public TokenPosition ScopeEnd { get; set; } = new(0,0);
 
     private readonly Dictionary<string, KarelSymbol> _symbols = new();
 
-    public KarelSymbolTable CreateRoutine(TokenPosition start, TokenPosition end)
+    public KarelSymbolTable CreateRoutine(TokenPosition start, TokenPosition end, Uri programUri)
     {
         if (!(IsPositionInScope(start) && (IsPositionInScope(end))))
         {
@@ -70,6 +72,7 @@ public class KarelSymbolTable
         var childTbl = new KarelSymbolTable
         {
             Parent = this,
+            ProgramUri = programUri,
             ScopeStart = start,
             ScopeEnd = end,
         };
@@ -78,46 +81,46 @@ public class KarelSymbolTable
         return childTbl;
     }
 
-    public void AddSymbol(string name, KarelSymbolKind kind, TokenPosition declarationPosition)
+    public void AddSymbol(string name, Uri uri, KarelSymbolKind kind, TokenPosition declarationPosition)
         => LockedWrite(() => {
             var symName = name.ToLower();
             if (!_symbols.ContainsKey(symName))
             {
-                _symbols[symName] = new KarelSymbol(symName, kind, null, declarationPosition);
+                _symbols[symName] = new KarelSymbol(symName, uri, kind, null, declarationPosition);
             }
         });
 
-    public void AddSymbol(string name, KarelSymbolKind kind, KarelUserType? type, TokenPosition declarationPosition)
+    public void AddSymbol(string name, Uri uri, KarelSymbolKind kind, KarelUserType? type, TokenPosition declarationPosition)
         => LockedWrite(() => {
             var symName = name.ToLower();
             if (!_symbols.ContainsKey(symName))
             {
-                _symbols[symName] = new KarelSymbol(symName, kind, type, declarationPosition);
+                _symbols[symName] = new KarelSymbol(symName, uri, kind, type, declarationPosition);
             }
         });
 
-    public void AddReference(string name, TokenPosition refPosition)
+    public void AddReference(string name, TokenPosition refPosition, Uri programUri)
         => LockedWrite(() => {
             if (_symbols.TryGetValue(name.ToLower(), out var symbol))
             {
-                symbol.ReferencePositions.Add(refPosition);
+                symbol.ReferencePositions.Add(new (refPosition, programUri));
             }
 
             if (Parent?.GetTopLevelSymbol(name) is { } parentSym)
             {
-                parentSym.ReferencePositions.Add(refPosition);
+                parentSym.ReferencePositions.Add(new (refPosition, programUri));
             }
         });
 
     // Registers a variable or one of its reachable struct fields under its
     // fully-qualified path. First registration wins, mirroring AddSymbol.
-    public void AddQualifiedSymbol(string fullName, string name, KarelSymbolKind kind, KarelUserType? type, TokenPosition declarationPosition)
+    public void AddQualifiedSymbol(string fullName, string name, Uri uri, KarelSymbolKind kind, KarelUserType? type, TokenPosition declarationPosition)
         => LockedWrite(() =>
         {
             var key = name.ToLower();
             if (!_symbols.ContainsKey(key))
             {
-                _symbols[key] = new(name, fullName, kind, type, declarationPosition);
+                _symbols[key] = new(name, fullName, uri, kind, type, declarationPosition);
             }
             else
             {
@@ -147,14 +150,14 @@ public class KarelSymbolTable
             return _symbols.GetValueOrDefault(symName);
         });
 
-    public List<TokenPosition> GetSymbolReferences(string name)
+    public List<ProgramPosition> GetSymbolReferences(string name)
         => GetTopLevelSymbol(name) switch
         {
             { } symbol => symbol.ReferencePositions,
             _ => []
         };
 
-    public List<TokenPosition> GetSymbolReferences(string name, TokenPosition position)
+    public List<ProgramPosition> GetSymbolReferences(string name, TokenPosition position)
         => GetSymbol(name, position) switch
         {
             { } symbol => symbol.ReferencePositions,

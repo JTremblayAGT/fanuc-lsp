@@ -15,7 +15,7 @@ public sealed record KarelProgram(
 {
     public KarelSymbolTable SymTable { get; init; } = new();
 
-    public string Uri { get; init; } = string.Empty;
+    public Uri? Uri { get; init; }
     public string LocalPath { get; init; } = string.Empty;
     public string HeaderComment { get; init; } = string.Empty;
 
@@ -52,9 +52,10 @@ public sealed record KarelProgram(
 
     public static Parser<KarelProgram> GetParser() => InternalParser.WithPos();
 
-    public static IResult<KarelProgram> ProcessAndParse(string uri)
+    public static IResult<KarelProgram> ProcessAndParse(string uriStr)
     {
-        var path = new Uri(uri).LocalPath;
+        var uri = new Uri(uriStr);
+        var path = uri.LocalPath;
         if (Path.GetDirectoryName(path) is not {} directory)
         {
             return Result.Failure<KarelProgram>(null, $"Could not extract directory from {path}", []);
@@ -68,6 +69,7 @@ public sealed record KarelProgram(
             .Where(line => !string.IsNullOrWhiteSpace(line))
             .ToList();
 
+        // TODO: clean up this bit a little
         return GetParser().WithErrorContext("PROGRAM").TryParse(ExpandIncludeDirectives(input, directory)) switch
         {
             { WasSuccessful: true } result => Result.Success(
@@ -78,7 +80,7 @@ public sealed record KarelProgram(
                     HeaderComment = headerCommentLines.Any()
                         ? headerCommentLines.Aggregate((acc, line) => acc + "\r\n" + line)
                         : string.Empty,
-                    SymTable = KarelSymbolTableBuilder.Build(result.Value)
+                    SymTable = KarelSymbolTableBuilder.Build(result.Value with { Uri = uri })
                 },
                 result.Remainder
             ),

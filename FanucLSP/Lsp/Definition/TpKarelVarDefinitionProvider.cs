@@ -1,5 +1,3 @@
-using System.Text.RegularExpressions;
-
 using FanucLsp.Lsp.State;
 using FanucLsp.Lsp.Util;
 using ParserUtils;
@@ -40,8 +38,8 @@ internal sealed partial class TpKarelVarDefinitionProvider : ITpDefinitionProvid
         {
             { } declPos => new TextDocumentLocation
             {
-                Uri = docState.TextDocument.Uri,
-                Range = GetContentRange(declPos)
+                Uri = declPos.ProgramUri.ToString(),
+                Range = GetContentRange(declPos.Position)
             },
             _ => null
         };

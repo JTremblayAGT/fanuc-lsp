@@ -22,10 +22,10 @@ LogMessage(logFilePath, $"Server started at {DateTime.Now}");
 // TODO: Make the server connect to the robot defined in some config file in project root
 var server = new LspServer(logFilePath);
 
-while (!Debugger.IsAttached)
-{
-    Thread.Sleep(1000);
-}
+//while (!Debugger.IsAttached)
+//{
+//    Thread.Sleep(1000);
+//}
 
 while (true)
 {

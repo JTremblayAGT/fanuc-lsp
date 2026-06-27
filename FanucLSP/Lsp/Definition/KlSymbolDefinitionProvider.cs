@@ -19,8 +19,8 @@ internal class KlSymbolDefinitionProvider : IKlDefinitionProvider
             {
                 { } symbol => new TextDocumentLocation
                 {
-                    Uri = document.Uri,
-                    Range = GetContentRange(symbol.DeclarationPosition)
+                    Uri = symbol.DeclarationPosition.ProgramUri.ToString(),
+                    Range = GetContentRange(symbol.DeclarationPosition.Position)
                 },
                 _ => null
             },

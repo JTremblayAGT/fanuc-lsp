@@ -117,16 +117,9 @@ public sealed record KarelEnvironmentDirective(string FileName)
            select new KarelEnvironmentDirective(fileName);
 }
 
-public sealed record KarelIncludeDirective(string FileName, string Uri, List<KarelDeclaration> Declarations, List<KarelRoutine> Routines)
+public sealed record KarelIncludeDirective(string FileName, Uri Uri, List<KarelDeclaration> Declarations, List<KarelRoutine> Routines)
     : KarelTranslatorDirective, IKarelParser<KarelTranslatorDirective>
 {
-    // TODO: Include directives bring over declarations from another file
-    // TODO: When parsing an include directive, parse declarations and store in the directive's AST node
-    // TODO: Will also need other metadata on the included file such as its URI
-    // TODO: We currently don't have any context of the current file's URI, dir, etc. to locate the other one though
-    // TODO: We will also have to treat positions with respect to the original file, not the current file, though starting a new parser with new input would do it
-    // TODO: This also means the symbol table will have to store URIs with the symbols to properly determine source
-
     private static Parser<(List<KarelDeclaration>, List<KarelRoutine>)> IncludedFileParser(string programUri)
     {
         if (!File.Exists(programUri))
@@ -149,7 +142,7 @@ public sealed record KarelIncludeDirective(string FileName, string Uri, List<Kar
         => from kv in Directive("INCLUDE")
            from fileUri in Parse.CharExcept(['\r', '\n', ';']).Until(KarelCommon.LineBreak).Text()
            from inner in IncludedFileParser(fileUri).WithErrorContext("INCLUDE")
-           select new KarelIncludeDirective(Path.GetFileNameWithoutExtension(fileUri), fileUri, inner.Item1, inner.Item2);
+           select new KarelIncludeDirective(Path.GetFileNameWithoutExtension(fileUri), new Uri(fileUri), inner.Item1, inner.Item2);
 
 }
 

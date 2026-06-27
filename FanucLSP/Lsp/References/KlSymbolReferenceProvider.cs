@@ -27,11 +27,15 @@ internal sealed class KlSymbolReferenceProvider : IKlReferenceProvider
         }
 
         var refs = program.SymTable.GetSymbolReferences(token, GetTokenPosition(position))
-            .Select(pos => new TextDocumentLocation { Uri = document.Uri, Range = GetContentRange(pos) });
+            .Select(pos => new TextDocumentLocation { Uri = pos.ProgramUri.ToString(), Range = GetContentRange(pos.Position) });
 
         if (context.IncludeDeclaration)
         {
-            return refs.Append(new TextDocumentLocation { Uri = document.Uri, Range = GetContentRange(symbol.DeclarationPosition) }).ToArray();
+            return refs.Append(new TextDocumentLocation 
+            {
+                Uri = symbol.DeclarationPosition.ProgramUri.ToString(),
+                Range = GetContentRange(symbol.DeclarationPosition.Position) 
+            }).ToArray();
         }
 
         return refs.ToArray();
