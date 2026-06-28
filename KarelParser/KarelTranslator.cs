@@ -41,13 +41,7 @@ public record KarelTranslatorDirective
             .Or(KarelSystemDirective.GetParser());
 
     public static Parser<KarelTranslatorDirective> GetParser()
-        => InternalParser()
-            .WithPosition()
-            .Select(result => result.Value with
-            {
-                Start = result.Start,
-                End = result.End
-            });
+        => InternalParser().WithPos();
 }
 
 public sealed record KarelAlphabetizeDirective
